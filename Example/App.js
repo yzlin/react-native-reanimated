@@ -20,6 +20,7 @@ import TransitionsSequence from './transitions/sequence';
 import TransitionsShuffle from './transitions/shuffle';
 import TransitionsProgress from './transitions/progress';
 import TransitionsTicket from './transitions/ticket';
+import TransitionsFancyPants from './transitions/fancyPants';
 
 import InteractablePlayground, {
   SCREENS as INTERACTABLE_SCREENS,
@@ -72,6 +73,10 @@ const SCREENS = {
     screen: TransitionsTicket,
     title: 'Transitions – flight ticket demo',
   },
+  transitionsFancyPants: {
+    screen: TransitionsFancyPants,
+    title: 'Transitions – fancy pants',
+  },
 };
 
 class MainScreen extends React.Component {
@@ -118,7 +123,7 @@ const ExampleApp = createStackNavigator(
     ...INTERACTABLE_SCREENS,
   },
   {
-    initialRouteName: 'Main',
+    initialRouteName: 'transitionsFancyPants',
   }
 );
 

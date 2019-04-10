@@ -4,11 +4,11 @@ import { Transitioning, Transition } from 'react-native-reanimated';
 
 function Sequence() {
   const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="scale" />
+    <Transition.Together>
+      <Transition.Out type="scale" durationMs={1500} />
       <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="fade" />
-    </Transition.Sequence>
+      <Transition.In type="circle" />
+    </Transition.Together>
   );
 
   let [showText, setShowText] = useState(true);
@@ -28,7 +28,16 @@ function Sequence() {
         }}
       />
       {showText && (
-        <Text style={styles.text}>Tap the above button to hide me</Text>
+        <View
+          style={{
+            backgroundColor: '#ff5252',
+            margin: 10,
+            padding: 150,
+            paddingHorizontal: 120,
+          }}>
+          <Text style={{ color: 'white' }}>Who</Text>
+          <Text style={{ color: 'white' }}>dis?</Text>
+        </View>
       )}
     </Transitioning.View>
   );

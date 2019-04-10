@@ -1,6 +1,7 @@
 package com.swmansion.reanimated.transitions;
 
 import android.support.transition.Fade;
+import android.support.transition.InteractiveTransition;
 import android.support.transition.SidePropagation;
 import android.support.transition.Slide;
 import android.support.transition.Transition;
@@ -23,6 +24,10 @@ class TransitionUtils {
   static @Nullable Transition inflate(ReadableMap config) {
     String type = config.getString("type");
     if ("group".equals(type)) {
+//      Transition group = inflateGroup(config);
+//      InteractiveTransition interactive = new InteractiveTransition();
+//      interactive.addTransition(group);
+//      return interactive;
       return inflateGroup(config);
     } else if ("in".equals(type)) {
       return inflateIn(config);
@@ -101,6 +106,8 @@ class TransitionUtils {
       return null;
     } else if ("fade".equals(type)) {
       return new Fade(Fade.IN | Fade.OUT);
+    } else if ("circle".equals(type)) {
+      return new CircularReveal();
     } else if ("scale".equals(type)) {
       return new Scale();
     } else if ("slide-top".equals(type)) {
