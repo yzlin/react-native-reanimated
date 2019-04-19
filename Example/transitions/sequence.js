@@ -5,9 +5,7 @@ import { Transitioning, Transition } from 'react-native-reanimated';
 function Sequence() {
   const transition = (
     <Transition.Together>
-      <Transition.Out type="scale" durationMs={1500} />
       <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="circle" />
     </Transition.Together>
   );
 
@@ -27,18 +25,15 @@ function Sequence() {
           setShowText(!showText);
         }}
       />
-      {showText && (
-        <View
-          style={{
-            backgroundColor: '#ff5252',
-            margin: 10,
-            padding: 150,
-            paddingHorizontal: 120,
-          }}>
-          <Text style={{ color: 'white' }}>Who</Text>
-          <Text style={{ color: 'white' }}>dis?</Text>
-        </View>
-      )}
+      <View
+        style={{
+          backgroundColor: '#ff5252',
+          margin: 10,
+          padding: 150,
+          borderRadius: showText ? 10 : 30,
+          paddingHorizontal: 120,
+        }}
+      />
     </Transitioning.View>
   );
 }

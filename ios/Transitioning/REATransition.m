@@ -164,8 +164,8 @@
 }
 
 - (REATransitionAnimation *)animationForTransitioning:(REATransitionValues *)startValues
-                                               endValues:(REATransitionValues *)endValues
-                                                 forRoot:(UIView *)root
+                                            endValues:(REATransitionValues *)endValues
+                                              forRoot:(UIView *)root
 {
   return nil;
 }

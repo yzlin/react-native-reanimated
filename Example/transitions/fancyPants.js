@@ -5,8 +5,10 @@ import {
   StyleSheet,
   Button,
   StatusBar,
+  Keyboard,
   TextInput,
   TouchableWithoutFeedback,
+  TouchableHighlight,
 } from 'react-native';
 import { Transitioning, Transition } from 'react-native-reanimated';
 import {} from 'react-native-paper';
@@ -15,20 +17,14 @@ function Row({ label, editing, value, onValueChange, startEditing, blur }) {
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      {editing ? (
-        <TextInput
-          autoFocus
-          style={styles.value}
-          keyboardType="decimal-pad"
-          value={value}
-          onChangeText={onValueChange}
-          onBlur={blur}
-        />
-      ) : (
-        <TouchableWithoutFeedback onPress={startEditing}>
-          <Text style={styles.value}>{value}</Text>
-        </TouchableWithoutFeedback>
-      )}
+      <TextInput
+        style={[styles.editText, editing ? {} : { color: '#B5B9C0' }]}
+        keyboardType="decimal-pad"
+        value={value}
+        onChangeText={onValueChange}
+        onFocus={startEditing}
+        onBlur={blur}
+      />
     </View>
   );
 }
@@ -48,13 +44,18 @@ function FancyPants() {
     setEditing(false);
   };
 
+  const transition2 = (
+    <Transition.Sequence>
+      <Transition.Out type="fade" />
+      <Transition.Change interpolation="easeInOut" />
+      <Transition.In type="slide-bottom" interpolation="easeOut" />
+    </Transition.Sequence>
+  );
   const transition = (
     <Transition.Sequence>
-      <Transition.Together>
-        <Transition.Out type="fade" />
-        <Transition.In type="fade" />
-      </Transition.Together>
+      <Transition.Out type="slide-bottom" />
       <Transition.Change interpolation="easeInOut" />
+      <Transition.In type="fade" interpolation="easeOut" />
     </Transition.Sequence>
   );
 
@@ -69,16 +70,28 @@ function FancyPants() {
           value={value}
           onValueChange={changeValue}
         />
+        <Row label="Coffee" value="150.50" />
+        <Row label="Subscriptions" value="39.99" />
+        <Row label="Car" value="75.00" />
         <View style={styles.bar} />
         <View style={styles.row}>
           <Text style={styles.summary}>Sum</Text>
-          <Text style={styles.editValue}>10.80</Text>
+          <Text style={styles.editValue}>276.29</Text>
         </View>
         {!editing && (
           <Text style={styles.description}>
-            Make sure to check your order before sending. Once sent your credit
-            card will be charged and you will never get your money back.
+            Make sure to check your spendings prior to sending. Once sent, all
+            your friends will learn how much you spent on partying and they may
+            never want to speak with you again.
           </Text>
+        )}
+        {editing && (
+          <TouchableHighlight
+            onPress={Keyboard.dismiss}
+            underlayColor="#d7e4fa"
+            style={styles.checkButton}>
+            <Text style={styles.buttonText}>✓</Text>
+          </TouchableHighlight>
         )}
       </View>
       <View style={styles.button}>
@@ -87,6 +100,10 @@ function FancyPants() {
     </Transitioning.View>
   );
 }
+
+FancyPants.navigationOptions = {
+  title: 'Spendings',
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -116,6 +133,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  checkButton: {
+    backgroundColor: '#C5D8F8',
+    position: 'absolute',
+    right: 10,
+    bottom: 310,
+    height: 50,
+    width: 50,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   buttonText: {
     fontWeight: 'bold',
     fontFamily: 'Menlo',
@@ -123,14 +151,14 @@ const styles = StyleSheet.create({
   },
   editor: {
     backgroundColor: 'white',
-    // shadowColor: '#000',
-    // shadowOffset: {
-    //   width: 0,
-    //   height: 2,
-    // },
-    // shadowOpacity: 0.25,
-    // shadowRadius: 3.84,
-    // elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
     padding: 20,
     height: '100%',
   },
@@ -139,10 +167,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  editText: {
+    color: '#444',
+    fontFamily: 'Menlo',
+    position: 'absolute',
+    right: 0,
   },
   value: {
     color: '#B5B9C0',
     fontFamily: 'Menlo',
+    position: 'absolute',
+    right: 0,
   },
   description: {
     color: '#B5B9C0',
@@ -167,7 +204,7 @@ const styles = StyleSheet.create({
   bar: {
     height: StyleSheet.hairlineWidth,
     alignSelf: 'stretch',
-    marginVertical: 10,
+    marginBottom: 10,
     backgroundColor: '#EDECED',
   },
   text: {

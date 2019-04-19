@@ -100,8 +100,8 @@
 }
 
 - (REATransitionAnimation *)animationForTransitioning:(REATransitionValues *)startValues
-                                               endValues:(REATransitionValues *)endValues
-                                                 forRoot:(UIView *)root
+                                            endValues:(REATransitionValues *)endValues
+                                              forRoot:(UIView *)root
 {
   BOOL isViewAppearing = (startValues == nil);
   if (isViewAppearing && !IS_LAYOUT_ONLY(endValues.view)) {
@@ -266,16 +266,18 @@
 @implementation REAChangeTransition
 
 - (REATransitionAnimation *)animationForTransitioning:(REATransitionValues *)startValues
-                                               endValues:(REATransitionValues *)endValues
-                                                 forRoot:(UIView *)root
+                                            endValues:(REATransitionValues *)endValues
+                                              forRoot:(UIView *)root
 {
   if (startValues == nil || endValues == nil || endValues.view.window == nil) {
     return nil;
   }
   BOOL animatePosition = !CGPointEqualToPoint(startValues.center, endValues.center);
   BOOL animateBounds = !CGRectEqualToRect(startValues.bounds, endValues.bounds);
+  BOOL animateCornerRadius = startValues.cornerRadius != endValues.cornerRadius;
+  BOOL animateShadowPath = !CGPathEqualToPath(startValues.shadowPath, endValues.shadowPath);
 
-  if (!animatePosition && !animateBounds) {
+  if (!animatePosition && !animateBounds && !animateCornerRadius && !animateShadowPath) {
     return nil;
   }
 
@@ -299,6 +301,22 @@
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
     animation.fromValue = [NSValue valueWithCGRect:fromValue];
     animation.toValue = [NSValue valueWithCGRect:endValues.bounds];
+    [animations addObject:animation];
+  }
+
+  if (animateCornerRadius) {
+    CGFloat fromValue = layer.presentationLayer.cornerRadius;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"cornerRadius"];
+    animation.fromValue = @(fromValue);
+    animation.toValue = @(endValues.cornerRadius);
+    [animations addObject:animation];
+  }
+
+  if (animateShadowPath) {
+    CGPathRef fromValue = layer.presentationLayer.shadowPath;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"shadowPath"];
+    animation.fromValue = (__bridge id)fromValue;
+    animation.toValue = (id)endValues.shadowPath;
     [animations addObject:animation];
   }
 
