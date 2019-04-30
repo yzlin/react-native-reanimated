@@ -11,6 +11,9 @@
   if (self = [super init]) {
     _view = view;
     if (view.layer.needsDisplay) {
+      // some RCTView properties (like shadows) are only updated in willDisplay
+      // therefore we trigger display here manually to make sure we read the
+      // corect values after they are updated
       [view.layer display];
     }
     _parent = view.superview;
