@@ -366,6 +366,7 @@
   BOOL animatePosition = !CGPointEqualToPoint(startValues.center, endValues.center);
   BOOL animateBounds = !CGRectEqualToRect(startValues.bounds, endValues.bounds);
   BOOL animateBackgroundColor = !CGColorEqualToColor(startValues.backgroundColor, endValues.backgroundColor);
+  BOOL animateZPosition = startValues.zPosition != endValues.zPosition;
   BOOL animateCornerRadius = startValues.cornerRadius != endValues.cornerRadius;
   BOOL animateShadowPath = !CGPathEqualToPath(startValues.shadowPath, endValues.shadowPath);
   BOOL animateShadowOpacity = startValues.shadowOpacity != endValues.shadowOpacity;
@@ -403,6 +404,14 @@
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
     animation.fromValue = (__bridge id)fromValue;
     animation.toValue = (__bridge id)endValues.backgroundColor;
+    [animations addObject:animation];
+  }
+
+  if (animateZPosition) {
+    CGFloat fromValue = layer.presentationLayer.zPosition;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"zPosition"];
+    animation.fromValue = @(fromValue);
+    animation.toValue = @(endValues.zPosition);
     [animations addObject:animation];
   }
 

@@ -5,6 +5,7 @@
 @property (nonatomic) CGPoint center;
 @property (nonatomic) CGRect bounds;
 @property (nonatomic) CGColorRef backgroundColor;
+@property (nonatomic) CGFloat zPosition;
 @property (nonatomic) CGFloat cornerRadius;
 @property (nonatomic) CGPoint centerRelativeToRoot;
 @property (nonatomic, retain) UIView *view;

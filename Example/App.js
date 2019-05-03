@@ -123,7 +123,7 @@ const ExampleApp = createStackNavigator(
     ...INTERACTABLE_SCREENS,
   },
   {
-    initialRouteName: 'transitionsSequence',
+    initialRouteName: 'transitionsFancyPants',
   }
 );
 

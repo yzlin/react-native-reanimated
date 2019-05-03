@@ -32,10 +32,7 @@ function Row({ label, value, transitioningRef }) {
   return (
     <TouchableHighlight
       onPress={flip}
-      style={[
-        expanded ? styles.expandedRow : styles.rowBtn,
-        transitioningRef ? { zIndex: 200 } : {},
-      ]}
+      style={[expanded ? styles.expandedRow : styles.rowBtn]}
       underlayColor="#eee">
       <View>
         {expanded && (
@@ -77,7 +74,7 @@ function FancyPants() {
     <Transition.Sequence>
       <Transition.Out type="fade" />
       <Transition.Change interpolation="easeInOut" />
-      <Transition.In type="circle-clip" interpolation="easeOut" />
+      <Transition.In type="fade" interpolation="easeOut" />
     </Transition.Sequence>
   );
 
@@ -181,7 +178,7 @@ const styles = StyleSheet.create({
     // elevation: 5,
   },
   expandedRow: {
-    // zIndex: 200,
+    zIndex: 200,
     alignSelf: 'stretch',
     marginHorizontal: -30,
     padding: 20,
