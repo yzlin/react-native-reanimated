@@ -166,8 +166,10 @@
   switch (self.animationType) {
     case REATransitionAnimationTypeCircle: {
       CGFloat radius = hypot(view.frame.size.width, view.frame.size.height);
-      startPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-1, -1, 2, 2)].CGPath;
-      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-radius, -radius, 2 * radius, 2 * radius)].CGPath;
+//      startPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 0, 0)].CGPath;
+//      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-radius, -radius, 2 * radius, 2 * radius)].CGPath;
+      startPath = CGPathCreateWithRect(CGRectMake(0, 0, 0, 0), nil);
+      endPath = CGPathCreateWithRect(CGRectMake(0, 0, view.frame.size.width, view.frame.size.height), nil);
       break;
     }
     default:
@@ -261,7 +263,7 @@
     case REATransitionAnimationTypeCircle: {
       CGFloat radius = hypot(view.frame.size.width, view.frame.size.height);
       startPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-radius, -radius, 2 * radius, 2 * radius)].CGPath;
-      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-1, -1, 2, 2)].CGPath;
+      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(0, 0, 0, 0)].CGPath;
       break;
     }
     default:
@@ -363,12 +365,13 @@
   }
   BOOL animatePosition = !CGPointEqualToPoint(startValues.center, endValues.center);
   BOOL animateBounds = !CGRectEqualToRect(startValues.bounds, endValues.bounds);
+  BOOL animateBackgroundColor = !CGColorEqualToColor(startValues.backgroundColor, endValues.backgroundColor);
   BOOL animateCornerRadius = startValues.cornerRadius != endValues.cornerRadius;
   BOOL animateShadowPath = !CGPathEqualToPath(startValues.shadowPath, endValues.shadowPath);
   BOOL animateShadowOpacity = startValues.shadowOpacity != endValues.shadowOpacity;
   BOOL animateShadowOffset = !CGSizeEqualToSize(startValues.shadowOffset, endValues.shadowOffset);
 
-  if (!animatePosition && !animateBounds && !animateCornerRadius && !animateShadowPath && !animateShadowOpacity && !animateShadowOffset) {
+  if (!animatePosition && !animateBounds && !animateBackgroundColor && !animateCornerRadius && !animateShadowPath && !animateShadowOpacity && !animateShadowOffset) {
     return nil;
   }
 
@@ -392,6 +395,14 @@
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"bounds"];
     animation.fromValue = [NSValue valueWithCGRect:fromValue];
     animation.toValue = [NSValue valueWithCGRect:endValues.bounds];
+    [animations addObject:animation];
+  }
+
+  if (animateBackgroundColor) {
+    CGColorRef fromValue = layer.presentationLayer.backgroundColor;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
+    animation.fromValue = (__bridge id)fromValue;
+    animation.toValue = (__bridge id)endValues.backgroundColor;
     [animations addObject:animation];
   }
 

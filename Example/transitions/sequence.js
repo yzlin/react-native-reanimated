@@ -1,14 +1,22 @@
 import React, { useState, useRef } from 'react';
-import { Text, View, StyleSheet, Button, StatusBar } from 'react-native';
+import {
+  Text,
+  Image,
+  View,
+  StyleSheet,
+  Button,
+  StatusBar,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import { Transitioning, Transition } from 'react-native-reanimated';
 
 function Sequence() {
   const transition = (
-    <Transition.Sequence>
-      <Transition.Out type="circle" />
+    <Transition.Together>
+      <Transition.Out type="fade" />
       <Transition.Change />
-      <Transition.In type="circle" />
-    </Transition.Sequence>
+      <Transition.In type="fade" />
+    </Transition.Together>
   );
 
   let [showText, setShowText] = useState(false);
@@ -27,7 +35,31 @@ function Sequence() {
           setShowText(!showText);
         }}
       />
-      {showText && (
+      {/* {showText && (
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }]} />
+      )} */}
+      <View
+        style={{
+          width: 80,
+          height: 80,
+          backgroundColor: showText ? 'red' : 'orange',
+        }}
+      />
+      {/* <TouchableWithoutFeedback
+        onPress={() => {
+          ref.current.animateNextTransition();
+          setShowText(!showText);
+        }}>
+        <Image
+          style={showText ? styles.float : styles.inline}
+          source={{
+            uri:
+              'https://assets1.ignimgs.com/2013/09/23/chewbacca-1280jpg-e94c97_1280w.jpg',
+          }}
+          resizeMode="contain"
+        />
+      </TouchableWithoutFeedback> */}
+      {/* {showText && (
         <View
           style={{
             backgroundColor: '#ff5252',
@@ -37,7 +69,7 @@ function Sequence() {
             paddingHorizontal: 120,
           }}
         />
-      )}
+      )} */}
     </Transitioning.View>
   );
 }
@@ -51,6 +83,15 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     margin: 10,
+  },
+  inline: {
+    width: 200,
+    height: 200,
+  },
+  float: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
   },
 });
 

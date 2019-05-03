@@ -25,6 +25,7 @@
     }
     _center = view.center;
     _bounds = view.bounds;
+    _backgroundColor = view.layer.backgroundColor;
     _cornerRadius = view.layer.cornerRadius;
     _shadowPath = view.layer.shadowOpacity < EPS ? nil : view.layer.shadowPath;
     _shadowOpacity = view.layer.shadowOpacity;
