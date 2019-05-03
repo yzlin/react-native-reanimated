@@ -4,12 +4,14 @@ import { Transitioning, Transition } from 'react-native-reanimated';
 
 function Sequence() {
   const transition = (
-    <Transition.Together>
-      <Transition.Change interpolation="easeInOut" />
-    </Transition.Together>
+    <Transition.Sequence>
+      <Transition.Out type="circle" />
+      <Transition.Change />
+      <Transition.In type="circle" />
+    </Transition.Sequence>
   );
 
-  let [showText, setShowText] = useState(true);
+  let [showText, setShowText] = useState(false);
   const ref = useRef();
 
   return (
@@ -25,15 +27,17 @@ function Sequence() {
           setShowText(!showText);
         }}
       />
-      <View
-        style={{
-          backgroundColor: '#ff5252',
-          margin: 10,
-          padding: 150,
-          borderRadius: showText ? 10 : 30,
-          paddingHorizontal: 120,
-        }}
-      />
+      {showText && (
+        <View
+          style={{
+            backgroundColor: '#ff5252',
+            margin: 10,
+            padding: 150,
+            borderRadius: showText ? 10 : 30,
+            paddingHorizontal: 120,
+          }}
+        />
+      )}
     </Transitioning.View>
   );
 }

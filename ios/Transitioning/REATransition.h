@@ -24,6 +24,7 @@ typedef NS_ENUM(NSInteger, REATransitionAnimationType) {
   REATransitionAnimationTypeSlideBottom,
   REATransitionAnimationTypeSlideRight,
   REATransitionAnimationTypeSlideLeft,
+  REATransitionAnimationTypeCircle,
 };
 
 typedef NS_ENUM(NSInteger, REATransitionInterpolationType) {

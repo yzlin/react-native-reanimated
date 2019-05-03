@@ -1,7 +1,34 @@
 #import <React/RCTViewManager.h>
+#import <React/RCTBorderDrawing.h>
 
 #import "REAAllTransitions.h"
 #import "RCTConvert+REATransition.h"
+
+@interface REAMaskRemover : NSObject <CAAnimationDelegate>
+@end
+
+@implementation REAMaskRemover {
+  CALayer *_layer;
+}
+
+- (instancetype)initWithLayer:(CALayer *)layer;
+{
+  self = [super init];
+  if (self) {
+    _layer = layer;
+  }
+  return self;
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+  if (flag) {
+    _layer.mask = nil;
+  }
+}
+
+@end
+
 
 @interface REASnapshotRemover : NSObject <CAAnimationDelegate>
 @end
@@ -132,14 +159,45 @@
   return self;
 }
 
+- (REATransitionAnimation *)appearMasked:(UIView *)view
+{
+  CABasicAnimation *animation;
+  CGPathRef startPath, endPath;
+  switch (self.animationType) {
+    case REATransitionAnimationTypeCircle: {
+      CGFloat radius = hypot(view.frame.size.width, view.frame.size.height);
+      startPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-1, -1, 2, 2)].CGPath;
+      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-radius, -radius, 2 * radius, 2 * radius)].CGPath;
+      break;
+    }
+    default:
+      return nil;
+  }
+
+  CAShapeLayer *mask = [CAShapeLayer new];
+  mask.path = endPath;
+  mask.backgroundColor = [UIColor blackColor].CGColor;
+
+  animation = [CABasicAnimation animationWithKeyPath:@"path"];
+  animation.fromValue = (__bridge id)startPath;
+  animation.toValue = (__bridge id)endPath;
+  animation.fillMode = kCAFillModeBackwards;
+  animation.delegate = [[REAMaskRemover alloc] initWithLayer:view.layer];
+  view.layer.mask = mask;
+
+  return [REATransitionAnimation transitionWithAnimation:animation layer:mask andKeyPath:animation.keyPath];
+}
+
 - (REATransitionAnimation *)appearView:(UIView *)view
-                                 inParent:(UIView *)parent
-                                  forRoot:(UIView *)root
+                              inParent:(UIView *)parent
+                               forRoot:(UIView *)root
 {
   CABasicAnimation *animation;
   switch (self.animationType) {
     case REATransitionAnimationTypeNone:
       return nil;
+    case REATransitionAnimationTypeCircle:
+      return [self appearMasked:view];
     case REATransitionAnimationTypeFade: {
       CGFloat finalOpacity = view.layer.opacity;
       animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
@@ -195,6 +253,35 @@
   return self;
 }
 
+- (REATransitionAnimation *)disappearMasked:(UIView *)view
+{
+  CABasicAnimation *animation;
+  CGPathRef startPath, endPath;
+  switch (self.animationType) {
+    case REATransitionAnimationTypeCircle: {
+      CGFloat radius = hypot(view.frame.size.width, view.frame.size.height);
+      startPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-radius, -radius, 2 * radius, 2 * radius)].CGPath;
+      endPath = [UIBezierPath bezierPathWithOvalInRect:CGRectMake(-1, -1, 2, 2)].CGPath;
+      break;
+    }
+    default:
+      return nil;
+  }
+
+  CAShapeLayer *mask = [CAShapeLayer new];
+  mask.path = endPath;
+  mask.backgroundColor = [UIColor blackColor].CGColor;
+
+  animation = [CABasicAnimation animationWithKeyPath:@"path"];
+  animation.fromValue = (__bridge id)startPath;
+  animation.toValue = (__bridge id)endPath;
+  animation.fillMode = kCAFillModeBackwards;
+  animation.delegate = [[REASnapshotRemover alloc] initWithView:view];
+  view.layer.mask = mask;
+
+  return [REATransitionAnimation transitionWithAnimation:animation layer:mask andKeyPath:animation.keyPath];
+}
+
 - (REATransitionAnimation *)disappearView:(UIView *)view
                                fromParent:(UIView *)parent
                                   forRoot:(UIView *)root
@@ -228,6 +315,8 @@
       animation.toValue = @(CATransform3DMakeScale(0.001, 0.001, 0.001));
       break;
     }
+    case REATransitionAnimationTypeCircle:
+      return [self disappearMasked:snapshotView];
     case REATransitionAnimationTypeSlideTop:
     case REATransitionAnimationTypeSlideBottom:
     case REATransitionAnimationTypeSlideLeft:
@@ -276,8 +365,10 @@
   BOOL animateBounds = !CGRectEqualToRect(startValues.bounds, endValues.bounds);
   BOOL animateCornerRadius = startValues.cornerRadius != endValues.cornerRadius;
   BOOL animateShadowPath = !CGPathEqualToPath(startValues.shadowPath, endValues.shadowPath);
+  BOOL animateShadowOpacity = startValues.shadowOpacity != endValues.shadowOpacity;
+  BOOL animateShadowOffset = !CGSizeEqualToSize(startValues.shadowOffset, endValues.shadowOffset);
 
-  if (!animatePosition && !animateBounds && !animateCornerRadius && !animateShadowPath) {
+  if (!animatePosition && !animateBounds && !animateCornerRadius && !animateShadowPath && !animateShadowOpacity && !animateShadowOffset) {
     return nil;
   }
 
@@ -314,9 +405,69 @@
 
   if (animateShadowPath) {
     CGPathRef fromValue = layer.presentationLayer.shadowPath;
+    CGPathRef toValue = endValues.shadowPath;
+    if (fromValue == nil) {
+      // shadow will appear
+      CGFloat cornerRadius = layer.presentationLayer.cornerRadius;
+      const RCTCornerRadii cornerRadii = (RCTCornerRadii){
+        cornerRadius,
+        cornerRadius,
+        cornerRadius,
+        cornerRadius
+      };
+      const RCTCornerInsets cornerInsets = RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero);
+      fromValue = RCTPathCreateWithRoundedRect(layer.presentationLayer.bounds, cornerInsets, NULL);
+      // we retain "toValue" so that we can release both to and from values at the end
+      CGPathRetain(toValue);
+      // make sure shadow offset stays the same
+      animateShadowOffset = YES;
+      startValues.shadowOffset = endValues.shadowOffset;
+    } else if (toValue == nil) {
+      // shadow is disappearing
+      CGFloat cornerRadius = endValues.cornerRadius;
+      const RCTCornerRadii cornerRadii = (RCTCornerRadii){
+        cornerRadius,
+        cornerRadius,
+        cornerRadius,
+        cornerRadius
+      };
+      const RCTCornerInsets cornerInsets = RCTGetCornerInsets(cornerRadii, UIEdgeInsetsZero);
+      toValue = RCTPathCreateWithRoundedRect(endValues.bounds, cornerInsets, NULL);
+      // we retain "fromValue" so that we can release both to and from values at the end
+      CGPathRetain(fromValue);
+      // make sure shadow offset stays the same
+      animateShadowOffset = YES;
+      endValues.shadowOffset = startValues.shadowOffset;
+    } else {
+      // retain both to and from values so that we can release them both
+      // w/o adding extra checks
+      CGPathRetain(fromValue);
+      CGPathRetain(toValue);
+    }
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"shadowPath"];
     animation.fromValue = (__bridge id)fromValue;
-    animation.toValue = (id)endValues.shadowPath;
+    animation.toValue = (__bridge id)toValue;
+    [animations addObject:animation];
+    // we update toValue here as in case of hiding shadow the path stays untouched
+    // which causes weird articatcs when attempting to animate it back in
+    layer.shadowPath = toValue;
+    CGPathRelease(fromValue);
+    CGPathRelease(toValue);
+  }
+
+  if (animateShadowOpacity) {
+    CGFloat fromValue = layer.presentationLayer.shadowOpacity;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"shadowOpacity"];
+    animation.fromValue = @(fromValue);
+    animation.toValue = @(endValues.shadowOpacity);
+    [animations addObject:animation];
+  }
+
+  if (animateShadowOffset) {
+    CGSize fromValue = layer.presentationLayer.shadowOffset;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"shadowOffset"];
+    animation.fromValue = @(fromValue);
+    animation.toValue = @(endValues.shadowOffset);
     [animations addObject:animation];
   }
 

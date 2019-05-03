@@ -11,6 +11,8 @@
 @property (nonatomic, retain) UIView *reactParent;
 @property (nonatomic) CGPoint centerInReactParent;
 @property (nonatomic) CGPathRef shadowPath;
+@property (nonatomic) CGFloat shadowOpacity;
+@property (nonatomic) CGSize shadowOffset;
 
 - (instancetype)initWithView:(UIView *)view forRoot:(UIView *)root;
 

@@ -17,7 +17,8 @@ RCT_ENUM_CONVERTER(REATransitionAnimationType, (@{
                                                   @"slide-top": @(REATransitionAnimationTypeSlideTop),
                                                   @"slide-bottom": @(REATransitionAnimationTypeSlideBottom),
                                                   @"slide-right": @(REATransitionAnimationTypeSlideRight),
-                                                  @"slide-left": @(REATransitionAnimationTypeSlideLeft)
+                                                  @"slide-left": @(REATransitionAnimationTypeSlideLeft),
+                                                  @"circle": @(REATransitionAnimationTypeCircle)
                                                   }), REATransitionAnimationTypeNone, integerValue)
 
 RCT_ENUM_CONVERTER(REATransitionInterpolationType, (@{

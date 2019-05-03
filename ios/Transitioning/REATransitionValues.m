@@ -4,6 +4,8 @@
 #import "REATransition.h"
 #import "REATransitionValues.h"
 
+#define EPS 1e-6
+
 @implementation REATransitionValues
 
 - (instancetype)initWithView:(UIView *)view forRoot:(UIView *)root
@@ -24,7 +26,9 @@
     _center = view.center;
     _bounds = view.bounds;
     _cornerRadius = view.layer.cornerRadius;
-    _shadowPath = view.layer.shadowPath;
+    _shadowPath = view.layer.shadowOpacity < EPS ? nil : view.layer.shadowPath;
+    _shadowOpacity = view.layer.shadowOpacity;
+    _shadowOffset = view.layer.shadowOffset;
     _centerRelativeToRoot = [_parent convertPoint:_center toView:root];
     _centerInReactParent = [_parent convertPoint:_center toView:_reactParent];
   }
