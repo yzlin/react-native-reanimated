@@ -366,13 +366,14 @@
   BOOL animatePosition = !CGPointEqualToPoint(startValues.center, endValues.center);
   BOOL animateBounds = !CGRectEqualToRect(startValues.bounds, endValues.bounds);
   BOOL animateBackgroundColor = !CGColorEqualToColor(startValues.backgroundColor, endValues.backgroundColor);
+  BOOL animateTransform = !CATransform3DEqualToTransform(startValues.transform, endValues.transform);
   BOOL animateZPosition = startValues.zPosition != endValues.zPosition;
   BOOL animateCornerRadius = startValues.cornerRadius != endValues.cornerRadius;
   BOOL animateShadowPath = !CGPathEqualToPath(startValues.shadowPath, endValues.shadowPath);
   BOOL animateShadowOpacity = startValues.shadowOpacity != endValues.shadowOpacity;
   BOOL animateShadowOffset = !CGSizeEqualToSize(startValues.shadowOffset, endValues.shadowOffset);
 
-  if (!animatePosition && !animateBounds && !animateBackgroundColor && !animateCornerRadius && !animateShadowPath && !animateShadowOpacity && !animateShadowOffset) {
+  if (!animatePosition && !animateBounds && !animateBackgroundColor && !animateTransform && !animateZPosition && !animateCornerRadius && !animateShadowPath && !animateShadowOpacity && !animateShadowOffset) {
     return nil;
   }
 
@@ -404,6 +405,14 @@
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"backgroundColor"];
     animation.fromValue = (__bridge id)fromValue;
     animation.toValue = (__bridge id)endValues.backgroundColor;
+    [animations addObject:animation];
+  }
+
+  if (animateTransform) {
+    CATransform3D fromValue = layer.presentationLayer.transform;
+    CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"transform"];
+    animation.fromValue = @(fromValue);
+    animation.toValue = @(endValues.transform);
     [animations addObject:animation];
   }
 

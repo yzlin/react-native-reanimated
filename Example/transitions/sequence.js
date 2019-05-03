@@ -43,6 +43,7 @@ function Sequence() {
           width: 80,
           height: 80,
           backgroundColor: showText ? 'red' : 'orange',
+          transform: [{ rotate: showText ? '45deg' : '0deg' }],
         }}
       />
       {/* <TouchableWithoutFeedback
