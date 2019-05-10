@@ -183,16 +183,16 @@ typedef NSMutableArray<REATransitionValues*> REAValuesList;
   double fraction = 0.;
   switch (self.propagation) {
     case REATransitionPropagationLeft:
-      fraction = values.centerRelativeToRoot.x / root.layer.bounds.size.width;
+      fraction = values.center.x / root.layer.bounds.size.width;
       break;
     case REATransitionPropagationRight:
-      fraction = 1. - values.centerRelativeToRoot.x / root.layer.bounds.size.width;
+      fraction = 1. - values.center.x / root.layer.bounds.size.width;
       break;
     case REATransitionPropagationTop:
-      fraction = values.centerRelativeToRoot.y / root.layer.bounds.size.height;
+      fraction = values.center.y / root.layer.bounds.size.height;
       break;
     case REATransitionPropagationBottom:
-      fraction = 1. - values.centerRelativeToRoot.y / root.layer.bounds.size.height;
+      fraction = 1. - values.center.y / root.layer.bounds.size.height;
       break;
   }
 

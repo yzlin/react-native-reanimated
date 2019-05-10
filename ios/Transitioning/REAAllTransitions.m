@@ -145,7 +145,9 @@
 
   BOOL isDisappearing = (startValues.visible && !endValues.visible);
   if (isDisappearing && !IS_LAYOUT_ONLY(startValues.view) && startValues.visible) {
-    startValues.view.center = startValues.centerInReactParent;
+    startValues.view.center = [startValues.view.window
+                               convertPoint:startValues.center
+                               toView:startValues.reactParent];
     return [self disappearView:startValues.view fromParent:startValues.reactParent forRoot:root];
   }
   return nil;
@@ -389,9 +391,12 @@
 
   if (animatePosition) {
     CGPoint fromValue = layer.presentationLayer.position;
+    CGPoint relativeFinalCenter = [endValues.view.window
+                                   convertPoint:endValues.center
+                                   toView:endValues.parent];
     CABasicAnimation *animation = [CABasicAnimation animationWithKeyPath:@"position"];
     animation.fromValue = [NSValue valueWithCGPoint:fromValue];
-    animation.toValue = [NSValue valueWithCGPoint:endValues.center];
+    animation.toValue = [NSValue valueWithCGPoint:relativeFinalCenter];
     [animations addObject:animation];
   }
 

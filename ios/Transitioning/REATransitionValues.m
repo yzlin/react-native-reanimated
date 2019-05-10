@@ -24,7 +24,7 @@
     while (_reactParent != nil && _reactParent != root && IS_LAYOUT_ONLY(_reactParent)) {
       _reactParent = _reactParent.reactSuperview;
     }
-    _center = view.center;
+    _center = [_parent convertPoint:view.center toView:nil];
     _bounds = view.bounds;
     _backgroundColor = view.layer.backgroundColor;
     _transform = view.layer.transform;
@@ -33,8 +33,6 @@
     _shadowPath = view.layer.shadowOpacity < EPS ? nil : view.layer.shadowPath;
     _shadowOpacity = view.layer.shadowOpacity;
     _shadowOffset = view.layer.shadowOffset;
-    _centerRelativeToRoot = [_parent convertPoint:_center toView:root];
-    _centerInReactParent = [_parent convertPoint:_center toView:_reactParent];
   }
   return self;
 }

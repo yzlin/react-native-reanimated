@@ -29,8 +29,9 @@ function Sequence() {
           height: 80,
           backgroundColor: 'orange', //showText ? 'red' : 'orange',
           // transform: [{ rotate: showText ? '45deg' : '0deg' }],
+          overflow: 'hidden',
         }}>
-        <Text>{'  Trololo'}</Text>
+        <Text>Trololo</Text>
       </Transitioning.View>
       {showText && (
         <Transitioning.View
@@ -42,8 +43,9 @@ function Sequence() {
             height: 120,
             backgroundColor: showText ? 'red' : 'orange',
             borderRadius: 20,
+            overflow: 'hidden',
           }}>
-          <Text>{'  Trololo'}</Text>
+          <Text>Trololo</Text>
         </Transitioning.View>
       )}
     </View>
