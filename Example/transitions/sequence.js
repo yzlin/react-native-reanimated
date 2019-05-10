@@ -8,70 +8,45 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { Transitioning, Transition } from 'react-native-reanimated';
+import { Transitioning } from 'react-native-reanimated';
 
 function Sequence() {
-  const transition = (
-    <Transition.Together>
-      <Transition.Out type="fade" />
-      <Transition.Change />
-      <Transition.In type="fade" />
-    </Transition.Together>
-  );
-
   let [showText, setShowText] = useState(false);
   const ref = useRef();
+  const from = useRef();
 
   return (
-    <Transitioning.View
-      ref={ref}
-      transition={transition}
-      style={styles.centerAll}>
+    <View ref={ref} style={styles.centerAll}>
       <Button
         title="show or hide"
         color="#FF5252"
-        onPress={() => {
-          ref.current.animateNextTransition();
-          setShowText(!showText);
-        }}
+        onPress={() => setShowText(!showText)}
       />
-      {/* {showText && (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: 'black' }]} />
-      )} */}
-      <View
+      <Transitioning.View
+        ref={from}
         style={{
           width: 80,
           height: 80,
-          backgroundColor: showText ? 'red' : 'orange',
-          transform: [{ rotate: showText ? '45deg' : '0deg' }],
-        }}
-      />
-      {/* <TouchableWithoutFeedback
-        onPress={() => {
-          ref.current.animateNextTransition();
-          setShowText(!showText);
+          backgroundColor: 'orange', //showText ? 'red' : 'orange',
+          // transform: [{ rotate: showText ? '45deg' : '0deg' }],
         }}>
-        <Image
-          style={showText ? styles.float : styles.inline}
-          source={{
-            uri:
-              'https://assets1.ignimgs.com/2013/09/23/chewbacca-1280jpg-e94c97_1280w.jpg',
-          }}
-          resizeMode="contain"
-        />
-      </TouchableWithoutFeedback> */}
-      {/* {showText && (
-        <View
+        <Text>{'  Trololo'}</Text>
+      </Transitioning.View>
+      {showText && (
+        <Transitioning.View
+          transitionFrom={from.current}
           style={{
-            backgroundColor: '#ff5252',
-            margin: 10,
-            padding: 150,
-            borderRadius: showText ? 10 : 30,
-            paddingHorizontal: 120,
-          }}
-        />
-      )} */}
-    </Transitioning.View>
+            position: 'absolute',
+            top: 0,
+            width: 120,
+            height: 120,
+            backgroundColor: showText ? 'red' : 'orange',
+            borderRadius: 20,
+          }}>
+          <Text>{'  Trololo'}</Text>
+        </Transitioning.View>
+      )}
+    </View>
   );
 }
 

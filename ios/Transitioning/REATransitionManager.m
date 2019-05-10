@@ -4,13 +4,13 @@
 #import <React/RCTUIManagerObserverCoordinator.h>
 
 #import "REATransition.h"
+#import "REAAllTransitions.h"
 
 @interface REATransitionManager () <RCTUIManagerObserver>
 @end
 
 @implementation REATransitionManager {
-  REATransition *_pendingTransition;
-  UIView *_pendingTransitionRoot;
+  NSMutableArray<REATransition *> *_pendingTransitions;
   RCTUIManager *_uiManager;
 }
 
@@ -18,45 +18,84 @@
 {
   if (self = [super init]) {
     _uiManager = uiManager;
+    _pendingTransitions = [NSMutableArray new];
   }
   return self;
 }
 
-- (void)beginTransition:(REATransition *)transition forView:(UIView *)view
-{
-  RCTAssertMainQueue();
-  if (_pendingTransition != nil) {
-    return;
-  }
-  _pendingTransition = transition;
-  _pendingTransitionRoot = view;
-  [transition startCaptureInRoot:view];
-}
-
-- (void)uiManagerWillPerformMounting:(RCTUIManager *)manager
-{
-  [manager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-    [_pendingTransition playInRoot:_pendingTransitionRoot];
-    _pendingTransitionRoot = nil;
-    _pendingTransition = nil;
-  }];
-}
-
-- (void)animateNextTransitionInRoot:(NSNumber *)reactTag withConfig:(NSDictionary *)config
+- (void)scheduleTransitionCallbacks
 {
   [_uiManager.observerCoordinator addObserver:self];
   [_uiManager prependUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-    UIView *view = viewRegistry[reactTag];
-    NSArray *transitionConfigs = [RCTConvert NSArray:config[@"transitions"]];
-    for (id transitionConfig in transitionConfigs) {
-      REATransition *transition = [REATransition inflate:transitionConfig];
-      [self beginTransition:transition forView:view];
+    for (REATransition *transition in _pendingTransitions) {
+      [transition startCaptureWithViewRegistry:viewRegistry];
     }
   }];
   __weak id weakSelf = self;
   [_uiManager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
     [uiManager.observerCoordinator removeObserver:weakSelf];
   }];
+}
+
+- (void)enqueueTransition:(REATransition *)transition
+{
+  [_pendingTransitions addObject:transition];
+  if (_pendingTransitions.count == 1) {
+    // if it is the first transition enqueued in this frame we need to schedule calls to
+    // begin and play transitions
+    [self scheduleTransitionCallbacks];
+  }
+}
+
+- (void)uiManagerWillPerformMounting:(RCTUIManager *)manager
+{
+  [manager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
+    for (REATransition *transition in _pendingTransitions) {
+      [transition playWithViewRegistry:viewRegistry];
+    }
+    [_pendingTransitions removeAllObjects];
+  }];
+}
+
+- (void)animateNextTransitionInRoot:(NSNumber *)reactTag withConfig:(NSDictionary *)config
+{
+}
+
+- (void)animateChange:(NSNumber *)reactTag withConfig:(NSDictionary *)config
+{
+  REAChangeTransition *transition = [[REAChangeTransition alloc] initWithConfig:nil];
+  transition.targetTags = @[reactTag];
+  [self enqueueTransition:transition];
+}
+
+- (void)animateAppear:(NSNumber *)reactTag withConfig:(NSDictionary *)config
+{
+  if (config[@"transitionFrom"] != nil) {
+    REAChangeTransition *transition = [[REAChangeTransition alloc] initWithConfig:nil];
+    transition.targetTags = @[reactTag, config[@"transitionFrom"]];
+    transition.targetMapping = @{config[@"transitionFrom"]: reactTag};
+    [self enqueueTransition:transition];
+  } else {
+    REAInTransition *transition = [[REAInTransition alloc] initWithConfig:nil];
+    transition.targetTags = @[reactTag];
+    transition.animationType = REATransitionAnimationTypeFade;
+    [self enqueueTransition:transition];
+  }
+}
+
+- (void)animateDisappear:(NSNumber *)reactTag withConfig:(NSDictionary *)config
+{
+  if (config[@"transitionFrom"] != nil) {
+    REAChangeTransition *transition = [[REAChangeTransition alloc] initWithConfig:nil];
+    transition.targetTags = @[reactTag, config[@"transitionFrom"]];
+    transition.targetMapping = @{reactTag: config[@"transitionFrom"]};
+    [self enqueueTransition:transition];
+  } else {
+    REAOutTransition *transition = [[REAOutTransition alloc] initWithConfig:nil];
+    transition.animationType = REATransitionAnimationTypeFade;
+    transition.targetTags = @[reactTag];
+    [self enqueueTransition:transition];
+  }
 }
 
 @end

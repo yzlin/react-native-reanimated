@@ -2,6 +2,7 @@
 
 @interface REATransitionValues : NSObject
 
+@property (nonatomic) BOOL visible;
 @property (nonatomic) CGPoint center;
 @property (nonatomic) CGRect bounds;
 @property (nonatomic) CGColorRef backgroundColor;

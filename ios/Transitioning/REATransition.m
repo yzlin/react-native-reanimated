@@ -5,39 +5,20 @@
 
 #import "REATransition.h"
 #import "REATransitionValues.h"
+#import "REAAllTransitions.h"
 #import "RCTConvert+REATransition.h"
 
 #define DEFAULT_PROPAGATION_SPEED 3
 
-@interface REATransitionGroup : REATransition
-@property (nonatomic) BOOL sequence;
-@property (nonatomic) NSArray *transitions;
-- (instancetype)initWithConfig:(NSDictionary *)config;
-@end
-
-@interface REAVisibilityTransition : REATransition
-@property (nonatomic) REATransitionAnimationType animationType;
-- (REATransitionAnimation *)appearView:(UIView*)view inParent:(UIView*)parent;
-- (REATransitionAnimation *)disappearView:(UIView*)view fromParent:(UIView*)parent;
-- (instancetype)initWithConfig:(NSDictionary *)config;
-@end
-
-@interface REAInTransition : REAVisibilityTransition
-- (instancetype)initWithConfig:(NSDictionary *)config;
-@end
-
-@interface REAOutTransition : REAVisibilityTransition
-- (instancetype)initWithConfig:(NSDictionary *)config;
-@end
-
-@interface REAChangeTransition : REATransition
-- (instancetype)initWithConfig:(NSDictionary *)config;
-@end
+typedef NSMutableDictionary<NSNumber*, REATransitionValues*> REAValuesMap;
+typedef NSMutableArray<REATransitionValues*> REAValuesList;
 
 @implementation REATransition {
   __weak UIView *_root;
-  NSMutableDictionary<NSNumber*, REATransitionValues*> *_startValues;
-  NSMutableDictionary<NSNumber*, REATransitionValues*> *_endValues;
+  REAValuesMap *_startValues;
+  REAValuesMap *_endValues;
+  REAValuesList *_startList;
+  REAValuesList *_endList;
 }
 
 + (REATransition *)inflate:(NSDictionary *)config
@@ -66,11 +47,16 @@
     _delay = [RCTConvert double:config[@"delayMs"]] / 1000.0;
     _interpolation = [RCTConvert REATransitionInterpolationType:config[@"interpolation"]];
     _propagation = [RCTConvert REATransitionPropagationType:config[@"propagation"]];
+
+    _startValues = [NSMutableDictionary new];
+    _endValues = [NSMutableDictionary new];
+    _startList = [NSMutableArray new];
+    _endList = [NSMutableArray new];
   }
   return self;
 }
 
-- (void)captureRecursiveIn:(UIView *)view to:(NSMutableDictionary<NSNumber*, REATransitionValues*> *)map forRoot:(UIView *)root
+- (void)captureRecursiveIn:(UIView *)view to:(REAValuesMap *)map forRoot:(UIView *)root
 {
   NSNumber *tag = view.reactTag;
   if (tag != nil) {
@@ -81,24 +67,88 @@
   }
 }
 
-- (void)startCaptureInRoot:(UIView *)root
+- (void)startCaptureWithViewRegistry:(REAViewRegistry *)viewRegistry
 {
   _startValues = [NSMutableDictionary new];
-  [self captureRecursiveIn:root to:_startValues forRoot:root];
+  for (NSNumber *targetTag in _targetTags) {
+    UIView *view = viewRegistry[targetTag];
+    _startValues[view.reactTag] = [[REATransitionValues alloc] initWithView:view forRoot:nil];
+  }
 }
 
-- (void)playInRoot:(UIView *)root
+- (void)matchByMapping:(REAValuesMap *)start end:(REAValuesMap *)end
 {
-  _endValues = [NSMutableDictionary new];
-  [self captureRecursiveIn:root to:_endValues forRoot:root];
-  NSArray *animations = [self animationsForTransitioning:_startValues
-                                               endValues:_endValues
-                                                 forRoot:root];
+  [_targetMapping enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSNumber * _Nonnull value, BOOL * _Nonnull stop) {
+    REATransitionValues *startValues = [start objectForKey:key];
+    REATransitionValues *endValues = [end objectForKey:value];
+    if (startValues != nil && endValues != nil) {
+      [start removeObjectsForKeys:@[key, value]];
+      [end removeObjectsForKeys:@[key, value]];
+      [_startList addObject:startValues];
+      [_endList addObject:endValues];
+    }
+  }];
+}
+
+- (void)matchByTags:(REAValuesMap *)start end:(REAValuesMap *)end
+{
+  NSMutableArray *keysToRemove = [NSMutableArray new];
+  [start enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, REATransitionValues * _Nonnull startValues, BOOL * _Nonnull stop) {
+    REATransitionValues *endValues = [end objectForKey:key];
+    if (endValues != nil) {
+      [_startList addObject:startValues];
+      [_endList addObject:endValues];
+      [keysToRemove addObject:key];
+    }
+  }];
+  [start removeObjectsForKeys:keysToRemove];
+  [end removeObjectsForKeys:keysToRemove];
+}
+
+- (void)addUnmatched:(REAValuesMap *)start end:(REAValuesMap *)end
+{
+  [start enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, REATransitionValues * _Nonnull startValues, BOOL * _Nonnull stop) {
+    [_startList addObject:startValues];
+    [_endList addObject:[REATransitionValues new]];
+  }];
+  [end enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, REATransitionValues * _Nonnull endValues, BOOL * _Nonnull stop) {
+    [_startList addObject:[REATransitionValues new]];
+    [_endList addObject:endValues];
+  }];
+  [start removeAllObjects];
+  [end removeAllObjects];
+}
+
+- (void)playWithViewRegistry:(REAViewRegistry *)viewRegistry
+{
+  [_endValues removeAllObjects];
+  for (NSNumber *targetTag in _targetTags) {
+    UIView *view = viewRegistry[targetTag];
+    if (view != nil) {
+      _endValues[view.reactTag] = [[REATransitionValues alloc] initWithView:view forRoot:nil];
+    }
+  }
+
+  [_startList removeAllObjects];
+  [_endList removeAllObjects];
+
+  // matching
+  REAValuesMap *unmatchedStart = [NSMutableDictionary dictionaryWithDictionary:_startValues];
+  REAValuesMap *unmatchedEnd = [NSMutableDictionary dictionaryWithDictionary:_endValues];
+  [self matchByMapping:unmatchedStart end:unmatchedEnd];
+  [self matchByTags:unmatchedStart end:unmatchedEnd];
+  [self addUnmatched:unmatchedStart end:unmatchedEnd];
+
+
+  NSArray *animations = [self animationsForTransitioning:_startList
+                                               endValues:_endList
+                                                 forRoot:nil];
   for (REATransitionAnimation *animation in animations) {
     [animation play];
   }
-  _startValues = nil;
-  _endValues = nil;
+
+  [_startValues removeAllObjects];
+  [_endValues removeAllObjects];
 }
 
 - (REATransitionValues *)findStartValuesForKey:(NSNumber *)key
@@ -170,38 +220,55 @@
   return nil;
 }
 
-- (NSArray<REATransitionAnimation*> *)animationsForTransitioning:(NSMutableDictionary<NSNumber *,REATransitionValues *> *)startValues
-                                                          endValues:(NSMutableDictionary<NSNumber *,REATransitionValues *> *)endValues
-                                                            forRoot:(UIView *)root
+- (NSArray<REATransitionAnimation *> *)animationsForTransitioning:(REATransitionValuesList *)startValuesList
+                                                        endValues:(REATransitionValuesList *)endValuesList
+                                                          forRoot:(UIView *)root
 {
   NSMutableArray *animations = [NSMutableArray new];
-  [startValues enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, REATransitionValues *startValue, BOOL *stop) {
-    REATransitionValues *endValue = endValues[key];
-    REATransitionAnimation *animation = [self animationForTransitioning:startValue endValues:endValue forRoot:root];
+  for (NSUInteger i = 0; i < startValuesList.count; i++) {
+    REATransitionValues *startValues = [startValuesList objectAtIndex:i];
+    REATransitionValues *endValues = [endValuesList objectAtIndex:i];
+    REATransitionAnimation *animation = [self animationForTransitioning:startValues
+                                                              endValues:endValues
+                                                                forRoot:root];
     if (animation != nil) {
       animation.animation.timingFunction = self.mediaTiming;
       animation.animation.duration = self.duration;
       [animation delayBy:self.delay];
-      CFTimeInterval propagationDelay = [self propagationDelayForTransitioning:startValue endValues:endValue forRoot:root];
+      CFTimeInterval propagationDelay = [self propagationDelayForTransitioning:startValues
+                                                                     endValues:endValues
+                                                                       forRoot:root];
       [animation delayBy:propagationDelay];
-      //      animation.animation.duration -= propagationDelay;
       [animations addObject:animation];
     }
-  }];
-  [endValues enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, REATransitionValues *endValue, BOOL *stop) {
-    if (startValues[key] == nil) {
-      REATransitionAnimation *animation = [self animationForTransitioning:nil endValues:endValue forRoot:root];
-      if (animation != nil) {
-        animation.animation.timingFunction = self.mediaTiming;
-        animation.animation.duration = self.duration;
-        [animation delayBy:self.delay];
-        CFTimeInterval propagationDelay = [self propagationDelayForTransitioning:nil endValues:endValue forRoot:root];
-        [animation delayBy:propagationDelay];
-        //        animation.animation.duration -= propagationDelay;
-        [animations addObject:animation];
-      }
-    }
-  }];
+  }
+//  [startValues enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, REATransitionValues *startValue, BOOL *stop) {
+//    REATransitionValues *endValue = endValues[key];
+//    REATransitionAnimation *animation = [self animationForTransitioning:startValue endValues:endValue forRoot:root];
+//    if (animation != nil) {
+//      animation.animation.timingFunction = self.mediaTiming;
+//      animation.animation.duration = self.duration;
+//      [animation delayBy:self.delay];
+//      CFTimeInterval propagationDelay = [self propagationDelayForTransitioning:startValue endValues:endValue forRoot:root];
+//      [animation delayBy:propagationDelay];
+//      //      animation.animation.duration -= propagationDelay;
+//      [animations addObject:animation];
+//    }
+//  }];
+//  [endValues enumerateKeysAndObjectsUsingBlock:^(NSNumber *key, REATransitionValues *endValue, BOOL *stop) {
+//    if (startValues[key] == nil) {
+//      REATransitionAnimation *animation = [self animationForTransitioning:nil endValues:endValue forRoot:root];
+//      if (animation != nil) {
+//        animation.animation.timingFunction = self.mediaTiming;
+//        animation.animation.duration = self.duration;
+//        [animation delayBy:self.delay];
+//        CFTimeInterval propagationDelay = [self propagationDelayForTransitioning:nil endValues:endValue forRoot:root];
+//        [animation delayBy:propagationDelay];
+//        //        animation.animation.duration -= propagationDelay;
+//        [animations addObject:animation];
+//      }
+//    }
+//  }];
   return animations;
 }
 

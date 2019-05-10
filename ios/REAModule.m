@@ -51,6 +51,22 @@ RCT_EXPORT_METHOD(animateNextTransition:(nonnull NSNumber *)rootTag config:(NSDi
   [_transitionManager animateNextTransitionInRoot:rootTag withConfig:config];
 }
 
+RCT_EXPORT_METHOD(animateChange:(nonnull NSNumber *)viewTag config:(NSDictionary *)config)
+{
+  [_transitionManager animateChange:viewTag withConfig:config];
+}
+
+RCT_EXPORT_METHOD(animateAppear:(nonnull NSNumber *)viewTag config:(NSDictionary *)config)
+{
+  [_transitionManager animateAppear:viewTag withConfig:config];
+}
+
+RCT_EXPORT_METHOD(animateDisappear:(nonnull NSNumber *)viewTag config:(NSDictionary *)config)
+{
+  [_transitionManager animateDisappear:viewTag withConfig:config];
+}
+
+
 #pragma mark -- API
 
 RCT_EXPORT_METHOD(createNode:(nonnull NSNumber *)nodeID

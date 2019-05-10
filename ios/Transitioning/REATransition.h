@@ -42,23 +42,28 @@ typedef NS_ENUM(NSInteger, REATransitionPropagationType) {
   REATransitionPropagationRight,
 };
 
+typedef NSDictionary<NSNumber *,UIView *> REAViewRegistry;
+typedef NSArray<REATransitionValues*> REATransitionValuesList;
+
 @interface REATransition : NSObject
+@property (nonatomic) NSMutableArray<NSNumber *> *targetTags;
+@property (nonatomic) NSMutableDictionary<NSNumber *, NSNumber *> *targetMapping;
 @property (nonatomic, weak) REATransition *parent;
 @property (nonatomic) CFTimeInterval duration;
 @property (nonatomic) CFTimeInterval delay;
 @property (nonatomic) REATransitionInterpolationType interpolation;
 @property (nonatomic) REATransitionPropagationType propagation;
-- (instancetype)initWithConfig:(NSDictionary *)config;
+- (instancetype)initWithConfig:(NSDictionary *)config NS_DESIGNATED_INITIALIZER;
 - (CAMediaTimingFunction *)mediaTiming;
-- (void)startCaptureInRoot:(UIView *)root;
-- (void)playInRoot:(UIView *)root;
+- (void)startCaptureWithViewRegistry:(REAViewRegistry *)viewRegistry;
+- (void)playWithViewRegistry:(REAViewRegistry *)viewRegistry;
 - (REATransitionValues *)findStartValuesForKey:(NSNumber *)key;
 - (REATransitionValues *)findEndValuesForKey:(NSNumber *)key;
 - (REATransitionAnimation *)animationForTransitioning:(REATransitionValues*)startValues
-                                               endValues:(REATransitionValues*)endValues
-                                                 forRoot:(UIView *)root;
-- (NSArray<REATransitionAnimation*> *)animationsForTransitioning:(NSMutableDictionary<NSNumber*, REATransitionValues*> *)startValues
-                                                          endValues:(NSMutableDictionary<NSNumber*, REATransitionValues*> *)endValues
+                                            endValues:(REATransitionValues*)endValues
+                                              forRoot:(UIView *)root;
+- (NSArray<REATransitionAnimation*> *)animationsForTransitioning:(REATransitionValuesList *)startValues
+                                                          endValues:(REATransitionValuesList *)endValues
                                                             forRoot:(UIView *)root;
 
 + (REATransition *)inflate:(NSDictionary *)config;

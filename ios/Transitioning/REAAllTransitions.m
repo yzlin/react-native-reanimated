@@ -78,14 +78,16 @@
   return self;
 }
 
-- (NSArray<REATransitionAnimation *> *)animationsForTransitioning:(NSMutableDictionary<NSNumber *,REATransitionValues *> *)startValues
-                                                           endValues:(NSMutableDictionary<NSNumber *,REATransitionValues *> *)endValues
-                                                             forRoot:(UIView *)root
+- (NSArray<REATransitionAnimation *> *)animationsForTransitioning:(REATransitionValuesList *)startValuesList
+                                                        endValues:(REATransitionValuesList *)endValuesList
+                                                          forRoot:(UIView *)root
 {
   CFTimeInterval delay = self.delay;
   NSMutableArray *animations = [NSMutableArray new];
   for (REATransition *transition in _transitions) {
-    NSArray *subanims = [transition animationsForTransitioning:startValues endValues:endValues forRoot:root];
+    NSArray *subanims = [transition animationsForTransitioning:startValuesList
+                                                     endValues:endValuesList
+                                                       forRoot:root];
     CFTimeInterval finishTime = CACurrentMediaTime();
     for (REATransitionAnimation *anim in subanims) {
       [anim delayBy:delay];
@@ -130,18 +132,19 @@
                                             endValues:(REATransitionValues *)endValues
                                               forRoot:(UIView *)root
 {
-  BOOL isViewAppearing = (startValues == nil);
+  BOOL isViewAppearing = (endValues.visible && !startValues.visible);
   if (isViewAppearing && !IS_LAYOUT_ONLY(endValues.view)) {
     NSNumber *parentKey = endValues.reactParent.reactTag;
     REATransitionValues *parentStartValues = [self findStartValuesForKey:parentKey];
     REATransitionValues *parentEndValues = [self findEndValuesForKey:parentKey];
-    BOOL isParentAppearing = (parentStartValues == nil && parentEndValues != nil);
+    BOOL isParentAppearing = (parentEndValues.visible && !parentStartValues.visible);
     if (!isParentAppearing) {
       return [self appearView:endValues.view inParent:endValues.parent forRoot:root];
     }
   }
 
-  if (endValues == nil && !IS_LAYOUT_ONLY(startValues.view) && startValues.reactParent.window != nil) {
+  BOOL isDisappearing = (startValues.visible && !endValues.visible);
+  if (isDisappearing && !IS_LAYOUT_ONLY(startValues.view) && startValues.visible) {
     startValues.view.center = startValues.centerInReactParent;
     return [self disappearView:startValues.view fromParent:startValues.reactParent forRoot:root];
   }
@@ -377,7 +380,7 @@
     return nil;
   }
 
-  CALayer *layer = endValues.view.layer;
+  CALayer *layer = startValues.view.layer;
 
   CAAnimationGroup *group = [CAAnimationGroup animation];
   group.fillMode = kCAFillModeBackwards;
@@ -501,6 +504,9 @@
   }
 
   group.animations = animations;
-  return [REATransitionAnimation transitionWithAnimation:group layer:layer andKeyPath:nil];
+  return [REATransitionAnimation
+          transitionWithAnimation:group
+          layer:endValues.view.layer
+          andKeyPath:nil];
 }
 @end

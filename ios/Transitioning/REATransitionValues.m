@@ -18,6 +18,7 @@
       // corect values after they are updated
       [view.layer display];
     }
+    _visible = view.window != nil;
     _parent = view.superview;
     _reactParent = view.reactSuperview;
     while (_reactParent != nil && _reactParent != root && IS_LAYOUT_ONLY(_reactParent)) {
