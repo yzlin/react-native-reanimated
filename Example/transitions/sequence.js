@@ -35,17 +35,25 @@ function Sequence() {
       </Transitioning.View>
       {showText && (
         <Transitioning.View
-          transitionFrom={from.current}
           style={{
             position: 'absolute',
             top: 0,
-            width: 120,
-            height: 120,
-            backgroundColor: showText ? 'red' : 'orange',
-            borderRadius: 20,
-            overflow: 'hidden',
+            right: 0,
+            left: 0,
+            height: 200,
+            backgroundColor: 'grey',
           }}>
-          <Text>Trololo</Text>
+          <Transitioning.View
+            transitionFrom={from.current}
+            style={{
+              width: 120,
+              height: 120,
+              backgroundColor: showText ? 'red' : 'orange',
+              borderRadius: 20,
+              overflow: 'hidden',
+            }}>
+            <Text>Trololo</Text>
+          </Transitioning.View>
         </Transitioning.View>
       )}
     </View>

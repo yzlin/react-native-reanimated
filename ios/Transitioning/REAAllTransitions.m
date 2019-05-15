@@ -145,7 +145,7 @@
 
   BOOL isDisappearing = (startValues.visible && !endValues.visible);
   if (isDisappearing && !IS_LAYOUT_ONLY(startValues.view) && startValues.visible) {
-    startValues.view.center = [startValues.view.window
+    startValues.view.center = [startValues.reactParent.window
                                convertPoint:startValues.center
                                toView:startValues.reactParent];
     return [self disappearView:startValues.view fromParent:startValues.reactParent forRoot:root];
@@ -286,7 +286,10 @@
   animation.delegate = [[REASnapshotRemover alloc] initWithView:view];
   view.layer.mask = mask;
 
-  return [REATransitionAnimation transitionWithAnimation:animation layer:mask andKeyPath:animation.keyPath];
+  return [REATransitionAnimation
+          transitionWithAnimation:animation
+          layer:mask
+          andKeyPath:animation.keyPath];
 }
 
 - (REATransitionAnimation *)disappearView:(UIView *)view
@@ -354,7 +357,10 @@
   animation.fillMode = kCAFillModeBackwards;
   animation.delegate = [[REASnapshotRemover alloc] initWithView:snapshotView];
 
-  return [REATransitionAnimation transitionWithAnimation:animation layer:snapshot andKeyPath:animation.keyPath];
+  return [REATransitionAnimation
+          transitionWithAnimation:animation
+          layer:snapshot
+          andKeyPath:animation.keyPath];
 }
 @end
 
