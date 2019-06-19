@@ -37,6 +37,21 @@ CGFloat SimulatorAnimationDragCoefficient(void) {
 {
   _animation.duration = self.duration * SimulatorAnimationDragCoefficient();
   _animation.beginTime = CACurrentMediaTime() + _delay * SimulatorAnimationDragCoefficient();
+  if ([_animation isKindOfClass:[CAAnimationGroup class]]) {
+    // if _animation is a group that contains CATransition elements those
+    // need to be started separately. It appears like there is a bug in
+    // CoreAnimation that prevents CATransitions from being launched when
+    // they are a part of CAAnimationGroup
+    CAAnimationGroup *group = (CAAnimationGroup *)_animation;
+    for (CAAnimation *animation in group.animations) {
+      if ([animation isKindOfClass:[CATransition class]]) {
+        animation.duration = _animation.duration / 2;
+        animation.beginTime = _animation.beginTime;
+        animation.timingFunction = _animation.timingFunction;
+        [_layer addAnimation:animation forKey:nil];
+      }
+    }
+  }
   [_layer addAnimation:_animation forKey:_keyPath];
 }
 

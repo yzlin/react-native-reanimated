@@ -24,3 +24,7 @@
 @interface REAChangeTransition : REATransition
 - (instancetype)initWithConfig:(NSDictionary *)config;
 @end
+
+@interface REACrossfadeTransition : REATransition
+- (instancetype)initWithConfig:(NSDictionary *)config;
+@end

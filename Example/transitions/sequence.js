@@ -22,7 +22,7 @@ function Sequence() {
         color="#FF5252"
         onPress={() => setShowText(!showText)}
       />
-      <Transitioning.View
+      {/* <Transitioning.View
         ref={from}
         style={{
           width: 80,
@@ -32,8 +32,11 @@ function Sequence() {
           overflow: 'hidden',
         }}>
         <Text>Trololo</Text>
-      </Transitioning.View>
-      {showText && (
+      </Transitioning.View> */}
+      <Transitioning.Text style={showText ? styles.before : styles.after}>
+        Trololo
+      </Transitioning.Text>
+      {/* {showText && (
         <Transitioning.View
           style={{
             position: 'absolute',
@@ -55,7 +58,7 @@ function Sequence() {
             <Text>Trololo</Text>
           </Transitioning.View>
         </Transitioning.View>
-      )}
+      )} */}
     </View>
   );
 }
@@ -65,6 +68,15 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  before: {
+    // color: 'green',
+    fontSize: 10,
+    // fontWeight: 'bold',
+  },
+  after: {
+    // color: 'blue',
+    fontSize: 20,
   },
   text: {
     fontSize: 16,

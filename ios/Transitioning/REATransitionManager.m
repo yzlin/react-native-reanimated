@@ -27,7 +27,7 @@
 {
   [_uiManager.observerCoordinator addObserver:self];
   [_uiManager prependUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-    for (REATransition *transition in _pendingTransitions) {
+    for (REATransition *transition in [_pendingTransitions reverseObjectEnumerator]) {
       [transition startCaptureWithViewRegistry:viewRegistry];
     }
   }];
@@ -50,7 +50,7 @@
 - (void)uiManagerWillPerformMounting:(RCTUIManager *)manager
 {
   [manager addUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
-    for (REATransition *transition in _pendingTransitions) {
+    for (REATransition *transition in [_pendingTransitions reverseObjectEnumerator]) {
       [transition playWithViewRegistry:viewRegistry];
     }
     [_pendingTransitions removeAllObjects];
@@ -63,9 +63,15 @@
 
 - (void)animateChange:(NSNumber *)reactTag withConfig:(NSDictionary *)config
 {
-  REAChangeTransition *transition = [[REAChangeTransition alloc] initWithConfig:nil];
-  transition.targetTags = @[reactTag];
-  [self enqueueTransition:transition];
+//  if ([config[@"crossfade"] boolValue]) {
+//    REACrossfadeTransition *transition = [[REACrossfadeTransition alloc] initWithConfig:nil];
+//    transition.targetTags = @[reactTag];
+//    [self enqueueTransition:transition];
+//  } else {
+    REAChangeTransition *transition = [[REAChangeTransition alloc] initWithConfig:nil];
+    transition.targetTags = @[reactTag];
+    [self enqueueTransition:transition];
+//  }
 }
 
 - (void)animateAppear:(NSNumber *)reactTag withConfig:(NSDictionary *)config

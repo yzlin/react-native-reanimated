@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, findNodeHandle } from 'react-native';
+import { View, Text, findNodeHandle } from 'react-native';
 import ReanimatedModule from './ReanimatedModule';
 
 const TransitioningContext = React.createContext();
@@ -159,8 +159,23 @@ class TransitioningView extends React.Component {
   }
 }
 
+class TransitioningText extends React.Component {
+  static contextType = TransitioningContext;
+  _viewRef = React.createRef();
+  componentDidUpdate(oldProps) {
+    const prevStyle = flattenStyle(oldProps.style);
+    const nextStyle = flattenStyle(this.props);
+    const viewTag = findNodeHandle(this._viewRef.current);
+    ReanimatedModule.animateChange(viewTag, { crossfade: true });
+  }
+  render() {
+    return <Text {...this.props} ref={this._viewRef} />;
+  }
+}
+
 const Transitioning = {
   View: TransitioningView,
+  Text: TransitioningText,
 };
 
 export { Transitioning };

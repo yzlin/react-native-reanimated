@@ -4,17 +4,16 @@
 #import "REAAllTransitions.h"
 #import "RCTConvert+REATransition.h"
 
-@interface REAMaskRemover : NSObject <CAAnimationDelegate>
+@interface REALayerRestorer : NSObject <CAAnimationDelegate>
 @end
 
-@implementation REAMaskRemover {
+@implementation REALayerRestorer {
   CALayer *_layer;
 }
 
-- (instancetype)initWithLayer:(CALayer *)layer;
+- (instancetype)initWithLayer:(CALayer *)layer
 {
-  self = [super init];
-  if (self) {
+  if (self = [super init]) {
     _layer = layer;
   }
   return self;
@@ -22,9 +21,29 @@
 
 - (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
 {
-  if (flag) {
-    _layer.mask = nil;
+  _layer.hidden = NO;
+}
+
+@end
+
+@interface REAMaskRemover : NSObject <CAAnimationDelegate>
+@end
+
+@implementation REAMaskRemover {
+  CALayer *_layer;
+}
+
+- (instancetype)initWithLayer:(CALayer *)layer
+{
+  if (self = [super init]) {
+    _layer = layer;
   }
+  return self;
+}
+
+- (void)animationDidStop:(CAAnimation *)anim finished:(BOOL)flag
+{
+  _layer.mask = nil;
 }
 
 @end
@@ -207,6 +226,7 @@
       return [self appearMasked:view];
     case REATransitionAnimationTypeFade: {
       CGFloat finalOpacity = view.layer.opacity;
+      view.layer.shouldRasterize = YES;
       animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
       animation.fromValue = @(0.0f);
       animation.toValue = @(finalOpacity);
@@ -301,7 +321,7 @@
   }
   // Add view back to parent temporarily in order to take snapshot
   [parent addSubview:view];
-  UIView *snapshotView = [view snapshotViewAfterScreenUpdates:NO];
+  UIView *snapshotView = [view snapshotViewAfterScreenUpdates:YES];
   [view removeFromSuperview];
   snapshotView.frame = view.frame;
   [parent addSubview:snapshotView];
@@ -514,10 +534,41 @@
     [animations addObject:animation];
   }
 
+  if (endValues.view.layer != startValues.view.layer) {
+    // if this is a shared transition, that is start and end layers differs, we want
+    // to hide starting layer for the duration of the animation and reveal it back again
+    // once the animation is finished
+    startValues.view.layer.hidden = YES;
+    group.delegate = [[REALayerRestorer alloc] initWithLayer:startValues.view.layer];
+  }
+
+  CATransition *animation = [CATransition animation];
+  animation.type = kCATransitionFade;
+  [animations addObject:animation];
+
   group.animations = animations;
+
   return [REATransitionAnimation
           transitionWithAnimation:group
           layer:endValues.view.layer
           andKeyPath:nil];
 }
+@end
+
+@implementation REACrossfadeTransition
+
+
+- (REATransitionAnimation *)animationForTransitioning:(REATransitionValues *)startValues
+                                            endValues:(REATransitionValues *)endValues
+                                              forRoot:(UIView *)root
+{
+  CATransition *animation = [CATransition animation];
+  animation.type = kCATransitionFade;
+
+  return [REATransitionAnimation
+          transitionWithAnimation:animation
+          layer:endValues.view.layer
+          andKeyPath:@"kCATransitionFade"];
+}
+
 @end
