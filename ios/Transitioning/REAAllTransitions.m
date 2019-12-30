@@ -235,8 +235,8 @@
     case REATransitionAnimationTypeScale: {
       CATransform3D finalTransform = view.layer.transform;
       animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-      animation.fromValue = @(CATransform3DMakeScale(0, 0, 0));
-      animation.toValue = @(finalTransform);
+      animation.fromValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.0, 0.0, 0)];
+      animation.toValue = [NSValue valueWithCATransform3D:finalTransform];
       break;
     }
     case REATransitionAnimationTypeSlideTop:
@@ -341,8 +341,8 @@
       CATransform3D fromValue = snapshot.transform;
       snapshot.transform = CATransform3DMakeScale(0.001, 0.001, 0.001);
       animation = [CABasicAnimation animationWithKeyPath:@"transform"];
-      animation.fromValue = @(fromValue);
-      animation.toValue = @(CATransform3DMakeScale(0.001, 0.001, 0.001));
+      animation.fromValue = [NSValue valueWithCATransform3D:fromValue];
+      animation.toValue = [NSValue valueWithCATransform3D:CATransform3DMakeScale(0.001, 0.001, 0.001)];
       break;
     }
     case REATransitionAnimationTypeCircle:

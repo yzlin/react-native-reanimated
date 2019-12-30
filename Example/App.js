@@ -1,24 +1,36 @@
+import { createBrowserApp } from '@react-navigation/web';
 import React from 'react';
-import { Text, View, FlatList, StyleSheet, YellowBox } from 'react-native';
-import { createStackNavigator } from 'react-navigation';
+import {
+  FlatList,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+  YellowBox,
+} from 'react-native';
 import { RectButton, ScrollView } from 'react-native-gesture-handler';
+import { createAppContainer } from 'react-navigation';
+import { createStackNavigator } from 'react-navigation-stack';
 
-import Snappable from './snappable';
-import ImageViewer from './imageViewer';
-import Test from './test';
-import Interpolate from './src/interpolate';
-import Colors from './colors';
-import StartAPI from './startAPI';
 import ChatHeads from './chatHeads';
 import Code from './code';
-import WidthAndHeight from './widthAndHeight';
-import Rotations from './rotations';
+import Colors from './colors';
+import DifferentSpringConfigs from './differentSpringConfigs';
+import ImageViewer from './imageViewer';
 import Imperative from './imperative';
+import InteractablePlayground, {
+  SCREENS as INTERACTABLE_SCREENS,
+} from './interactablePlayground';
 import PanRotateAndZoom from './PanRotateAndZoom';
 import ProgressBar from './progressBar';
+import Rotations from './rotations';
+import Snappable from './snappable';
+import Interpolate from './src/interpolate';
+import StartAPI from './startAPI';
+import Test from './test';
+import TransitionsProgress from './transitions/progress';
 import TransitionsSequence from './transitions/sequence';
 import TransitionsShuffle from './transitions/shuffle';
-import TransitionsProgress from './transitions/progress';
 import TransitionsTicket from './transitions/ticket';
 import TransitionsFancyPants from './transitions/fancyPants';
 
@@ -56,6 +68,10 @@ const SCREENS = {
   progressBar: {
     screen: ProgressBar,
     title: 'Progress bar',
+  },
+  differentSpringConfigs: {
+    screen: DifferentSpringConfigs,
+    title: 'Different Spring Configs',
   },
   transitionsSequence: {
     screen: TransitionsSequence,
@@ -148,4 +164,9 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ExampleApp;
+const createApp = Platform.select({
+  web: input => createBrowserApp(input, { history: 'hash' }),
+  default: input => createAppContainer(input),
+});
+
+export default createApp(ExampleApp);

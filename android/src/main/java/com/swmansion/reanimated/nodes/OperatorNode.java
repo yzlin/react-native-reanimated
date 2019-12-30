@@ -89,6 +89,12 @@ public class OperatorNode extends Node {
       return Math.sqrt(x);
     }
   };
+  private static final Operator LOG = new SingleOperator() {
+    @Override
+    public double eval(Double x) {
+      return Math.log(x);
+    }
+  };
   private static final Operator SIN = new SingleOperator() {
     @Override
     public double eval(Double x) {
@@ -183,7 +189,7 @@ public class OperatorNode extends Node {
   private static final Operator EQ = new CompOperator() {
     @Override
     public boolean eval(Double x, Double y) {
-      return x.equals(y);
+      return x.doubleValue() == y.doubleValue();
     }
   };
   private static final Operator GREATER_THAN = new CompOperator() {
@@ -207,7 +213,7 @@ public class OperatorNode extends Node {
   private static final Operator NEQ = new CompOperator() {
     @Override
     public boolean eval(Double x, Double y) {
-      return !x.equals(y);
+      return x.doubleValue() != y.doubleValue();
     }
   };
 
@@ -235,6 +241,8 @@ public class OperatorNode extends Node {
       mOperator = MODULO;
     } else if ("sqrt".equals(op)) {
       mOperator = SQRT;
+    } else if ("log".equals(op)) {
+      mOperator = LOG;
     } else if ("sin".equals(op)) {
       mOperator = SIN;
     } else if ("cos".equals(op)) {

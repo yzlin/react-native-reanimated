@@ -1,7 +1,8 @@
 import AnimatedNode from './AnimatedNode';
-import { val } from '../utils';
+import { val } from '../val';
 
 import invariant from 'fbjs/lib/invariant';
+import { adapt } from '../core/AnimatedBlock';
 
 function reduce(fn) {
   return input => input.reduce((a, b) => fn(val(a), val(b)));
@@ -28,6 +29,7 @@ const OPERATIONS = {
   pow: reduce((a, b) => Math.pow(a, b)),
   modulo: reduce((a, b) => ((a % b) + b) % b),
   sqrt: single(a => Math.sqrt(a)),
+  log: single(a => Math.log(a)),
   sin: single(a => Math.sin(a)),
   cos: single(a => Math.cos(a)),
   tan: single(a => Math.tan(a)),
@@ -35,6 +37,7 @@ const OPERATIONS = {
   asin: single(a => Math.asin(a)),
   atan: single(a => Math.atan(a)),
   exp: single(a => Math.exp(a)),
+  round: single(a => Math.round(a)),
 
   // logical
   and: reduceFrom((a, b) => a && b, true),
@@ -53,18 +56,35 @@ const OPERATIONS = {
   neq: infix((a, b) => a != b),
 };
 
-export default class AnimatedOperator extends AnimatedNode {
+class AnimatedOperator extends AnimatedNode {
   _input;
   _op;
   _operation;
 
   constructor(operator, input) {
+    invariant(
+      typeof operator === 'string',
+      `Reanimated: Animated.operator node first argument should be of type String, but got: ${operator}`
+    );
+    invariant(
+      input.every(
+        el =>
+          el instanceof AnimatedNode ||
+          typeof el === 'string' ||
+          typeof el === 'number'
+      ),
+      `Reanimated: Animated.operator node second argument should be one or more of type AnimatedNode, String or Number but got ${input}`
+    );
     super(
       { type: 'op', op: operator, input: input.map(n => n.__nodeID) },
       input
     );
     this._op = operator;
     this._input = input;
+  }
+
+  toString() {
+    return `AnimatedOperator, id: ${this.__nodeID}`;
   }
 
   __onEvaluate() {
@@ -74,4 +94,8 @@ export default class AnimatedOperator extends AnimatedNode {
     }
     return this._operation(this._input);
   }
+}
+
+export function createAnimatedOperator(name) {
+  return (...args) => new AnimatedOperator(name, args.map(adapt));
 }

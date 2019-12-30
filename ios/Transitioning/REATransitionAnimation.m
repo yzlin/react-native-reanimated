@@ -3,18 +3,26 @@
 
 #import "REATransitionAnimation.h"
 
+
 #define DEFAULT_DURATION 0.25
 
-CGFloat SimulatorAnimationDragCoefficient(void) {
 #if TARGET_IPHONE_SIMULATOR
-  static float (*dragCoeffFunc)(void) = NULL;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-    dragCoeffFunc = (float (*)(void))dlsym(RTLD_DEFAULT, "UIAnimationDragCoefficient");
-  });
-  return dragCoeffFunc ? dragCoeffFunc() : 1.f;
+// Based on https://stackoverflow.com/a/13307674
+float UIAnimationDragCoefficient(void);
+#endif
+
+CGFloat SimAnimationDragCoefficient()
+{
+#if TARGET_IPHONE_SIMULATOR
+  if (NSClassFromString(@"XCTest") != nil) {
+    // UIAnimationDragCoefficient is 10.0 in tests for some reason, but
+    // we need it to be 1.0.
+    return 1.0;
+  } else {
+    return (CGFloat)UIAnimationDragCoefficient();
+  }
 #else
-  return 1.f;
+  return 1.0;
 #endif
 }
 
@@ -35,23 +43,15 @@ CGFloat SimulatorAnimationDragCoefficient(void) {
 
 - (void)play
 {
-  _animation.duration = self.duration * SimulatorAnimationDragCoefficient();
-  _animation.beginTime = CACurrentMediaTime() + _delay * SimulatorAnimationDragCoefficient();
-  if ([_animation isKindOfClass:[CAAnimationGroup class]]) {
-    // if _animation is a group that contains CATransition elements those
-    // need to be started separately. It appears like there is a bug in
-    // CoreAnimation that prevents CATransitions from being launched when
-    // they are a part of CAAnimationGroup
-    CAAnimationGroup *group = (CAAnimationGroup *)_animation;
-    for (CAAnimation *animation in group.animations) {
-      if ([animation isKindOfClass:[CATransition class]]) {
-        animation.duration = _animation.duration / 2;
-        animation.beginTime = _animation.beginTime;
-        animation.timingFunction = _animation.timingFunction;
-        [_layer addAnimation:animation forKey:nil];
-      }
-    }
+  /*
+  CACurrentMediaTime introduces some kind of delay  even if _delay is set to 0
+  it calls mach_absolute_time() which is based on the last time the device booted
+  which might cause the delay
+  */
+  if (_delay > 0){
+    _animation.beginTime = CACurrentMediaTime() + _delay * SimAnimationDragCoefficient();
   }
+  _animation.duration = self.duration * SimAnimationDragCoefficient();
   [_layer addAnimation:_animation forKey:_keyPath];
 }
 

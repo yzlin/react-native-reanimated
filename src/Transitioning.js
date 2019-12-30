@@ -154,6 +154,7 @@ class TransitioningView extends React.Component {
     }
     ReanimatedModule.animateDisappear(viewTag, config);
   }
+
   render() {
     return <View {...this.props} ref={this._viewRef} />;
   }
@@ -168,6 +169,7 @@ class TransitioningText extends React.Component {
     const viewTag = findNodeHandle(this._viewRef.current);
     ReanimatedModule.animateChange(viewTag, { crossfade: true });
   }
+
   render() {
     return <Text {...this.props} ref={this._viewRef} />;
   }

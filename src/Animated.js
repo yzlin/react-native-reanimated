@@ -1,13 +1,4 @@
-import {
-  Image,
-  ScrollView,
-  Text,
-  View,
-  UIManager,
-  requireNativeComponent,
-  findNodeHandle,
-} from 'react-native';
-import React from 'react';
+import { Image, ScrollView, Text, View } from 'react-native';
 import Easing from './Easing';
 import AnimatedClock from './core/AnimatedClock';
 import AnimatedValue from './core/AnimatedValue';
@@ -32,7 +23,12 @@ import {
   Transitioning,
   createTransitioningComponent,
 } from './Transitioning';
+import SpringUtils from './animations/SpringUtils';
 
+
+const decayWrapper = backwardCompatibleAnimWrapper(decay, DecayAnimation);
+const timingWrapper = backwardCompatibleAnimWrapper(timing, TimingAnimation);
+const springWrapper = backwardCompatibleAnimWrapper(spring, SpringAnimation);
 const Animated = {
   // components
   View: createAnimatedComponent(View),
@@ -52,9 +48,10 @@ const Animated = {
   ...derived,
 
   // animations
-  decay: backwardCompatibleAnimWrapper(decay, DecayAnimation),
-  timing: backwardCompatibleAnimWrapper(timing, TimingAnimation),
-  spring: backwardCompatibleAnimWrapper(spring, SpringAnimation),
+  decay: decayWrapper,
+  timing: timingWrapper,
+  spring: springWrapper,
+  SpringUtils,
 
   // configuration
   addWhitelistedNativeProps,
@@ -63,4 +60,24 @@ const Animated = {
 
 export default Animated;
 
-export { Easing, Transitioning, Transition, createTransitioningComponent };
+// operations
+export * from './base';
+export * from './derived';
+
+export {
+  Easing,
+  Transitioning,
+  Transition,
+  createTransitioningComponent, 
+
+  // classes
+  AnimatedClock as Clock,
+  AnimatedValue as Value,
+  AnimatedNode as Node,
+
+  // animations
+  decayWrapper as decay,
+  timingWrapper as timing,
+  springWrapper as spring,
+  SpringUtils,
+};

@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -21,7 +22,65 @@ const {
   Value,
   Clock,
   event,
+  proc,
 } = Animated;
+
+const betterSpring = proc(
+  (
+    finished,
+    velocity,
+    position,
+    time,
+    prevPosition,
+    toValue,
+    damping,
+    mass,
+    stiffness,
+    overshootClamping,
+    restSpeedThreshold,
+    restDisplacementThreshold,
+    clock
+  ) =>
+    spring(
+      clock,
+      {
+        finished,
+        velocity,
+        position,
+        time,
+        prevPosition,
+      },
+      {
+        toValue,
+        damping,
+        mass,
+        stiffness,
+        overshootClamping,
+        restDisplacementThreshold,
+        restSpeedThreshold,
+      }
+    )
+);
+
+function springFill(clock, state, config) {
+  return betterSpring(
+    state.finished,
+    state.velocity,
+    state.position,
+    state.time,
+    new Value(0),
+    config.toValue,
+    config.damping,
+    config.mass,
+    config.stiffness,
+    config.overshootClamping,
+    config.restSpeedThreshold,
+    config.restDisplacementThreshold,
+    clock
+  );
+}
+const stopClockProc = proc(clock => stopClock(clock))
+const startClockProc = proc(clock => startClock(clock))
 
 function runSpring(clock, value, dest) {
   const state = {
@@ -34,7 +93,7 @@ function runSpring(clock, value, dest) {
   const config = {
     toValue: new Value(0),
     damping: 7,
-    mass: 1,
+    mass: 5,
     stiffness: 121.6,
     overshootClamping: false,
     restSpeedThreshold: 0.001,
@@ -48,13 +107,14 @@ function runSpring(clock, value, dest) {
       set(state.position, value),
       set(state.velocity, -2500),
       set(config.toValue, dest),
-      startClock(clock),
+      startClockProc(clock),
     ]),
-    spring(clock, state, config),
-    cond(state.finished, debug('stop clock', stopClock(clock))),
+    springFill(clock, state, config),
+    cond(state.finished, debug('stop clock', stopClockProc(clock))),
     state.position,
   ]);
 }
+
 
 function runTiming(clock, value, dest) {
   const state = {
@@ -77,10 +137,10 @@ function runTiming(clock, value, dest) {
       set(state.position, value),
       set(state.frameTime, 0),
       set(config.toValue, dest),
-      startClock(clock),
+      startClockProc(clock),
     ]),
     timing(clock, state, config),
-    cond(state.finished, debug('stop clock', stopClock(clock))),
+    cond(state.finished, debug('stop clock', stopClockProc(clock))),
     state.position,
   ]);
 }
@@ -92,10 +152,11 @@ export default class Example extends Component {
     // const transX = new Value(0);
     const clock = new Clock();
     // const twenty = new Value(20);
-    // const thirty = new Value(30);
-    // this._transX = cond(new Value(0), twenty, multiply(3, thirty));
-    this._transX = runTiming(clock, -120, 120);
+    this.t = Array.from(Array(40)).map(() =>
+      runSpring(new Clock(), Math.random() * -200, Math.random() * 200)
+    );
   }
+
   componentDidMount() {
     // Animated.spring(this._transX, {
     //   duration: 300,
@@ -103,18 +164,22 @@ export default class Example extends Component {
     //   toValue: 150,
     // }).start();
   }
+
   render() {
     return (
       <View style={styles.container}>
-        <Animated.View
-          style={[styles.box, { transform: [{ translateX: this._transX }] }]}
-        />
+        {Array.from(Array(40)).map((_, i) => (
+          <Animated.View
+            key={i}
+            style={[styles.box, { transform: [{ translateX: this.t[i] }] }]}
+          />
+        ))}
       </View>
     );
   }
 }
 
-const BOX_SIZE = 100;
+const BOX_SIZE = 10;
 
 const styles = StyleSheet.create({
   container: {
@@ -129,6 +194,6 @@ const styles = StyleSheet.create({
     borderColor: '#F5FCFF',
     alignSelf: 'center',
     backgroundColor: 'plum',
-    margin: BOX_SIZE / 2,
+    margin: 2,
   },
 });
