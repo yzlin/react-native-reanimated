@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, findNodeHandle } from 'react-native';
+import { View, Text, findNodeHandle, StyleSheet } from 'react-native';
 import ReanimatedModule from './ReanimatedModule';
 
 const TransitioningContext = React.createContext();
@@ -127,7 +127,7 @@ const TransitioningContext = React.createContext();
 //   return Wrapped;
 // }
 
-import flattenStyle from 'react-native/lib/flattenStyle';
+const flattenStyle = StyleSheet.flatten;
 
 class TransitioningView extends React.Component {
   static contextType = TransitioningContext;
