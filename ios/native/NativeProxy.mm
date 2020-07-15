@@ -95,6 +95,13 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     }];
   };
 
+  auto propObtainer = [reanimatedModule](jsi::Runtime &rt, const int viewTag, const jsi::String &propName) -> jsi::Value {
+    NSString* propNameConverted = [NSString stringWithFormat:@"%s",propName.utf8(rt).c_str()];
+      std::string resultStr = std::string([[reanimatedModule.nodesManager obtainProp:[NSNumber numberWithInt:viewTag] propName:propNameConverted] UTF8String]);
+      jsi::Value val = jsi::String::createFromUtf8(rt, resultStr);
+      return val;
+  };
+
   std::shared_ptr<Scheduler> scheduler(new IOSScheduler(jsInvoker));
   std::unique_ptr<jsi::Runtime> animatedRuntime = facebook::jsc::makeJSCRuntime();
   std::shared_ptr<ErrorHandler> errorHandler = std::make_shared<IOSErrorHandler>(scheduler);
@@ -104,6 +111,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
                                                                             std::move(animatedRuntime),
                                                                             requestRender,
                                                                             propUpdater,
+                                                                            propObtainer,
                                                                             errorHandler));
 
   [reanimatedModule.nodesManager registerEventHandler:^(NSString *eventName, id<RCTEvent> event) {

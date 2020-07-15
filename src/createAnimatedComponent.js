@@ -49,6 +49,7 @@ export default function createAnimatedComponent(Component) {
 
     constructor(props) {
       super(props);
+      this.viewTag = undefined;
       this._attachProps(this.props);
     }
 
@@ -183,8 +184,9 @@ export default function createAnimatedComponent(Component) {
     }
 
     _attachPropUpdater() {
-      const viewTag = findNodeHandle(this);
-      NODE_MAPPING.set(viewTag, this);
+      this.viewTag =
+        this.viewTag === undefined ? findNodeHandle(this) : this.viewTag;
+      NODE_MAPPING.set(this.viewTag, this);
       if (NODE_MAPPING.size === 1) {
         ReanimatedEventEmitter.addListener('onReanimatedPropsChange', listener);
       }
@@ -194,21 +196,23 @@ export default function createAnimatedComponent(Component) {
       const styles = Array.isArray(this.props.style)
         ? this.props.style
         : [this.props.style];
-      const viewTag = findNodeHandle(this);
+      this.viewTag =
+        this.viewTag === undefined ? findNodeHandle(this) : this.viewTag;
       styles.forEach(style => {
         if (style && style.viewTag !== undefined) {
-          style.viewTag.value = viewTag;
+          style.viewTag.value = this.viewTag;
         }
       });
       // attach animatedProps property
       if (this.props.animatedProps) {
-        this.props.animatedProps.viewTag.value = viewTag;
+        this.props.animatedProps.viewTag.value = this.viewTag;
       }
     }
 
     _detachPropUpdater() {
-      const viewTag = findNodeHandle(this);
-      NODE_MAPPING.delete(viewTag);
+      this.viewTag =
+        this.viewTag === undefined ? findNodeHandle(this) : this.viewTag;
+      NODE_MAPPING.delete(this.viewTag);
       if (NODE_MAPPING.size === 0) {
         ReanimatedEventEmitter.removeAllListeners('onReanimatedPropsChange');
       }
@@ -231,7 +235,7 @@ export default function createAnimatedComponent(Component) {
         // TODO: Delete this after React Native also deletes this deprecation helper.
         if (ref != null && ref.getNode == null) {
           ref.getNode = () => {
-           console.warn(
+            console.warn(
               '%s: Calling %s on the ref of an Animated component ' +
                 'is no longer necessary. You can now directly use the ref ' +
                 'instead. This method will be removed in a future release.',
