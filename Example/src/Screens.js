@@ -1,5 +1,10 @@
-import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text, TouchableHighlight, TouchableWithoutFeedback} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  View,
+  TouchableHighlight,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -10,14 +15,14 @@ import Animated, {
 const initialAppearDuration = 5600;
 const smallerDotMax = 110;
 
-const LoadingView = ({onPress}) => {
+const LoadingView = ({ onPress }) => {
   const smalledDotValue = useSharedValue(0);
-  console.log('LoadingView')
+  console.log('LoadingView');
   useEffect(() => {
     console.log('withTiming');
     smalledDotValue.value = withTiming(smallerDotMax, {
       duration: initialAppearDuration,
-    })
+    });
   }, []);
 
   useDerivedValue(() => {
@@ -30,7 +35,7 @@ const LoadingView = ({onPress}) => {
 
   return (
     <View style={styles.container}>
-      {/*<Animated.View style={[styles.dot, smallDotStyle]} />*/}
+      {/* <Animated.View style={[styles.dot, smallDotStyle]} /> */}
     </View>
   );
 };
@@ -51,7 +56,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default LoadingView;
-
-

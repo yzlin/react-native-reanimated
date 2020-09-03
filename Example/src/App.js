@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import {SafeAreaView, StyleSheet, View, Text} from 'react-native';
+import {SafeAreaView, StyleSheet, View} from 'react-native';
 import Routes from './Routes';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { View, Text, TouchableWithoutFeedback } from 'react-native';
+import { View, TouchableWithoutFeedback } from 'react-native';
 import LoadingView from './Screens';
 
 const Routes = (props) => {
@@ -9,9 +9,7 @@ const Routes = (props) => {
     <View style={{padding: 50}}>
       {pres && <LoadingView />}
       <TouchableWithoutFeedback onPress={() => {setPres(!pres)}}>
-        <Text>
-          switch
-        </Text>
+        <View style={{ width: 70, height: 70, backgroundColor: 'black' }} />
       </TouchableWithoutFeedback>
     </View>
   );
