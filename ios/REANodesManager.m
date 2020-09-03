@@ -140,6 +140,7 @@
 
 - (void)onAnimationFrame:(CADisplayLink *)displayLink
 {
+  NSLog(@"start onAnimationFrame");
   _currentAnimationTimestamp = _displayLink.timestamp;
 
   // We process all enqueued events first
@@ -164,6 +165,7 @@
   if (_onAnimationCallbacks.count == 0) {
     [self stopUpdatingOnAnimationFrame];
   }
+  NSLog(@"end onAnimationFrame");
 }
 
 - (void)performOperations
