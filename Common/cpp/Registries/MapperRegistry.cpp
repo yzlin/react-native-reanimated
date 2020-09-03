@@ -3,18 +3,22 @@
 #include <map>
 #include <array>
 #include <set>
+#include "Logger.h"
 
 namespace reanimated {
 
 void MapperRegistry::startMapper(std::shared_ptr<Mapper> mapper) {
+  std::string text = "start" + std::to_string(mapper->id);
+  Logger::log(text.c_str());
   mappers[mapper->id] = mapper;
   updatedSinceLastExecute = true;
 }
 
 void MapperRegistry::stopMapper(unsigned long id) {
   mappers.erase(id);
-  updatedSinceLastExecute = true;
-}
+  std::string text = "stop" + std::to_string(id);
+  Logger::log(text.c_str());
+  updatedSinceLastExecute = true;}
 
 void MapperRegistry::execute(jsi::Runtime &rt) {
   if (updatedSinceLastExecute) {

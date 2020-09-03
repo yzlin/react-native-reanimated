@@ -15,12 +15,12 @@ const Routes = (props) => {
       <Stack.Screen
         name={FIRST_SCREEN}
         component={FirstScreen}
-        options={{header: () => null}}
+        options={{header: () => null, animationEnabled: false}}
       />
       <Stack.Screen
         name={SECOND_SCREEN}
         component={SecondScreen}
-        options={{header: () => null}}
+        options={{header: () => null, animationEnabled: false}}
       />
     </Stack.Navigator>
   );

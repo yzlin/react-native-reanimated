@@ -109,7 +109,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
       return val;
   };
 
-  std::shared_ptr<Scheduler> scheduler(new REAIOSScheduler(jsInvoker));
+  std::shared_ptr<Scheduler> scheduler(new REAIOSScheduler(jsInvoker, uiManager));
   std::unique_ptr<jsi::Runtime> animatedRuntime = facebook::jsc::makeJSCRuntime();
   std::shared_ptr<ErrorHandler> errorHandler = std::make_shared<REAIOSErrorHandler>(scheduler);
 

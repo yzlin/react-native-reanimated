@@ -1,31 +1,33 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, Text} from 'react-native';
+import {StyleSheet, View, Text, TouchableHighlight} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  useDerivedValue,
 } from 'react-native-reanimated';
 
-const initialAppearDuration = 1600;
+const initialAppearDuration = 5600;
 const smallerDotMax = 110;
 
-const LoadingView = () => {
+const LoadingView = ({onPress, name}) => {
   const smalledDotValue = useSharedValue(0);
 
   useEffect(() => {
+    console.log(name, 'withTiming');
     smalledDotValue.value = withTiming(smallerDotMax, {
       duration: initialAppearDuration,
     })
   }, []);
 
-  var smallDotStyle = useAnimatedStyle(() => {
+  useDerivedValue(() => {
     return {
       width: smalledDotValue.value,
       height: smalledDotValue.value,
       borderRadius: smalledDotValue.value / 2,
     };
-  });
-
+  }, []);
+  
   const [present, setPresent] = useState(true);
 
   useEffect(() => {
@@ -43,12 +45,22 @@ const LoadingView = () => {
   if (present) {
     return (
       <View style={styles.container}>
-        <Animated.View style={[styles.dot, smallDotStyle]} />
-        <Text>Test</Text>
+         <Text>{name}</Text>
+        {/*<Animated.View style={[styles.dot, smallDotStyle]} />*/}
+        <TouchableHighlight onPress={onPress}>
+          <Text style={{padding: 30}}>switch</Text>
+        </TouchableHighlight>
       </View>
     );
   } else {
-    return null;
+    return (
+      <View style={styles.container}>
+        <Text>{name}</Text>
+        <TouchableHighlight onPress={onPress}>
+          <Text style={{padding: 30}}>switch</Text>
+        </TouchableHighlight>
+      </View>
+    );
   }
 };
 
@@ -68,23 +80,12 @@ const styles = StyleSheet.create({
   },
 });
 
-const screens = ['first', 'second'];
-let current = 0;
-const navigate = (navigation) => {
-  setTimeout(() => {
-    current = (current + 1) % screens.length;
-    navigation.navigate(screens[current]);
-    navigate(navigation);
-  }, Math.random() * 1000);
-};
 
 export const FirstScreen = (props) => {
-  useEffect(() => {
-    navigate(props.navigation);
-  }, [props.navigation]);
-  return <LoadingView />;
+  return (<LoadingView name={"first"} onPress={() => {props.navigation.navigate('second');}} />);
 };
 
 export const SecondScreen = (props) => {
-  return <LoadingView />;
+  return (<LoadingView name={'second'} onPress={() => {props.navigation.navigate('first');}} />);
 };
+

@@ -259,6 +259,7 @@ export function useAnimatedStyle(updater, dependencies) {
   const viewTag = useSharedValue(-1);
   const initRef = useRef(null);
   const inputs = Object.values(updater._closure);
+  console.log("inputs", inputs);
 
   // build dependencies
   if (dependencies === undefined) {
@@ -278,12 +279,15 @@ export function useAnimatedStyle(updater, dependencies) {
   const { remoteState, initial } = initRef.current;
 
   useEffect(() => {
+    const x = Math.random();
     const fun = () => {
       'worklet';
-      styleUpdater(viewTag, updater, remoteState);
+      //styleUpdater(viewTag, updater, remoteState);
     };
     const mapperId = startMapper(fun, inputs, []);
+    console.log('start mapper', x, mapperId);
     return () => {
+      console.log('stopMapper', x, mapperId);
       stopMapper(mapperId);
     };
   }, dependencies);
@@ -481,6 +485,7 @@ export function useAnimatedRef() {
     });
     ref.current = fun;
   }
+  
 
   return ref.current;
 }

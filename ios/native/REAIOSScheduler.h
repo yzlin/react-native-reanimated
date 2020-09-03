@@ -13,9 +13,12 @@ using namespace react;
 
 class REAIOSScheduler : public Scheduler {
   public:
-  REAIOSScheduler(std::shared_ptr<CallInvoker> jsInvoker);
+  REAIOSScheduler(std::shared_ptr<CallInvoker> jsInvoker, RCTUIManager *uiManager);
   void scheduleOnUI(std::function<void()> job) override;
   virtual ~REAIOSScheduler();
+  
+  private:
+  RCTUIManager *uiManager;
 };
 
 } // namespace reanimated

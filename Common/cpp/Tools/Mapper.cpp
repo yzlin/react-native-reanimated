@@ -25,6 +25,8 @@ outputs(outputs) {
 
 void Mapper::execute(jsi::Runtime &rt) {
   dirty = false;
+  std::string text = "execute mapper " + std::to_string(this->id);
+  Logger::log(text.c_str());
   mapper.callWithThis(rt, mapper);
 }
 
