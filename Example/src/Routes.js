@@ -1,28 +1,19 @@
-import React, {useEffect} from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import {FirstScreen, SecondScreen, ThirdScreen, FourthScreen} from './Screens';
-
-const Stack = createStackNavigator();
-
-const FIRST_SCREEN = 'first';
-const SECOND_SCREEN = 'second';
-const THIRD_SCREEN = 'third';
-const FOURTH_SCREEN = 'fourth';
+import React, {useEffect, useState} from 'react';
+import { View, TouchableOpacity, Text } from 'react-native';
+import LoadingView from './Screens';
 
 const Routes = (props) => {
+  const [pres, setPres] = useState(true);
+
   return (
-    <Stack.Navigator initialRouteName={FIRST_SCREEN}>
-      <Stack.Screen
-        name={FIRST_SCREEN}
-        component={FirstScreen}
-        options={{header: () => null, animationEnabled: false}}
-      />
-      <Stack.Screen
-        name={SECOND_SCREEN}
-        component={SecondScreen}
-        options={{header: () => null, animationEnabled: false}}
-      />
-    </Stack.Navigator>
+    <View style={{padding: 50}}>
+      {pres && <LoadingView />}
+      <TouchableOpacity onPress={() => {setPres(!pres)}}>
+        <Text>
+          switch
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 

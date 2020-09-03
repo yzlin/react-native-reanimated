@@ -27,41 +27,13 @@ const LoadingView = ({onPress, name}) => {
       borderRadius: smalledDotValue.value / 2,
     };
   }, []);
-  
-  const [present, setPresent] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
-    setTimeout(() => {
-      if (!cancelled) {
-        setPresent(false);
-      }
-    }, Math.random() * 800);
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (present) {
-    return (
-      <View style={styles.container}>
-         <Text>{name}</Text>
-        {/*<Animated.View style={[styles.dot, smallDotStyle]} />*/}
-        <TouchableHighlight onPress={onPress}>
-          <Text style={{padding: 30}}>switch</Text>
-        </TouchableHighlight>
-      </View>
-    );
-  } else {
-    return (
-      <View style={styles.container}>
+  return (
+    <View style={styles.container}>
         <Text>{name}</Text>
-        <TouchableHighlight onPress={onPress}>
-          <Text style={{padding: 30}}>switch</Text>
-        </TouchableHighlight>
-      </View>
-    );
-  }
+      {/*<Animated.View style={[styles.dot, smallDotStyle]} />*/}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
@@ -81,11 +53,6 @@ const styles = StyleSheet.create({
 });
 
 
-export const FirstScreen = (props) => {
-  return (<LoadingView name={"first"} onPress={() => {props.navigation.navigate('second');}} />);
-};
+export default LoadingView;
 
-export const SecondScreen = (props) => {
-  return (<LoadingView name={'second'} onPress={() => {props.navigation.navigate('first');}} />);
-};
 

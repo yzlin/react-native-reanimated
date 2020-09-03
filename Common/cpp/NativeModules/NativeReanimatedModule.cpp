@@ -205,6 +205,7 @@ void NativeReanimatedModule::maybeRequestRender()
 
 void NativeReanimatedModule::onRender(double timestampMs)
 {
+  Logger::log("reanimated render!");
   try
   {
     mapperRegistry->execute(*runtime);
@@ -228,6 +229,7 @@ void NativeReanimatedModule::onRender(double timestampMs)
       throw;
     }
   }
+  Logger::log("reanimated render KONIEC!");
 }
 
 NativeReanimatedModule::~NativeReanimatedModule()
