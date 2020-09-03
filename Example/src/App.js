@@ -8,7 +8,6 @@
 
 import React from 'react';
 import {SafeAreaView, StyleSheet, View, Text} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
 import Routes from './Routes';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 
