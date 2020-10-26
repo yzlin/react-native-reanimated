@@ -73,6 +73,10 @@ export function getTimestamp() {
   return _getCurrentTime();
 }
 
+export const forceRender = (timestamp) => {
+  NativeReanimated.forceRender(timestamp);
+};
+
 function workletValueSetter(value) {
   'worklet';
   const previousAnimation = this._animation;
