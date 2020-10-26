@@ -10,7 +10,9 @@ void RuntimeDecorator::addNativeObjects(jsi::Runtime &rt,
                                         RequestFrameFunction requestFrame,
                                         ScrollToFunction scrollTo,
                                         MeasuringFunction measure,
-                                        TimeProviderFunction getCurrentTime) {
+                                        TimeProviderFunction getCurrentTime,
+                                        std::function<void(double)> forceRender)
+{
   rt.global().setProperty(rt, "_WORKLET", jsi::Value(true));
   
   jsi::Object dummyGlobal(rt);
@@ -136,6 +138,16 @@ void RuntimeDecorator::addNativeObjects(jsi::Runtime &rt,
   };
   jsi::Value timeFun = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_getCurrentTime"), 0, clb6);
   rt.global().setProperty(rt, "_getCurrentTime", timeFun);
-}
 
+  auto clb7 = [forceRender, getCurrentTime](
+                  jsi::Runtime &rt,
+                  const jsi::Value &thisValue,
+                  const jsi::Value *args,
+                  size_t count) -> jsi::Value {
+    forceRender(getCurrentTime());
+    return jsi::Value::undefined();
+  };
+  jsi::Value frfun = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_forceRender"), 1, clb7);
+  rt.global().setProperty(rt, "_forceRender", frfun);
+}
 }

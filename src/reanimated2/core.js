@@ -1,4 +1,4 @@
-/* global _WORKLET _getCurrentTime _frameTimestamp _eventTimestamp */
+/* global _WORKLET _getCurrentTime _frameTimestamp _eventTimestamp _forceRender */
 
 import NativeReanimated from './NativeReanimated';
 
@@ -74,7 +74,9 @@ export function getTimestamp() {
 }
 
 export const forceRender = (timestamp) => {
-  NativeReanimated.forceRender(timestamp);
+  'worklet';
+  // NativeReanimated.forceRender(timestamp);
+  _forceRender();
 };
 
 function workletValueSetter(value) {
@@ -92,7 +94,8 @@ function workletValueSetter(value) {
     const animation = typeof value === 'function' ? value() : value;
     const initializeAnimation = (timestamp) => {
       animation.onStart(animation, this.value, timestamp, previousAnimation);
-      runOnJS(NativeReanimated.forceRender)(timestamp);
+      console.log('force render from initialize animation');
+      forceRender();
     };
     initializeAnimation(getTimestamp());
     const step = (timestamp) => {

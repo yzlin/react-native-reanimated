@@ -11,6 +11,7 @@ import Animated, {
   cancelAnimation,
   useDerivedValue,
   runOnJS,
+  forceRender,
 } from 'react-native-reanimated';
 import {
   Dimensions,
@@ -449,6 +450,8 @@ export const Pager = typedMemo(function Pager<
         index.value = nextIndex;
         onIndexChangeCb(nextIndex);
       }
+      console.log('force render from on end');
+      forceRender();
     },
   });
 

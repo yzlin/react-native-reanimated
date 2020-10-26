@@ -59,6 +59,7 @@ const globals = new Set([
   '_getCurrentTime',
   '_eventTimestamp',
   '_frameTimestamp',
+  '_forceRender',
   'isNaN',
 ]);
 

@@ -75,13 +75,18 @@ NativeReanimatedModule::NativeReanimatedModule(std::shared_ptr<CallInvoker> jsIn
     frameCallbacks.push_back(callback);
     maybeRequestRender();
   };
+  
+  auto forceRenderr = [=](double timestamp) {
+    onRender(timestamp);
+  };
 
   RuntimeDecorator::addNativeObjects(*runtime,
                                      platformDepMethodsHolder.updaterFunction,
                                      requestAnimationFrame,
                                      platformDepMethodsHolder.scrollToFunction,
                                      platformDepMethodsHolder.measuringFunction,
-                                     platformDepMethodsHolder.getCurrentTime);
+                                     platformDepMethodsHolder.getCurrentTime,
+                                     forceRenderr);
 }
 
 bool NativeReanimatedModule::isUIRuntime(jsi::Runtime &rt)
@@ -220,7 +225,7 @@ void NativeReanimatedModule::maybeRequestRender()
   {
     renderRequested = true;
     requestRender([this](double timestampMs) {
-      std::string str = "--- native render ";
+      std::string str = "--- native maybeRequestRender ";
       str += std::to_string(timestampMs);
       Logger::log(str.c_str());
       this->renderRequested = false;
@@ -231,6 +236,9 @@ void NativeReanimatedModule::maybeRequestRender()
 
 void NativeReanimatedModule::onRender(double timestampMs)
 {
+    std::string str = "--- native onRender ";
+    str += std::to_string(timestampMs);
+    Logger::log(str.c_str());
   try
   {
     mapperRegistry->execute(*runtime);

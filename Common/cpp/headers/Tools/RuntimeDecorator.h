@@ -17,7 +17,8 @@ public:
                                RequestFrameFunction requestFrame,
                                ScrollToFunction scrollTo,
                                MeasuringFunction measure,
-                               TimeProviderFunction getCurrentTime);
+                               TimeProviderFunction getCurrentTime,
+                               std::function<void(double)> forceRender);
 };
 
 }
