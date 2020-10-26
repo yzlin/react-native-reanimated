@@ -45,6 +45,10 @@ const NativeReanimated = {
   getViewProp(viewTag, propName, callback) {
     return InnerNativeModule.getViewProp(viewTag, propName, callback);
   },
+
+  forceRender(timestampMs) {
+    return InnerNativeModule.forceRender(timestampMs);
+  },
 };
 
 export default NativeReanimated.native ? NativeReanimated : reanimatedJS;

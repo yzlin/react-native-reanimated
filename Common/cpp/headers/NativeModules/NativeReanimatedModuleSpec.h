@@ -40,6 +40,9 @@ class JSI_EXPORT NativeReanimatedModuleSpec : public TurboModule {
 
   // views
   virtual jsi::Value getViewProp(jsi::Runtime &rt, const jsi::Value &viewTag, const jsi::Value &propName, const jsi::Value &callback) = 0;
+
+  // experimental
+  virtual void forceRender(jsi::Runtime &rt, const jsi::Value &timestampMs) = 0;
 };
 
 } // namespace reanimated

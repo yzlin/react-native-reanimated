@@ -6,6 +6,23 @@ global.__reanimatedWorkletInit = function(worklet) {
   worklet.__worklet = true;
 };
 
+export const runOnJS = (fun) => {
+  'worklet';
+  if (!_WORKLET) {
+    return fun;
+  }
+  if (!fun.__callAsync) {
+    console.log('typ', typeof fun);
+    console.log('name', fun.name);
+    console.log('code', fun.toString());
+    throw new Error(
+      "Attempting to call runOnJS with an object that is not a host function. Using runOnJS is only possible with methods that are defined on the main React-Native Javascript thread and that aren't marked as worklets"
+    );
+  } else {
+    return fun.__callAsync;
+  }
+};
+
 function pushFrame(frame) {
   NativeReanimated.pushFrame(frame);
 }
@@ -71,6 +88,7 @@ function workletValueSetter(value) {
     const animation = typeof value === 'function' ? value() : value;
     const initializeAnimation = (timestamp) => {
       animation.onStart(animation, this.value, timestamp, previousAnimation);
+      runOnJS(NativeReanimated.forceRender)(timestamp);
     };
     initializeAnimation(getTimestamp());
     const step = (timestamp) => {
@@ -159,23 +177,6 @@ export function startMapper(mapper, inputs = [], outputs = []) {
 export function stopMapper(mapperId) {
   NativeReanimated.stopMapper(mapperId);
 }
-
-export const runOnJS = (fun) => {
-  'worklet';
-  if (!_WORKLET) {
-    return fun;
-  }
-  if (!fun.__callAsync) {
-    console.log('typ', typeof fun);
-    console.log('name', fun.name);
-    console.log('code', fun.toString());
-    throw new Error(
-      "Attempting to call runOnJS with an object that is not a host function. Using runOnJS is only possible with methods that are defined on the main React-Native Javascript thread and that aren't marked as worklets"
-    );
-  } else {
-    return fun.__callAsync;
-  }
-};
 
 const capturableConsole = console;
 runOnUI(() => {

@@ -48,7 +48,9 @@ class NativeReanimatedModule : public NativeReanimatedModuleSpec
     void unregisterEventHandler(jsi::Runtime &rt, const jsi::Value &registrationId) override;
 
     jsi::Value getViewProp(jsi::Runtime &rt, const jsi::Value &viewTag, const jsi::Value &propName, const jsi::Value &callback) override;
-    
+
+    void forceRender(jsi::Runtime &rt, const jsi::Value &timestampMs) override;
+
     void onRender(double timestampMs);
     void onEvent(std::string eventName, std::string eventAsString);
 

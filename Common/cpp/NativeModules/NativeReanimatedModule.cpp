@@ -188,6 +188,12 @@ jsi::Value NativeReanimatedModule::getViewProp(jsi::Runtime &rt, const jsi::Valu
   return jsi::Value::undefined();
 }
 
+
+void NativeReanimatedModule::forceRender(jsi::Runtime &rt, const jsi::Value &timestampMs) {
+  Logger::log("here force render");
+  this->onRender(timestampMs.getNumber());
+}
+
 void NativeReanimatedModule::onEvent(std::string eventName, std::string eventAsString)
 {
    try
@@ -214,6 +220,9 @@ void NativeReanimatedModule::maybeRequestRender()
   {
     renderRequested = true;
     requestRender([this](double timestampMs) {
+      std::string str = "--- native render ";
+      str += std::to_string(timestampMs);
+      Logger::log(str.c_str());
       this->renderRequested = false;
       this->onRender(timestampMs);
     }, *this->runtime);
