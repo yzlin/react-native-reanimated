@@ -95,7 +95,7 @@ function workletValueSetter(value) {
     const initializeAnimation = (timestamp) => {
       animation.onStart(animation, this.value, timestamp, previousAnimation);
       console.log('force render from initialize animation');
-      forceRender();
+      // forceRender();
     };
     initializeAnimation(getTimestamp());
     const step = (timestamp) => {

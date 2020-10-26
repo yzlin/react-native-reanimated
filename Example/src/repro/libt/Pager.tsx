@@ -451,7 +451,7 @@ export const Pager = typedMemo(function Pager<
         onIndexChangeCb(nextIndex);
       }
       console.log('force render from on end');
-      forceRender();
+      //forceRender();
     },
   });
 

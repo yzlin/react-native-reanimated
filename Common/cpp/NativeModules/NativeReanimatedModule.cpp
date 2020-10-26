@@ -205,10 +205,7 @@ void NativeReanimatedModule::onEvent(std::string eventName, std::string eventAsS
     {
       eventHandlerRegistry->processEvent(*runtime, eventName, eventAsString);
       mapperRegistry->execute(*runtime);
-      if (mapperRegistry->needRunOnRender())
-      {
-        maybeRequestRender();
-      }
+      maybeRequestRender();
     }
     catch (...)
     {
