@@ -166,7 +166,7 @@ export function cancelAnimation(sharedValue) {
 
 function callbackDecorator(callback) {
   'worklet';
-  if (!callback || callback.__worklet || (!(callback.__callAsync))) {
+  if (!callback || callback.__worklet || !callback.__callAsync) {
     return callback;
   }
   return (isFinished) => {
@@ -267,6 +267,7 @@ export function withSpring(toValue, userConfig, callback) {
       const { toValue, lastTimestamp, current, velocity } = animation;
 
       const deltaTime = Math.min(now - lastTimestamp, 64);
+      console.log('deltaTime', deltaTime);
       animation.lastTimestamp = now;
 
       const c = config.damping;
