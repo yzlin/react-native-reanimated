@@ -63,9 +63,12 @@ export function useGalleryItem(
 
   const { opacity, activeIndex } = galleryManager!.sharedValues;
 
-  const styles = useAnimatedStyle(() => ({
-    opacity: activeIndex.value === index ? opacity.value : 1,
-  }));
+  const styles = useAnimatedStyle(() => {
+    console.log('here', opacity.value)
+    return {
+      opacity: activeIndex.value === index ? opacity.value : 1,
+    }
+  });
 
   useEffect(() => {
     galleryManager.registerItem(index, ref);
