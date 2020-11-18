@@ -26,10 +26,15 @@ import ScrollToExample from './ScrollToExample';
 import AnimatedTabBarExample from './AnimatedTabBarExample';
 import LightboxExample from './LightboxExample';
 import LiquidSwipe from './LiquidSwipe';
+import Repro from './ReproExample/src/Navigation'; // eslint-disable-line
 
 YellowBox.ignoreWarnings(['Calling `getNode()`']);
 
 const SCREENS = {
+  Repro: {
+    screen: Repro,
+    title: '🆕 Repro',
+  },
   AnimatedStyleUpdate: {
     screen: AnimatedStyleUpdateExample,
     title: '🆕 Animated Style Update',

@@ -6511,6 +6511,16 @@ react-is@^16.8.1, react-is@^16.8.4:
   version "16.9.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.9.0.tgz#21ca9561399aad0ff1a7701c01683e8ca981edcb"
 
+react-native-fast-image@^8.3.4:
+  version "8.3.4"
+  resolved "https://registry.yarnpkg.com/react-native-fast-image/-/react-native-fast-image-8.3.4.tgz#79edca177e30311b19d59ff335625bcbe22650d7"
+  integrity sha512-LpzAdjUphihUpVEBn5fEv5AILe55rHav0YiZroPZ1rumKDhAl4u2cG01ku2Pb7l8sayjTsNu7FuURAlXUUDsow==
+
+react-native-gallery-toolkit@^1.0.0-alpha.1.2:
+  version "1.0.0-alpha.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-gallery-toolkit/-/react-native-gallery-toolkit-1.0.0-alpha.1.2.tgz#fdad07e39d577cec5dcea528dfb2e0924bd54ed1"
+  integrity sha512-8R5hWOWJIL6Kv66hyfku7zkyEH4BJsjSJYJiYcrbQmNjXtwXEwCHJ2zIsIhqExTb3GtBCcSCx64UY/DkTskM/A==
+
 react-native-gesture-handler@^1.8.0:
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-1.8.0.tgz#18f61f51da50320f938957b0ee79bc58f47449dc"
