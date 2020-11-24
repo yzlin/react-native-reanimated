@@ -208,7 +208,12 @@ export const ScalableImage = React.memo<ScalableImageProps>(
       onStart: (_, ctx) => {
         vec.set(ctx.origin, ctx.adjustFocal);
 
-        onGestureStart();
+        if (onGestureStart.__callAsync) {
+          onGestureStart.__callAsync();
+        } else {
+          onGestureStart();
+        }
+        
       },
 
       onActive: (_, ctx) => {
@@ -224,7 +229,11 @@ export const ScalableImage = React.memo<ScalableImageProps>(
       },
 
       onEnd: (_, ctx) => {
-        onGestureRelease();
+        if (onGestureRelease.__callAsync) {
+          onGestureRelease.__callAsync();
+        } else {
+          onGestureRelease();
+        }
         // reset gestureScale value
         ctx.gestureScale = 1;
 

@@ -174,7 +174,7 @@ function RenderItem({
     'worklet';
 
     setControlsHidden(true);
-    StatusBar.setHidden(true);
+    StatusBar.setHidden.__callAsync(true);
     activeItemIndex.value = _index;
   }, []);
 
@@ -184,7 +184,7 @@ function RenderItem({
     //delay for smooth hiding background opacity
     activeItemIndex.value = delay(200, withTiming(-1));
     setControlsHidden(false);
-    StatusBar.setHidden(false);
+    StatusBar.setHidden.__callAsync(false);
   }, []);
 
   const overlayStyles = useAnimatedStyle(() => {
