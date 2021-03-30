@@ -4,8 +4,6 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Home, SpringLayoutAnimation, MountingUnmounting } from './LayoutReanimation';
 
-import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
-
 const Stack = createStackNavigator();
 
 const Screens = [

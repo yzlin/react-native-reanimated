@@ -45,11 +45,24 @@
 - (void)addSecondSnapshot:(REASnapshooter*)snapshooter
 {
   _secondSnapshots[snapshooter.tag] = snapshooter;
+  if ([snapshooter.capturedValues count] == 0) { // Root config should be removed on next unmounting animation
+    // TODO
+  }
 }
 
 - (void)setAnimationStartingBlock:(void (^)(NSNumber *tag))startAnimation
 {
   _startAnimationForTag = startAnimation;
+}
+
+- (void)setAnimationMountingBlock:
+{
+  
+}
+
+- (void)setAnimationUnmountingBlock:
+{
+  
 }
 
 - (void)notifyAboutProgress:(NSNumber*)progressNumber tag:(NSNumber*)tag
@@ -89,7 +102,13 @@
       view.center = CGPointMake(currentX + currentWidth/2.0, currentY + currentHeight/2.0);
     }
     
-    //TODO appearing and disappearing
+    if (startValues == nil && targetValues != nil) { // appearing
+      NSDictionary* newProps = self.getMoutingStyle(tag);
+    }
+    
+    if (startValues != nil && targetValues == nil) { // disappearing
+      NSDictionary* newProps = self.getMoutingStyle(tag);
+    }
   }
 }
 

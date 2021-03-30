@@ -42,6 +42,8 @@
     }
   }
   
+  values[@"parent"] = view.superview;
+  
   [_listView addObject:view];
   self.capturedValues[[NSValue valueWithNonretainedObject:view]] = values;
 }

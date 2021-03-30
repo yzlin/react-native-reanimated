@@ -54,7 +54,7 @@
                                        void(^)(REAAnimationRootView* view, NSNumber *)) = ^void(NSDictionary<NSNumber *,UIView *> *viewRegistry, void(^block)(REAAnimationRootView* view, NSNumber *)) {
         for (NSNumber *tag in affectedAnimationRootsTags) {
             UIView* view = viewRegistry[tag];
-            RCTAssert([view isKindOfClass:[REAAnimationRootView class]], @"View is not a subclass of REAAnimationRootView");
+            RCTAssert(view == nil || [view isKindOfClass:[REAAnimationRootView class]], @"View is not a subclass of REAAnimationRootView");
             REAAnimationRootView* animtionRoot = (REAAnimationRootView*) view;
             block(animtionRoot, tag);
         }
@@ -79,9 +79,12 @@
         void (^block)(REAAnimationRootView*, NSNumber *) = ^void(REAAnimationRootView* view, NSNumber *tag) {
           NSSet* capturableProps = view.capturablePropeties;
           REASnapshooter* snapshooter = [[REASnapshooter alloc] initWithTag:tag capturableProps:capturableProps];
-          [REAViewTraverser traverse:view withBlock:^(UIView* view) {
-            [snapshooter takeSnapshot: view];
-          }];
+          if (view) {
+            [REAViewTraverser traverse:view withBlock:^(UIView* view) {
+              [snapshooter takeSnapshot: view];
+            }];
+          }
+          
           [_animationsManager addSecondSnapshot: snapshooter];
           [_animationsManager notifyAboutProgress:0 tag:tag]; // prepare for the first frame
         };
@@ -97,7 +100,7 @@
         RCTShadowView* shadowView = [self.uiManager shadowViewForReactTag:tag];
       if (shadowView == nil) {
         [[REAReactBatchObserver animationRootsTags] removeObject:tag];
-       // [self.affectedAnimationRootsTags addObject:tag];
+        [self.affectedAnimationRootsTags addObject:tag];
         continue;
       }
       if (YGNodeIsDirty(shadowView.yogaNode)) {

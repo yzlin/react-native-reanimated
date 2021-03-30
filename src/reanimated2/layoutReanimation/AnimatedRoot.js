@@ -4,18 +4,38 @@ import { runOnUI, makeMutable } from '../core';
 
 const REALayoutView = requireNativeComponent('REALayoutView');
 
+function defaultMountingUnmounting(progress) {
+    'worklet'
+    return {};
+}
+
 export class AnimatedRoot extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.sv = makeMutable(0);
+        this.alreadyConfigured = false;
     }
 
-    componentDidMount() {
-        const tag = findNodeHandle(this);
+    setRef(ref) {
+        const tag = findNodeHandle(ref);
+        if (tag == null || !this.alreadyConfigured) return;
+        this.alreadyConfigured = true;
         console.log("config For a tag", tag);
-        const animation = this.props.animation;
+        let {animation, mounting, unmounting} = this.props;
+        if (animation == null) {
+            animation = withTiming(1, {duration: 1});
+        }
+        if (mounting == null) {
+            mounting = defaultMountingUnmounting;
+        }
+        if (unmounting == null) {
+            unmounting = defaultMountingUnmounting;
+        }
+
         const config = {
-            animation: animation,
+            animation,
+            mounting,
+            unmounting,
             sv: this.sv,
         }
         runOnUI(() => {
@@ -26,17 +46,12 @@ export class AnimatedRoot extends React.Component {
 
     render() {
         return (
-            <REALayoutView {...this.props} animated={true && !(this.props.animated === 'false')} ref={this.ref} />
+            <REALayoutView {...this.props} animated={true && !(this.props.animated === 'false')} ref={this.setRef.bind(this)} />
         );
     }
 
     componentWillUnmount() {
-        const tag = findNodeHandle(this);
         this.sv = null;
-        runOnUI(() => {
-            'worklet'
-            global.LayoutAnimationRepository.removeConfig(tag);
-        })();
     }
 
 }
@@ -80,6 +95,18 @@ runOnUI(
                 sv.value = 0;
                 configs[tag].sv.value = animation;
                 
+            },
+            getMountingStyle(tag, progress) {
+                if (configs[tag] == null) {
+                    return {}; // :(
+                }
+                return configs[tag].mounting(tag, progress);
+            },
+            getUnmountingStyle(tag, progress) {
+                if (configs[tag] == null) {
+                    return {}; // :(
+                }
+                return configs[tag].unmounting(tag, progress);
             },
         };  
     }
