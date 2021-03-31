@@ -1,28 +1,19 @@
 import { isCompletionStatement } from 'babel-types';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, AnimatedRoot, withTiming } from 'react-native-reanimated';
-
-type mountingStyle = {
-    x?: number,
-    y?: number,
-    width?: number,
-    height?: number,
-    opacity?: number,
-};
+import Animated, { useAnimatedStyle, AnimatedRoot, withTiming, withSpring } from 'react-native-reanimated';
 
 function AnimatedView() {
 
     const style = useAnimatedStyle(() => {
-        return {
-            
-        }
+        return {}
     });
 
-    const mounting = (progress: number) => {
+    const mounting = (progress: number, targetValues) => {
         'worklet';
         return {
             opacity: progress,
+            originX: targetValues.originX * progress + (1-progress) * (-300),
         }
     }
 
@@ -34,7 +25,7 @@ function AnimatedView() {
     }
 
     return (
-        <AnimatedRoot isShallow={true} animation={withTiming(1, {duration: 2000})} mounting={mounting} unmounting={unmounting} >
+        <AnimatedRoot isShallow={false} animation={withTiming(1, {duration: 2000})} mounting={mounting} unmounting={unmounting} >
             <Animated.View style={[styles.animatedView, style]} >
                 <Text> kk </Text>
             </Animated.View>

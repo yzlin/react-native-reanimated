@@ -26,21 +26,17 @@
 {
   NSMutableDictionary* values = [NSMutableDictionary new];
   UIView *windowView = UIApplication.sharedApplication.keyWindow;
-  //CGPoint origin = view.frame.origin; [[view superview] convertPoint:view.frame.origin toView:windowView]; //TODO choose correct origin
+  CGPoint originFromRootPerspective = [[view superview] convertPoint:view.center toView:windowView]; //TODO choose correct origin
   
-  for (NSString* value in _capturableProps)
-  {
-    
-    if ([value isEqual:@"width"]) {
-      values[@"width"] = [NSNumber numberWithDouble:(double)(view.bounds.size.width)];
-    } else if ([value isEqual:@"height"]) {
-      values[@"height"] = [NSNumber numberWithDouble:(double)(view.bounds.size.height)];
-    } else if ([value isEqual:@"originX"]) {
-      values[@"originX"] = [NSNumber numberWithDouble:view.center.x - view.bounds.size.width/2.0];
-    } else if ([value isEqual:@"originY"]) {
-      values[@"originY"] = [NSNumber numberWithDouble:view.center.y - view.bounds.size.height/2.0];
-    }
-  }
+ 
+  values[@"width"] = [NSNumber numberWithDouble:(double)(view.bounds.size.width)];
+  values[@"height"] = [NSNumber numberWithDouble:(double)(view.bounds.size.height)];
+  values[@"originX"] = [NSNumber numberWithDouble:view.center.x - view.bounds.size.width/2.0];
+  values[@"originY"] = [NSNumber numberWithDouble:view.center.y - view.bounds.size.height/2.0];
+  values[@"globalOriginX"] = [NSNumber numberWithDouble:originFromRootPerspective.x - view.bounds.size.width/2.0];
+  values[@"globalOriginY"] = [NSNumber numberWithDouble:originFromRootPerspective.y - view.bounds.size.height/2.0];
+
+  //TODO capture additional values set by a user
   
   values[@"parent"] = view.superview;
   
