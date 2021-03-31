@@ -166,6 +166,38 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     }
   }];
   
+  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber * _Nonnull tag, NSNumber * _Nonnull progress) {
+    std::shared_ptr<jsi::Runtime> rt = wrt.lock();
+    if (wrt.expired()) {
+      return [NSMutableDictionary new];
+    }
+    jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
+    if (!layoutAnimationRepositoryAsValue.isUndefined()) {
+      jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
+      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]));
+      jsi::Object props = value.asObject(*rt);
+      NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
+      return [propsDict mutableCopy];
+    }
+    return [NSMutableDictionary new];
+  }];
+  
+  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber * _Nonnull tag, NSNumber * _Nonnull progress) {
+    std::shared_ptr<jsi::Runtime> rt = wrt.lock();
+    if (wrt.expired()) {
+      return [NSMutableDictionary new];
+    }
+    jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
+    if (!layoutAnimationRepositoryAsValue.isUndefined()) {
+      jsi::Function getUnmountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getUnmountingStyle");
+      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]));
+      jsi::Object props = value.asObject(*rt);
+      NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
+      return [propsDict mutableCopy];
+    }
+    return [NSMutableDictionary new];
+  }];
+  
   // Layout Animations end
   
   PlatformDepMethodsHolder platformDepMethodsHolder = {

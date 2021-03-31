@@ -6,10 +6,13 @@
 //
 
 #import "REAAnimationsManager.h"
+#import <React/RCTComponentData.h>
 
 @interface REAAnimationsManager ()
 
 @property (atomic, nullable) void(^startAnimationForTag)(NSNumber *);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*);
 
 @end
 
@@ -55,14 +58,14 @@
   _startAnimationForTag = startAnimation;
 }
 
-- (void)setAnimationMountingBlock:
+- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress))block
 {
-  
+  _getStyleWhileMounting = block;
 }
 
-- (void)setAnimationUnmountingBlock:
+- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress))block
 {
-  
+  _getStyleWhileUnmounting = block;
 }
 
 - (void)notifyAboutProgress:(NSNumber*)progressNumber tag:(NSNumber*)tag
@@ -101,13 +104,37 @@
       view.bounds = CGRectMake(0, 0, currentWidth, currentHeight);
       view.center = CGPointMake(currentX + currentWidth/2.0, currentY + currentHeight/2.0);
     }
+    // Let's assume for now that this is a View componenet
+    NSMutableDictionary* dataComponenetsByName = [_uiManager valueForKey:@"_componentDataByName"];
+    RCTComponentData *componentData = dataComponenetsByName[@"RCTView"];
     
     if (startValues == nil && targetValues != nil) { // appearing
-      NSDictionary* newProps = self.getMoutingStyle(tag);
+      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress]);
+      /*if (newProps[@"height"]) {
+        double height = newProps[@"height"];
+        //TODO
+        [newProps removeObjectForKey:@"height"];
+      }
+      if (newProps[@"width"]) {
+        double width = newProps[@"width"];
+        //TODO
+        [newProps removeObjectForKey:@"width"];
+      }
+      if (newProps[@"originX"]) {
+        double originX = newProps[@"originX"];
+        //TODO
+        [newProps removeObjectForKey:@"originX"];
+      }
+      if (newProps[@"originY"]) {
+        double originY = newProps[@"originY"];
+        //TODO
+        [newProps removeObjectForKey:@"originY"];
+      }*/
+      [componentData setProps:newProps forView:view];
     }
     
     if (startValues != nil && targetValues == nil) { // disappearing
-      NSDictionary* newProps = self.getMoutingStyle(tag);
+      //NSDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress]);
     }
   }
 }
