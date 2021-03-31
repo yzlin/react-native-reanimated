@@ -148,9 +148,9 @@
       
       // only animated hightest appearing/disappearing view !!! Investigate if it's right approach
       // Maybe we should pass additional info to worklet if the a view is highest or not
-      if (![view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:targetValues[@"parent"]]] == nil) {
+      if (![view isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[NSValue valueWithNonretainedObject:startValues[@"parent"]]] == nil) {
         if (view.superview == nil) {
-          [((UIView*)targetValues[@"parent"]) addSubview:view];
+          [((UIView*)startValues[@"parent"]) addSubview:view];
         }
         
         continue;
@@ -198,12 +198,16 @@
 {
   if (newProps[@"height"]) {
     double height = [newProps[@"height"] doubleValue];
+    double oldHeight = view.bounds.size.height;
     view.bounds = CGRectMake(0, 0, view.bounds.size.width, height);
+    view.center = CGPointMake(view.center.x, view.center.y - oldHeight/2.0 + view.bounds.size.height/2.0);
     [newProps removeObjectForKey:@"height"];
   }
   if (newProps[@"width"]) {
     double width = [newProps[@"width"] doubleValue];
+    double oldWidth = view.bounds.size.width;
     view.bounds = CGRectMake(0, 0, width, view.bounds.size.height);
+    view.center = CGPointMake(view.center.x + view.bounds.size.width/2.0 - oldWidth/2.0, view.center.y);
     [newProps removeObjectForKey:@"width"];
   }
   if (newProps[@"originX"]) {

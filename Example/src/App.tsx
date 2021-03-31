@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Home, SpringLayoutAnimation, MountingUnmounting } from './LayoutReanimation';
+import { Home, SpringLayoutAnimation, MountingUnmounting, SwipeableList } from './LayoutReanimation';
 
 const Stack = createStackNavigator();
 
@@ -14,6 +14,10 @@ const Screens = [
   {
     name: 'Mounting Unmounting',
     screen: MountingUnmounting,
+  },
+  {
+    name: 'Swipeable list',
+    screen: SwipeableList,
   }
 ];
 
