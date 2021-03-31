@@ -163,12 +163,19 @@
         UIView *windowView = UIApplication.sharedApplication.keyWindow;
         [windowView addSubview:view];
         
+        NSMutableDictionary * newOrigin = [@{
+          @"originX": startValues[@"originX"],
+          @"originY": startValues[@"originY"]
+        } mutableCopy];
+        
+        [self setNewProps:newOrigin forView:view withComponentData:nil];
+        
         [self addBlockOnAnimationEnd:tag block:^{
           [view removeFromSuperview];
         }];
       }
       
-      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], targetValues);
+      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], startValues);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }
   }

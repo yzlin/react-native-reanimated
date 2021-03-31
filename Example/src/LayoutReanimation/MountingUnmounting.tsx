@@ -17,15 +17,16 @@ function AnimatedView() {
         }
     }
 
-    const unmounting = (progress: number) => {
+    const unmounting = (progress: number, initialValues) => {
         'worklet';
         return {
             opacity: 1 - progress,
+            originX: initialValues.originX * (1-progress) + progress * (1000),
         }
     }
 
     return (
-        <AnimatedRoot isShallow={false} animation={withTiming(1, {duration: 2000})} mounting={mounting} unmounting={unmounting} >
+        <AnimatedRoot isShallow={false} animation={withSpring(1)} mounting={mounting} unmounting={unmounting} >
             <Animated.View style={[styles.animatedView, style]} >
                 <Text> kk </Text>
             </Animated.View>
