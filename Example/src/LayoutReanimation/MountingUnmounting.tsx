@@ -14,6 +14,9 @@ function AnimatedView() {
         return {
             opacity: progress,
             originX: targetValues.originX * progress + (1-progress) * (-300),
+            transform: [
+                {rotate: `${(Math.max(progress, 1) - 1) * 90}deg`},
+            ],
         }
     }
 
