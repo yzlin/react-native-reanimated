@@ -166,7 +166,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     }
   }];
   
-  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber * _Nonnull tag, NSNumber * _Nonnull progress) {
+  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return [NSMutableDictionary new];
@@ -174,7 +174,13 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
-      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]));
+      jsi::Object target(*rt);
+      target.setProperty(*rt, "width", [values[@"width"] doubleValue]);
+      target.setProperty(*rt, "height", [values[@"height"] doubleValue]);
+      target.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
+      target.setProperty(*rt, "originY", [values[@"originX"] doubleValue]);
+      
+      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), target);
       jsi::Object props = value.asObject(*rt);
       NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
       return [propsDict mutableCopy];
@@ -182,7 +188,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     return [NSMutableDictionary new];
   }];
   
-  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber * _Nonnull tag, NSNumber * _Nonnull progress) {
+  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return [NSMutableDictionary new];
@@ -190,7 +196,13 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function getUnmountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getUnmountingStyle");
-      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]));
+      jsi::Object initial(*rt);
+      initial.setProperty(*rt, "width", [values[@"width"] doubleValue]);
+      initial.setProperty(*rt, "height", [values[@"height"] doubleValue]);
+      initial.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
+      initial.setProperty(*rt, "originY", [values[@"originX"] doubleValue]);
+      
+      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]), initial);
       jsi::Object props = value.asObject(*rt);
       NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
       return [propsDict mutableCopy];

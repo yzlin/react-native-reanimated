@@ -11,8 +11,8 @@
 @interface REAAnimationsManager ()
 
 @property (atomic, nullable) void(^startAnimationForTag)(NSNumber *);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*, NSDictionary*);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*, NSDictionary*);
 
 @end
 
@@ -61,12 +61,12 @@
   _startAnimationForTag = startAnimation;
 }
 
-- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress))block
+- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target))block
 {
   _getStyleWhileMounting = block;
 }
 
-- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress))block
+- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* initial))block
 {
   _getStyleWhileUnmounting = block;
 }
@@ -112,7 +112,7 @@
     RCTComponentData *componentData = dataComponenetsByName[@"RCTView"];
     
     if (startValues == nil && targetValues != nil) { // appearing
-      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress]);
+      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], targetValues);
       /*if (newProps[@"height"]) {
         double height = newProps[@"height"];
         //TODO
@@ -137,7 +137,7 @@
     }
     
     if (startValues != nil && targetValues == nil) { // disappearing
-      //NSDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress]);
+      //NSDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], startValues);
     }
   }
 }
