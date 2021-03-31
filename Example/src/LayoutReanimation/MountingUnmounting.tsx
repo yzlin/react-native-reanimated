@@ -34,7 +34,7 @@ function AnimatedView() {
     }
 
     return (
-        <AnimatedRoot isShallow={true} animation={withTiming(1)} mounting={mounting} unmounting={unmounting} >
+        <AnimatedRoot isShallow={true} animation={withTiming(1, {duration: 2000})} mounting={mounting} unmounting={unmounting} >
             <Animated.View style={[styles.animatedView, style]} >
                 <Text> kk </Text>
             </Animated.View>

@@ -34,6 +34,9 @@
 
 - (void)invalidate
 {
+  _getStyleWhileUnmounting = nil;
+  _getStyleWhileMounting = nil;
+  _startAnimationForTag = nil;
   _uiManager = nil;
 }
 

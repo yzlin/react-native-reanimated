@@ -174,7 +174,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
-      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]));
+      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]));
       jsi::Object props = value.asObject(*rt);
       NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
       return [propsDict mutableCopy];

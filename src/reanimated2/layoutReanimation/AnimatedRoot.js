@@ -18,7 +18,7 @@ export class AnimatedRoot extends React.Component {
 
     setRef(ref) {
         const tag = findNodeHandle(ref);
-        if (tag == null || !this.alreadyConfigured) return;
+        if (tag == null || this.alreadyConfigured) return;
         this.alreadyConfigured = true;
         console.log("config For a tag", tag);
         let {animation, mounting, unmounting} = this.props;
@@ -100,13 +100,13 @@ runOnUI(
                 if (configs[tag] == null) {
                     return {}; // :(
                 }
-                return configs[tag].mounting(tag, progress);
+                return configs[tag].mounting(progress);
             },
             getUnmountingStyle(tag, progress) {
                 if (configs[tag] == null) {
                     return {}; // :(
                 }
-                return configs[tag].unmounting(tag, progress);
+                return configs[tag].unmounting(progress);
             },
         };  
     }
