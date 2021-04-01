@@ -12,8 +12,8 @@
 @interface REAAnimationsManager ()
 
 @property (atomic, nullable) void(^startAnimationForTag)(NSNumber *);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*, NSDictionary*);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*, NSDictionary*);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*, NSDictionary*, NSNumber*);
+@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*, NSDictionary*, NSNumber*);
 @property (atomic, nullable) void(^removeConfigForTag)(NSNumber *);
 
 @end
@@ -76,12 +76,12 @@
   _startAnimationForTag = startAnimation;
 }
 
-- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target))block
+- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target, NSNumber* depth))block
 {
   _getStyleWhileMounting = block;
 }
 
-- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* initial))block
+- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* initial, NSNumber* depth))block
 {
   _getStyleWhileUnmounting = block;
 }
@@ -101,12 +101,17 @@
     return;
   }
   
-  NSMutableSet<UIView *>* allViews = [NSMutableSet new];
+  NSMutableSet<UIView *>* allViewsSet = [NSMutableSet new];
+  NSMutableArray<UIView *>* allViews = [NSMutableArray new];
   for (UIView *view in first.listView) {
     [allViews addObject:view];
+    [allViewsSet addObject:view];
   }
   for (UIView *view in second.listView) {
-    [allViews addObject:view];
+    if (![allViewsSet containsObject:view]) {
+      [allViewsSet addObject:view];
+      [allViews addObject:view];
+    }
   }
   
   for (UIView *view in allViews) {
@@ -133,49 +138,69 @@
     
     if (startValues == nil && targetValues != nil) { // appearing
       
-      // only animated hightest appearing/disappearing view !!! Investigate if it's right approach
-      // Maybe we should pass additional info to worklet if the a view is highest or not
-      if (![view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:targetValues[@"parent"]]] == nil) {
-        continue;
+      double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
+      if (targetValues[@"depth"] == nil) {
+        UIView *lowestAppearingAncestor = view;
+        while (![lowestAppearingAncestor isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:lowestAppearingAncestor.superview]] == nil) {
+          lowestAppearingAncestor = lowestAppearingAncestor.superview;
+          depth++;
+        }
+        targetValues[@"depth"] = [NSNumber numberWithDouble:depth];
       }
-      
-      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], targetValues);
+      depth = [targetValues[@"depth"] doubleValue];
+    
+      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], targetValues, [NSNumber numberWithDouble: depth]);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }
     
     if (startValues != nil && targetValues == nil) { // disappearing
       // TODO allow nested AnimationRoots to disapprear diffrently
       
-      // only animated hightest appearing/disappearing view !!! Investigate if it's right approach
-      // Maybe we should pass additional info to worklet if the a view is highest or not
-      if (![view isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[NSValue valueWithNonretainedObject:startValues[@"parent"]]] == nil) {
-        if (view.superview == nil) {
-          [((UIView*)startValues[@"parent"]) addSubview:view];
+      double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
+      if (startValues[@"depth"] == nil) {
+        UIView *lowestDisappearingAncestor = view;
+        while (![lowestDisappearingAncestor isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[NSValue valueWithNonretainedObject:first.capturedValues[[NSValue valueWithNonretainedObject: lowestDisappearingAncestor]][@"parent"]]] == nil) {
+          lowestDisappearingAncestor = (UIView*)first.capturedValues[[NSValue valueWithNonretainedObject: lowestDisappearingAncestor]][@"parent"];
+          depth++;
         }
+        startValues[@"depth"] = [NSNumber numberWithDouble:depth];
         
-        continue;
+        if ([view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:startValues[@"parent"]]] == nil) {
+          // If I'm a root and I don't have any roots above me
+          
+          if (view.superview == nil) {
+            //add To window
+            startValues[@"originX"] = startValues[@"globalOriginX"];
+            startValues[@"originY"] = startValues[@"globalOriginY"];
+            
+            UIView *windowView = UIApplication.sharedApplication.keyWindow;
+            [windowView addSubview:view];
+            
+            NSMutableDictionary * newOrigin = [@{
+              @"originX": startValues[@"originX"],
+              @"originY": startValues[@"originY"]
+            } mutableCopy];
+            
+            [self setNewProps:newOrigin forView:view withComponentData:nil];
+            
+            [self addBlockOnAnimationEnd:tag block:^{
+              [view removeFromSuperview];
+            }];
+          }
+          
+        } else {
+          if (view.superview == nil) {
+            [((UIView*)startValues[@"parent"]) addSubview:view];
+            [self addBlockOnAnimationEnd:tag block:^{
+              [view removeFromSuperview];
+            }];
+          }
+
+        }
       }
+      depth = [startValues[@"depth"] doubleValue];
       
-      if (view.superview == nil) {
-        startValues[@"originX"] = startValues[@"globalOriginX"];
-        startValues[@"originY"] = startValues[@"globalOriginY"];
-        
-        UIView *windowView = UIApplication.sharedApplication.keyWindow;
-        [windowView addSubview:view];
-        
-        NSMutableDictionary * newOrigin = [@{
-          @"originX": startValues[@"originX"],
-          @"originY": startValues[@"originY"]
-        } mutableCopy];
-        
-        [self setNewProps:newOrigin forView:view withComponentData:nil];
-        
-        [self addBlockOnAnimationEnd:tag block:^{
-          [view removeFromSuperview];
-        }];
-      }
-      
-      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], startValues);
+      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], startValues, startValues[@"depth"]);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }
   }

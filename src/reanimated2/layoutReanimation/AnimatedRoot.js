@@ -96,18 +96,18 @@ runOnUI(
                 configs[tag].sv.value = animation;
                 
             },
-            getMountingStyle(tag, progress, targetData) {
+            getMountingStyle(tag, progress, targetData, depth) {
                 if (configs[tag] == null) {
                     return {}; // :(
                 }
                 
-                return configs[tag].mounting(progress, targetData);
+                return configs[tag].mounting(progress, targetData, depth);
             },
-            getUnmountingStyle(tag, progress, initialData) {
+            getUnmountingStyle(tag, progress, initialData, depth) {
                 if (configs[tag] == null) {
                     return {}; // :(
                 }
-                return configs[tag].unmounting(progress, initialData);
+                return configs[tag].unmounting(progress, initialData, depth);
             },
         };  
     }

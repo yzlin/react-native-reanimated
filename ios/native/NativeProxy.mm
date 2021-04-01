@@ -166,7 +166,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     }
   }];
   
-  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values) {
+  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values, NSNumber* depth) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return [NSMutableDictionary new];
@@ -180,7 +180,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
       target.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
       target.setProperty(*rt, "originY", [values[@"originY"] doubleValue]);
       
-      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), target);
+      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), target, jsi::Value([depth doubleValue]));
       jsi::Object props = value.asObject(*rt);
       NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
       return [propsDict mutableCopy];
@@ -188,7 +188,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     return [NSMutableDictionary new];
   }];
   
-  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values) {
+  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values, NSNumber* depth) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return [NSMutableDictionary new];
@@ -202,7 +202,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
       initial.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
       initial.setProperty(*rt, "originY", [values[@"originY"] doubleValue]);
       
-      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), initial);
+      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), initial, jsi::Value([depth doubleValue]));
       jsi::Object props = value.asObject(*rt);
       NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
       return [propsDict mutableCopy];
