@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {View, Button, Text, ScrollView, StyleSheet } from 'react-native';
 import { AnimatedRoot, withTiming, withSpring } from 'react-native-reanimated';
 
-function unmounting(progress, initialValues) {
+function unmounting(progress, initialValues, depth) {
     'worklet'
     return {
         height: (1-progress) * initialValues.height,

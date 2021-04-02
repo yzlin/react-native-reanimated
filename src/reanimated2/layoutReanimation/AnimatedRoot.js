@@ -1,14 +1,10 @@
 import { requireNativeComponent, findNodeHandle } from 'react-native';
 import React from 'react';
 import { runOnUI, makeMutable } from '../core';
+import { withTiming } from '../animations';
+import { OpacityAnimation, ReverseAnimation } from './defaultAnimations';
 
 const REALayoutView = requireNativeComponent('REALayoutView');
-
-function defaultMountingUnmounting(progress) {
-    'worklet'
-    return {};
-}
-
 export class AnimatedRoot extends React.Component {
     constructor(props, context) {
         super(props, context);
@@ -23,13 +19,13 @@ export class AnimatedRoot extends React.Component {
         console.log("config For a tag", tag);
         let {animation, mounting, unmounting} = this.props;
         if (animation == null) {
-            animation = withTiming(1, {duration: 1});
+            animation = withTiming(1);
         }
         if (mounting == null) {
-            mounting = defaultMountingUnmounting;
+            mounting = OpacityAnimation;
         }
         if (unmounting == null) {
-            unmounting = defaultMountingUnmounting;
+            unmounting = ReverseAnimation(mounting);
         }
 
         const config = {

@@ -8,6 +8,7 @@
 #import "REAAnimationsManager.h"
 #import <React/RCTComponentData.h>
 #import "REAAnimationRootView.h"
+#import "REAHeroView.h"
 
 @interface REAAnimationsManager ()
 
@@ -101,27 +102,37 @@
     return;
   }
   
-  NSMutableSet<UIView *>* allViewsSet = [NSMutableSet new];
+  NSMutableSet<NSValue*>* allViewsSet = [NSMutableSet new];
   NSMutableArray<UIView *>* allViews = [NSMutableArray new];
   for (UIView *view in first.listView) {
     [allViews addObject:view];
-    [allViewsSet addObject:view];
+    [allViewsSet addObject:[REASnapshooter idFor:view]];
   }
   for (UIView *view in second.listView) {
-    if (![allViewsSet containsObject:view]) {
-      [allViewsSet addObject:view];
+    if (![allViewsSet containsObject:[REASnapshooter idFor:view]]) {
+      [allViewsSet addObject:[REASnapshooter idFor:view]];
       [allViews addObject:view];
     }
   }
   
   for (UIView *view in allViews) {
-    NSMutableDictionary<NSString*, NSNumber*>* startValues = first.capturedValues[[NSValue valueWithNonretainedObject:view]];
-    NSMutableDictionary<NSString*, NSNumber*>* targetValues = second.capturedValues[[NSValue valueWithNonretainedObject:view]];
+    NSMutableDictionary<NSString*, NSNumber*>* startValues = first.capturedValues[[REASnapshooter idFor:view]];
+    NSMutableDictionary<NSString*, NSNumber*>* targetValues = second.capturedValues[[REASnapshooter idFor:view]];
     
     // TODO let ViewManager handle animation progress based on view snapshots
     if (startValues != nil && targetValues != nil) { //interpolate
       // TODO make it more flexiable
       // TODO interpolate transform matrix
+      
+      if ([view isKindOfClass:[REAHeroView class]] && !startValues[@"corrected"]) { // Hero changes origin
+        startValues[@"corrected"] = @(YES);
+        UIView *newParent = (UIView*)targetValues[@"parent"];
+        UIView *windowView = UIApplication.sharedApplication.keyWindow;
+        CGPoint point = CGPointMake([startValues[@"globalOriginX"] doubleValue], [startValues[@"globalOriginY"] doubleValue]);
+        CGPoint correctedOrigin = [windowView convertPoint:point toView:newParent];
+        startValues[@"originX"] = [NSNumber numberWithDouble:correctedOrigin.x];
+        startValues[@"originY"] = [NSNumber numberWithDouble:correctedOrigin.y];
+      }
       
       double currentWidth = [targetValues[@"width"] doubleValue] * progress + [startValues[@"width"] doubleValue] * (1.0 - progress);
       double currentHeight = [targetValues[@"height"] doubleValue] * progress + [startValues[@"height"] doubleValue] * (1.0 - progress);
@@ -141,7 +152,7 @@
       double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
       if (targetValues[@"depth"] == nil) {
         UIView *lowestAppearingAncestor = view;
-        while (![lowestAppearingAncestor isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:lowestAppearingAncestor.superview]] == nil) {
+        while (![lowestAppearingAncestor isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[REASnapshooter idFor:lowestAppearingAncestor.superview]] == nil) {
           lowestAppearingAncestor = lowestAppearingAncestor.superview;
           depth++;
         }
@@ -159,13 +170,13 @@
       double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
       if (startValues[@"depth"] == nil) {
         UIView *lowestDisappearingAncestor = view;
-        while (![lowestDisappearingAncestor isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[NSValue valueWithNonretainedObject:first.capturedValues[[NSValue valueWithNonretainedObject: lowestDisappearingAncestor]][@"parent"]]] == nil) {
-          lowestDisappearingAncestor = (UIView*)first.capturedValues[[NSValue valueWithNonretainedObject: lowestDisappearingAncestor]][@"parent"];
+        while (![lowestDisappearingAncestor isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[REASnapshooter idFor:(UIView*)first.capturedValues[[REASnapshooter idFor: lowestDisappearingAncestor]][@"parent"]]] == nil) {
+          lowestDisappearingAncestor = (UIView*)first.capturedValues[[REASnapshooter idFor: lowestDisappearingAncestor]][@"parent"];
           depth++;
         }
         startValues[@"depth"] = [NSNumber numberWithDouble:depth];
         
-        if ([view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[NSValue valueWithNonretainedObject:startValues[@"parent"]]] == nil) {
+        if ([view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[REASnapshooter idFor:(UIView*)startValues[@"parent"]]] == nil) {
           // If I'm a root and I don't have any roots above me
           
           if (view.superview == nil) {

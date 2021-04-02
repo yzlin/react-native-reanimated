@@ -9,8 +9,9 @@ function AnimatedView() {
         return {}
     });
 
-    const mounting = (progress: number, targetValues) => {
+    const mounting = (progress: number, targetValues, depth) => {
         'worklet';
+        if (depth >= 1) return {};
         return {
             opacity: progress,
             originX: targetValues.originX * progress + (1-progress) * (-300),

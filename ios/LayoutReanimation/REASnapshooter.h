@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(instancetype)initWithTag:(NSNumber*)tag capturableProps:(NSSet*)capturableProps;
 -(void)takeSnapshot:(UIView*)view;
 
++ (NSValue*)idFor:(UIView *)view;
+
 @end
 
 NS_ASSUME_NONNULL_END

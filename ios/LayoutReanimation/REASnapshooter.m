@@ -6,6 +6,7 @@
 //
 
 #import "REASnapshooter.h"
+#import "REAHeroView.h"
 
 @implementation REASnapshooter 
 
@@ -41,7 +42,16 @@
   values[@"parent"] = view.superview;
   
   [_listView addObject:view];
-  self.capturedValues[[NSValue valueWithNonretainedObject:view]] = values;
+  self.capturedValues[[REASnapshooter idFor:view]] = values;
+}
+
++ (NSValue*)idFor:(UIView *)view
+{
+  if ([view isKindOfClass:[REAHeroView class]]) {
+    id heroId = ((REAHeroView*)view).heroId;
+    return [NSValue valueWithNonretainedObject:heroId];
+  }
+  return [NSValue valueWithNonretainedObject:view];
 }
 
 @end
