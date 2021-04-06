@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import Animated, { AnimatedRoot, HeroView, withTiming } from 'react-native-reanimated';
+import Animated, { AnimatedLayout, HeroView, withTiming } from 'react-native-reanimated';
 
 const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id nibh risus. Quisque malesuada justo at ex tincidunt, at commodo lacus consequat. Cras magna turpis, malesuada a egestas et, elementum vulputate risus.`;
 
@@ -62,7 +62,7 @@ export function HeroExample(): React.ReactElement {
 
     return (
         <View style={{flex:1}}>
-            <AnimatedRoot animation={withTiming(1, {duration: 3000})} style={{flex:1}} >
+            <AnimatedLayout animation={withTiming(1, {duration: 3000})} style={{flex:1}} >
                 <View style={{flex: 1}}>
                     <View style={Styles.menu}> 
                         {items.map((item) => (
@@ -73,7 +73,7 @@ export function HeroExample(): React.ReactElement {
                         {chosen && <Item key={chosen.name} name={chosen.name} desc={chosen.desc}/>}
                     </View>
                 </View>
-            </AnimatedRoot>
+            </AnimatedLayout>
         </View>
     );
 }

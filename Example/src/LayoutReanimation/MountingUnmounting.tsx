@@ -1,7 +1,7 @@
 import { isCompletionStatement } from 'babel-types';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, AnimatedRoot, withTiming, withSpring } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, AnimatedLayout, withTiming, withSpring } from 'react-native-reanimated';
 
 function AnimatedView() {
 
@@ -30,11 +30,11 @@ function AnimatedView() {
     }
 
     return (
-        <AnimatedRoot isShallow={false} animation={withSpring(1)} mounting={mounting} unmounting={unmounting} >
+        <AnimatedLayout isShallow={false} animation={withSpring(1)} mounting={mounting} unmounting={unmounting} >
             <Animated.View style={[styles.animatedView, style]} >
                 <Text> kk </Text>
             </Animated.View>
-        </AnimatedRoot>
+        </AnimatedLayout>
     );
 }
 

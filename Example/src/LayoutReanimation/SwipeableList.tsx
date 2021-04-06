@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {View, Button, Text, ScrollView, StyleSheet } from 'react-native';
-import { AnimatedRoot, withTiming, withSpring } from 'react-native-reanimated';
+import { AnimatedLayout, withTiming, withSpring } from 'react-native-reanimated';
 
 function unmounting(progress, initialValues, depth) {
     'worklet'
@@ -23,7 +23,7 @@ export function SwipeableList() {
     return (
         <View>
             <View>
-                <AnimatedRoot animation={withTiming(1)} unmounting={unmounting}>
+                <AnimatedLayout animation={withTiming(1)} unmounting={unmounting}>
                     { 
                         fruits.map(value => {
                            return (
@@ -38,7 +38,7 @@ export function SwipeableList() {
                             )
                         })
                     }
-                </AnimatedRoot>
+                </AnimatedLayout>
             </View>
         </View>
     );

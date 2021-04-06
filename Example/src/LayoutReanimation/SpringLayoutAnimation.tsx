@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { AnimatedRoot, withSpring } from 'react-native-reanimated';
+import { AnimatedLayout, withSpring } from 'react-native-reanimated';
 
 function Box({label, state}: {label: string, state: boolean}) {
   return (
@@ -16,12 +16,12 @@ export function SpringLayoutAnimation(): React.ReactElement {
   return (
     <View style={{marginTop: 30}} >
       <View style={{height: 300}} >
-        <AnimatedRoot animation={withSpring(1)} isShallow={false} style={{flexDirection: state? 'row' : 'column'}} >
+        <AnimatedLayout animation={withSpring(1)} isShallow={false} style={{flexDirection: state? 'row' : 'column'}} >
           {state && <Box key="a" label="A" state={state} />}
           <Box key="b" label="B" state={state} />
           {!state && <Box key="a" label="A" state={state} />}
           <Box key="c" label="C" state={state} />
-        </AnimatedRoot>
+        </AnimatedLayout>
       </View>
     
       <Button onPress={() => {setState(!state)}} title="toggle" />

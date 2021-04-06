@@ -5,7 +5,7 @@ import { withTiming } from '../animations';
 import { OpacityAnimation, ReverseAnimation } from './defaultAnimations';
 
 const REALayoutView = requireNativeComponent('REALayoutView');
-export class AnimatedRoot extends React.Component {
+export class AnimatedLayout extends React.Component {
     constructor(props, context) {
         super(props, context);
         this.sv = makeMutable(0);
