@@ -45,13 +45,13 @@
   self.capturedValues[[REASnapshooter idFor:view]] = values;
 }
 
-+ (NSValue*)idFor:(UIView *)view
++ (NSString*)idFor:(UIView *)view
 {
   if ([view isKindOfClass:[REAHeroView class]]) {
-    id heroId = ((REAHeroView*)view).heroId;
-    return [NSValue valueWithNonretainedObject:heroId];
+    NSString *heroId = ((REAHeroView*)view).heroId;
+    return heroId;
   }
-  return [NSValue valueWithNonretainedObject:view];
+  return [[NSNumber numberWithUnsignedLong:[[NSValue valueWithNonretainedObject:view] hash]] stringValue];
 }
 
 @end

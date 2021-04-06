@@ -20,7 +20,7 @@ export function OpacityAnimation(progress, initial, depth) {
         return {};
     }
     return {
-        opacity: (1-progress),
+        opacity: (progress),
     };
 }
 

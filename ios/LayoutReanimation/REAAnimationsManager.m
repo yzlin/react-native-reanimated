@@ -60,7 +60,7 @@
   _secondSnapshots[snapshooter.tag] = snapshooter;
   if ([snapshooter.capturedValues count] == 0) { // Root config should be removed on next unmounting animation
     [self addBlockOnAnimationEnd:snapshooter.tag block:^{
-      
+      //TODO
     }];
   }
 }
@@ -102,7 +102,7 @@
     return;
   }
   
-  NSMutableSet<NSValue*>* allViewsSet = [NSMutableSet new];
+  NSMutableSet<NSString*>* allViewsSet = [NSMutableSet new];
   NSMutableArray<UIView *>* allViews = [NSMutableArray new];
   for (UIView *view in first.listView) {
     [allViews addObject:view];

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableHighlight } from 'react-native';
-import Animated, { AnimatedRoot, HeroView } from 'react-native-reanimated';
+import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import Animated, { AnimatedRoot, HeroView, withTiming } from 'react-native-reanimated';
 
 const loremIpsum = `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc id nibh risus. Quisque malesuada justo at ex tincidunt, at commodo lacus consequat. Cras magna turpis, malesuada a egestas et, elementum vulputate risus.`;
 
@@ -29,16 +29,25 @@ const DATA: Array<ItemData> = [
 ];
 
 function Item({asMenuItem, name, desc, choose}) {
-    const Wrapper: React.ElementType = (asMenuItem)? TouchableHighlight : View;
+    const Wrapper: React.ElementType = (asMenuItem)? TouchableOpacity : View;
+
+    function mounting(progress, target) {
+        'worklet'
+        return {
+            height: progress * target.height,
+            width: progress * target.width,
+        }
+    }
+
     return (
-       
-            <Wrapper style={Styles.item} onPress={() => {choose(name)}}>
+        <HeroView heroId={name} style={Styles.item}>
+            <Wrapper onPress={() => {choose(name)}}>
                 <View>
                     <Text>{name}</Text>
                     {!asMenuItem && <Text>{desc}</Text>}
                 </View>
             </Wrapper>
-      
+        </HeroView>
     );
 }
 
@@ -51,29 +60,9 @@ export function HeroExample(): React.ReactElement {
         setChosen(DATA.find(i => (i.name === name)) as ItemData);
     }
 
-     const mounting = (progress: number, targetValues, depth) => {
-        'worklet';
-        if (depth >= 1) return {};
-        return {
-            opacity: progress,
-            originX: targetValues.originX * progress + (1-progress) * (-300),
-            transform: [
-                {rotate: `${(Math.max(progress, 1) - 1) * 90}deg`},
-            ],
-        }
-    }
-
-    const unmounting = (progress: number, initialValues) => {
-        'worklet';
-        return {
-            opacity: 1 - progress,
-            originX: initialValues.originX * (1-progress) + progress * (1000),
-        }
-    }
-
     return (
-        <View style={{flex:1, paddingTop: 100}}>
-            <AnimatedRoot mounting={mounting} unmounting={unmounting}>
+        <View style={{flex:1}}>
+            <AnimatedRoot animation={withTiming(1, {duration: 3000})} style={{flex:1}} >
                 <View style={{flex: 1}}>
                     <View style={Styles.menu}> 
                         {items.map((item) => (
@@ -81,7 +70,7 @@ export function HeroExample(): React.ReactElement {
                         ))}
                     </View>
                     <View style={Styles.chosen}>
-                        {chosen && <Item name={chosen.name} desc={chosen.desc}/>}
+                        {chosen && <Item key={chosen.name} name={chosen.name} desc={chosen.desc}/>}
                     </View>
                 </View>
             </AnimatedRoot>
@@ -101,6 +90,7 @@ const Styles = StyleSheet.create({
     },
     chosen: {
         flex: 8,
+        flexDirection: 'column-reverse'
     },
     item: {
         padding: 5,
