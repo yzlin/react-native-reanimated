@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target, NSNumber* depth))block;
 - (void)setAnimationStartingBlock:(void (^)(NSNumber *tag))startAnimation;
 - (void)notifyAboutProgress:(NSNumber*)progress tag:(NSNumber*)tag;
-- (void)notifyAboutEnd:(NSNumber*)tag;
+- (void)notifyAboutEnd:(NSNumber*)tag cancelled:(BOOL)cancelled;
 - (void)addBlockOnAnimationEnd:(NSNumber*)tag block:(void (^)(void))block;
 
 - (void)invalidate;

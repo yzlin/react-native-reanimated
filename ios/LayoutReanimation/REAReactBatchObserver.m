@@ -28,6 +28,8 @@
     [self.animationsManager invalidate];
     self.animationsManager = nil;
     [self.uiManager.observerCoordinator removeObserver:self];
+    [[REAReactBatchObserver animationRootsTags] removeAllObjects];
+    self.affectedAnimationRootsTags = [NSMutableSet new];
 }
 
 - (instancetype)initWithBridge:(RCTBridge*)bridge

@@ -182,6 +182,22 @@ void RuntimeDecorator::decorateUIRuntime(jsi::Runtime &rt,
   };
   jsi::Value _stopObservingProgress = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_stopObservingProgress"), 0, clb8);
   rt.global().setProperty(rt, "_stopObservingProgress", _stopObservingProgress);
+  
+  auto clb9 = [layoutProxy](
+                               jsi::Runtime &rt,
+                               const jsi::Value &thisValue,
+                               const jsi::Value *args,
+                               size_t count
+                               ) -> jsi::Value {
+    std::shared_ptr<LayoutAnimationsProxy> proxy = layoutProxy.lock();
+    if (layoutProxy.expired()) {
+      return jsi::Value::undefined();
+    }
+    proxy->notifyAboutCancellation(args[0].asNumber());
+    return jsi::Value::undefined();
+  };
+  jsi::Value _notifyAboutCancellation = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_notfiyAboutCancellation"), 0, clb9);
+  rt.global().setProperty(rt, "_notifyAboutCancellation", _notifyAboutCancellation);
 }
 
 bool RuntimeDecorator::isWorkletRuntime(jsi::Runtime& rt) {

@@ -60,7 +60,7 @@
   _secondSnapshots[snapshooter.tag] = snapshooter;
   if ([snapshooter.capturedValues count] == 0) { // Root config should be removed on next unmounting animation
     [self addBlockOnAnimationEnd:snapshooter.tag block:^{
-      //TODO
+      _removeConfigForTag(snapshooter.tag);
     }];
   }
 }
@@ -217,7 +217,7 @@
   }
 }
 
-- (void)notifyAboutEnd:(NSNumber*)tag
+- (void)notifyAboutEnd:(NSNumber*)tag cancelled:(BOOL)cancelled
 {
   if (_blocksForTags[tag] != nil) {
     for (void(^block)(void) in _blocksForTags[tag]) {
@@ -226,8 +226,11 @@
     [_blocksForTags removeObjectForKey:tag];
   }
   
-  [_firstSnapshots removeObjectForKey:tag];
-  [_secondSnapshots removeObjectForKey:tag];
+  if (!cancelled) {
+    [_firstSnapshots removeObjectForKey:tag];
+    [_secondSnapshots removeObjectForKey:tag];
+  }
+  
 }
 
 - (void)setNewProps:(NSMutableDictionary *)newProps forView:(UIView*)view withComponentData:(RCTComponentData*)componentData

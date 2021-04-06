@@ -146,9 +146,9 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     }
   };
   
-  auto notifyAboutEnd = [=](int tag) {
+  auto notifyAboutEnd = [=](int tag, bool isCancelled) {
     if (animationsManager) {
-      [animationsManager notifyAboutEnd:[NSNumber numberWithInt: tag]];
+      [animationsManager notifyAboutEnd:[NSNumber numberWithInt: tag] cancelled:isCancelled];
     }
   };
   

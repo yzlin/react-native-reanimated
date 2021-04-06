@@ -14,7 +14,7 @@ namespace reanimated {
 
 const long long idOffset = 1e9;
 
-LayoutAnimationsProxy::LayoutAnimationsProxy(std::function<void(int, float)> _notifyAboutProgress, std::function<void(int)> _notifyAboutEnd): notifyAboutProgress(std::move(_notifyAboutProgress)), notifyAboutEnd(std::move(_notifyAboutEnd)) {
+LayoutAnimationsProxy::LayoutAnimationsProxy(std::function<void(int, float)> _notifyAboutProgress, std::function<void(int, bool)> _notifyAboutEnd): notifyAboutProgress(std::move(_notifyAboutProgress)), notifyAboutEnd(std::move(_notifyAboutEnd)) {
 }
 
 void LayoutAnimationsProxy::startObserving(int tag, std::shared_ptr<MutableValue> sv) {
@@ -32,7 +32,11 @@ void LayoutAnimationsProxy::stopObserving(int tag) {
   std::shared_ptr<MutableValue> sv = observedValues[tag];
   sv->removeListener(tag + idOffset);
   observedValues.erase(tag);
-  this->notifyAboutEnd(tag);
+  this->notifyAboutEnd(tag, false);
+}
+
+void LayoutAnimationsProxy::notifyAboutCancellation(int tag) {
+  this->notifyAboutEnd(tag, false);
 }
 
 }
