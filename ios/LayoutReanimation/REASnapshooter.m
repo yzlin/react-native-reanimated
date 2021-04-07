@@ -7,6 +7,7 @@
 
 #import "REASnapshooter.h"
 #import "REAHeroView.h"
+#import "REAAnimationRootView.h"
 
 @implementation REASnapshooter 
 
@@ -28,6 +29,16 @@
   NSMutableDictionary* values = [NSMutableDictionary new];
   UIView *windowView = UIApplication.sharedApplication.keyWindow;
   CGPoint originFromRootPerspective = [[view superview] convertPoint:view.center toView:windowView]; //TODO choose correct origin
+  
+  if ([view isKindOfClass:[REAAnimationRootView class]]) {
+    NSMutableArray * pathToWindow = [NSMutableArray new];
+    UIView *current = view;
+    do {
+      [pathToWindow addObject:current];
+      current = current.superview;
+    } while (current != windowView);
+    values[@"pathToWindow"] = pathToWindow;
+  }
   
  
   values[@"width"] = [NSNumber numberWithDouble:(double)(view.bounds.size.width)];

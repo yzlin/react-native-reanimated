@@ -67,11 +67,17 @@
         void (^block)(REAAnimationRootView*, NSNumber *) = ^void(REAAnimationRootView* view, NSNumber *tag) {
           NSSet* capturableProps = view.capturablePropeties;
           REASnapshooter* snapshooter = [[REASnapshooter alloc] initWithTag:tag capturableProps:capturableProps];
+          
+          if (view.shouldBeAnimated) {
+            
+          }
+          
           [REAViewTraverser traverse:view withBlock:^(UIView* view) {
             [snapshooter takeSnapshot: view];
           }];
           [_animationsManager startAnimationWithFirstSnapshot: snapshooter];
         };
+      
         goThroughAffectedWithBlock(viewRegistry, block);
     }];
     

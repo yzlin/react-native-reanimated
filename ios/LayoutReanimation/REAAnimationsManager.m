@@ -180,22 +180,27 @@
           // If I'm a root and I don't have any roots above me
           
           if (view.superview == nil) {
-            //add To window
-            startValues[@"originX"] = startValues[@"globalOriginX"];
-            startValues[@"originY"] = startValues[@"globalOriginY"];
+            NSMutableArray * viewsToDetach = [NSMutableArray new];
             
-            UIView *windowView = UIApplication.sharedApplication.keyWindow;
-            [windowView addSubview:view];
-            
-            NSMutableDictionary * newOrigin = [@{
-              @"originX": startValues[@"originX"],
-              @"originY": startValues[@"originY"]
-            } mutableCopy];
-            
-            [self setNewProps:newOrigin forView:view withComponentData:nil];
+            NSMutableArray * pathToWindow = ((NSMutableArray *)startValues[@"pathToWindow"]);
+            for (int i = 1; i < [pathToWindow count]; ++i) {
+              UIView *current = pathToWindow[i-1];
+              
+              if (current != view && [current isKindOfClass:[REAAnimationRootView class]]) {
+                break;
+              }
+              
+              UIView *nextView = pathToWindow[i];
+              if (current.superview == nil) {
+                [viewsToDetach addObject:current];
+                [nextView addSubview:current];
+              }
+            }
             
             [self addBlockOnAnimationEnd:tag block:^{
-              [view removeFromSuperview];
+              for (UIView * current in viewsToDetach) {
+                [current removeFromSuperview];
+              }
             }];
           }
           
@@ -260,6 +265,7 @@
     [newProps removeObjectForKey:@"originY"];
   }
   [componentData setProps:newProps forView:view];
+
 }
 
 @end

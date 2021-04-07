@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Home, SpringLayoutAnimation, MountingUnmounting, SwipeableList, HeroExample } from './LayoutReanimation';
+import { Home, SpringLayoutAnimation, MountingUnmounting, SwipeableList, HeroExample, Modal } from './LayoutReanimation';
 
 const Stack = createStackNavigator();
 
@@ -22,6 +22,10 @@ const Screens = [
   {
     name: "Hero Animation",
     screen: HeroExample,
+  },
+  {
+    name: "Modal",
+    screen: Modal,
   }
 ];
 
