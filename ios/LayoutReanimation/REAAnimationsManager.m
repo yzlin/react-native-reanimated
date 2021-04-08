@@ -160,7 +160,7 @@
       }
       depth = [targetValues[@"depth"] doubleValue];
     
-      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
+      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
       NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], preparedValues, [NSNumber numberWithDouble: depth]);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }

@@ -1,48 +1,44 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Image } from 'react-native';
-import Animated, { useAnimatedStyle, AnimatedLayout, withTiming, withSpring, ReverseAnimation } from 'react-native-reanimated';
+import Animated, { 
+    useAnimatedStyle, 
+    AnimatedLayout, 
+    withTiming, 
+    withSpring, 
+    ReverseAnimation,  
+    SlideAnimation,
+} from 'react-native-reanimated';
 
 const DATA = [
     {
         pokemonName: "Bulbasaur",
         firstType: 'poison',
         secondType: 'grass',
+        img: require('./Bulbasaur.png'),
     },
     {
         pokemonName: "Charizard",
         firstType: "Fire",
         secondType: 'flying',
+        img: require('./Charizard.png'),
     },
     {
         pokemonName: 'Butterfree',
         firstType: 'Bug',
         secondType: 'flying',
+        img: require('./Butterfree.png'),
     },
 ]
 
 function AnimatedView({pokemon}) {
 
-    const mounting = (progress: number, targetValues, depth) => {
-        'worklet';
-        if (depth > 0) return {};
-
-        console.log("targetValues ", targetValues, " progress ", progress);
-
-        return {
-            transform: [
-               { translateY: targetValues.height/2 },
-                { perspective: 500 },
-                { rotateX: `${(1-progress) * 90}deg`},
-                { translateY: -targetValues.height/2 },
-                { translateY: 300 * (1-progress) },
-            ],
-        }
-    }
-
     return (
-        <AnimatedLayout isShallow={false} animation={withTiming(1, {duration: 2000})} mounting={mounting} >
+        <AnimatedLayout 
+        animation={withTiming(1, {duration: 2000})} 
+        mounting={SlideAnimation('right')} 
+        unmounting={SlideAnimation('right')} >
             <Animated.View style={[styles.animatedView]} >
-                <Image source={`./${pokemon.pokemonName}.png`} />
+                <Image source={pokemon.img} />
                 <View>
                     <Text> { pokemon.firstType } </Text>
                     <Text> { pokemon.secondType }</Text>

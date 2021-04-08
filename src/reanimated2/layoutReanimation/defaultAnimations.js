@@ -24,7 +24,7 @@ export function OpacityAnimation(progress, initial, depth, isMounting, isReverse
     };
 }
 
-function slide(direction) {
+export function SlideAnimation(direction) {
     'worklet'
     let modX = 0;
     let modY = 0;
@@ -45,14 +45,22 @@ function slide(direction) {
         modY = 1;
     }
 
-    return (progress, values, depth, isMounting) => {
+    return (progrezz, values, depth, isMounting, isReversed) => {
         'worklet';
+        let progress = progrezz;
+        let mutableModX = modX;
+        let mutableModY = modY;
+        console.log("values", values);
+        if (depth > 0) return {};
         if (!isMounting) {
-            modX *= -1;
-            modY *= -1;
+            if (!isReversed) {
+                progress = 1 - progress;
+            }
+            mutableModX *= -1;
+            mutableModY *= -1;
         }
-        const startX = values.originX + modX * values.windowWidth;
-        const startY = values.originY + modY * values.windowHeight;
+        const startX = values.originX + mutableModX * values.windowWidth;
+        const startY = values.originY + mutableModY * values.windowHeight;
         return {
             originX: (1-progress) * startX + (progress) * values.originX,
             originY: (1-progress) * startY + (progress) * values.originY, 
