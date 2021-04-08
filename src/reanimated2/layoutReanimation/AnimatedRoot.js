@@ -81,10 +81,14 @@ runOnUI(
                 }
                 const animation = (configs[tag].animation)(); // it should be an animation factory as it has been created on RN side
                 const sv = configs[tag].sv;
+                const originalCallback = animation.callback;
                 animation.callback = (finished) => {
                     if (finished) {
                         _stopObservingProgress(tag);
                         sv.value = 0;
+                    }
+                    if (originalCallback) {
+                        originalCallback();
                     }
                 }
                 _startObservingProgress(tag, sv);

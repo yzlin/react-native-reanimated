@@ -34,7 +34,7 @@ function AnimatedView({pokemon}) {
 
     return (
         <AnimatedLayout 
-        animation={withTiming(1, {duration: 2000})} 
+        animation={withSpring(1)} 
         mounting={SlideAnimation('right')} 
         unmounting={SlideAnimation('right')} >
             <Animated.View style={[styles.animatedView]} >
