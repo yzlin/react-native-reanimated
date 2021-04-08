@@ -160,7 +160,8 @@
       }
       depth = [targetValues[@"depth"] doubleValue];
     
-      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], targetValues, [NSNumber numberWithDouble: depth]);
+      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
+      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], preparedValues, [NSNumber numberWithDouble: depth]);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }
     
@@ -216,7 +217,8 @@
       }
       depth = [startValues[@"depth"] doubleValue];
       
-      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], startValues, startValues[@"depth"]);
+      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
+      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], preparedValues, startValues[@"depth"]);
       [self setNewProps:newProps forView:view withComponentData:componentData];
     }
   }
@@ -266,6 +268,22 @@
   }
   [componentData setProps:newProps forView:view];
 
+}
+
+- (NSDictionary*) prepareDataForAnimatingWorklet:(NSMutableDictionary*)values
+{
+  UIView *windowView = UIApplication.sharedApplication.keyWindow;
+  NSDictionary* preparedData = @{
+    @"width": values[@"width"],
+    @"height": values[@"height"],
+    @"originX": values[@"originX"],
+    @"originY": values[@"originY"],
+    @"globalOriginX": values[@"globalOriginX"],
+    @"globalOriginY": values[@"globalOriginY"],
+    @"windowWidth": [NSNumber numberWithDouble:windowView.bounds.size.width],
+    @"windowHeight": [NSNumber numberWithDouble:windowView.bounds.size.height]
+  };
+  return preparedData;
 }
 
 @end

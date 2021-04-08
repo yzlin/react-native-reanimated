@@ -4,3 +4,4 @@ export * from './Home';
 export * from './SwipeableList';
 export * from './HeroAnimation';
 export * from './Modal';
+export * from './Carousel';

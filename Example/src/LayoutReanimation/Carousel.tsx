@@ -1,12 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Image } from 'react-native';
 import Animated, { useAnimatedStyle, AnimatedLayout, withTiming, withSpring, ReverseAnimation } from 'react-native-reanimated';
 
-function AnimatedView() {
+const DATA = [
+    {
+        pokemonName: "Bulbasaur",
+        firstType: 'poison',
+        secondType: 'grass',
+    },
+    {
+        pokemonName: "Charizard",
+        firstType: "Fire",
+        secondType: 'flying',
+    },
+    {
+        pokemonName: 'Butterfree',
+        firstType: 'Bug',
+        secondType: 'flying',
+    },
+]
 
-    const style = useAnimatedStyle(() => {
-        return {}
-    });
+function AnimatedView({pokemon}) {
 
     const mounting = (progress: number, targetValues, depth) => {
         'worklet';
@@ -27,20 +41,26 @@ function AnimatedView() {
 
     return (
         <AnimatedLayout isShallow={false} animation={withTiming(1, {duration: 2000})} mounting={mounting} >
-            <Animated.View style={[styles.animatedView, style]} >
-                <Text> kk </Text>
+            <Animated.View style={[styles.animatedView]} >
+                <Image source={`./${pokemon.pokemonName}.png`} />
+                <View>
+                    <Text> { pokemon.firstType } </Text>
+                    <Text> { pokemon.secondType }</Text>
+                </View>
             </Animated.View>
         </AnimatedLayout>
     );
 }
 
-export function Modal(): React.ReactElement {
-    const [show, setShow] = useState(false);
+
+
+export function Carousel(): React.ReactElement {
+    const [currentIndex, incrementIndex] = useState(0);
     return (
         <View style={{flexDirection: 'column-reverse'}}>
-            <Button title="toggle" onPress={() => {setShow((last) => !last)}}/>
+            <Button title="toggle" onPress={() => { incrementIndex((prev) => ((prev+1) % DATA.length))}}/>
             <View style={{height: 400, alignItems: 'center', justifyContent: 'center', borderWidth: 1}}>
-                {show && <AnimatedView />}
+                <AnimatedView key={currentIndex} pokemon={DATA[currentIndex]} />
             </View>
         </View>
     );

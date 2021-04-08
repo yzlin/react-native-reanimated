@@ -175,10 +175,10 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
       jsi::Object target(*rt);
-      target.setProperty(*rt, "width", [values[@"width"] doubleValue]);
-      target.setProperty(*rt, "height", [values[@"height"] doubleValue]);
-      target.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
-      target.setProperty(*rt, "originY", [values[@"originY"] doubleValue]);
+      for (NSString *key in values.allKeys) {
+        NSNumber* value = values[key];
+        target.setProperty(*rt, [key UTF8String], [value doubleValue]);
+      }
       
       jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), target, jsi::Value([depth doubleValue]));
       jsi::Object props = value.asObject(*rt);
@@ -197,10 +197,10 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function getUnmountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getUnmountingStyle");
       jsi::Object initial(*rt);
-      initial.setProperty(*rt, "width", [values[@"width"] doubleValue]);
-      initial.setProperty(*rt, "height", [values[@"height"] doubleValue]);
-      initial.setProperty(*rt, "originX", [values[@"originX"] doubleValue]);
-      initial.setProperty(*rt, "originY", [values[@"originY"] doubleValue]);
+      for (NSString *key in values.allKeys) {
+        NSNumber* value = values[key];
+        initial.setProperty(*rt, [key UTF8String], [value doubleValue]);
+      }
       
       jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), initial, jsi::Value([depth doubleValue]));
       jsi::Object props = value.asObject(*rt);

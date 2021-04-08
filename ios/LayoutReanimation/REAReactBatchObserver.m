@@ -69,7 +69,7 @@
           REASnapshooter* snapshooter = [[REASnapshooter alloc] initWithTag:tag capturableProps:capturableProps];
           
           if (view.shouldBeAnimated) {
-            
+            //TODO
           }
           
           [REAViewTraverser traverse:view withBlock:^(UIView* view) {

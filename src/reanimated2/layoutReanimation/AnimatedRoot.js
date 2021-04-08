@@ -97,13 +97,13 @@ runOnUI(
                     return {}; // :(
                 }
                 
-                return configs[tag].mounting(progress, targetData, depth);
+                return configs[tag].mounting(progress, targetData, depth, true);
             },
             getUnmountingStyle(tag, progress, initialData, depth) {
                 if (configs[tag] == null) {
                     return {}; // :(
                 }
-                return configs[tag].unmounting(progress, initialData, depth);
+                return configs[tag].unmounting(progress, initialData, depth, false);
             },
         };  
     }
