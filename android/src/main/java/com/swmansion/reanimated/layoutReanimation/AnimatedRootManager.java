@@ -4,8 +4,12 @@ import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.LayoutShadowNode;
+import com.facebook.react.uimanager.NativeViewHierarchyOptimizer;
 import com.facebook.react.uimanager.ThemedReactContext;
+import com.facebook.react.uimanager.UIImplementation;
+import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.events.EventDispatcher;
 
 class ReaShadowNode extends LayoutShadowNode {
     public ReaShadowNode() {
@@ -15,7 +19,15 @@ class ReaShadowNode extends LayoutShadowNode {
     @Override
     public void setReactTag(int reactTag) {
         super.setReactTag(reactTag);
-        // TODO add to the registry
+        ReactBatchObserver.animatedRoots.add(reactTag);
+    }
+
+    @Override
+    public void onBeforeLayout(NativeViewHierarchyOptimizer nativeViewHierarchyOptimizer) {
+        super.onBeforeLayout(nativeViewHierarchyOptimizer);
+        if (this.hasUpdates()) {
+           // ReactBatchObserver.affectedAnimatedRoots.add(this.getReactTag());
+        }
     }
 
 }

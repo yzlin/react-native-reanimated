@@ -26,6 +26,7 @@ import com.facebook.react.uimanager.UIManagerReanimatedHelper;
 import com.facebook.react.uimanager.events.Event;
 import com.facebook.react.uimanager.events.EventDispatcherListener;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.swmansion.reanimated.layoutReanimation.ReactBatchObserver;
 import com.swmansion.reanimated.nodes.AlwaysNode;
 import com.swmansion.reanimated.nodes.BezierNode;
 import com.swmansion.reanimated.nodes.BlockNode;
@@ -92,6 +93,7 @@ public class NodesManager implements EventDispatcherListener {
     void onAnimationFrame(double timestampMs);
   }
 
+  private ReactBatchObserver mReactBatchObserver;
   private final SparseArray<Node> mAnimatedNodes = new SparseArray<>();
   private final Map<String, EventNode> mEventMapping = new HashMap<>();
   private final UIImplementation mUIImplementation;
@@ -120,6 +122,10 @@ public class NodesManager implements EventDispatcherListener {
     if (mNativeProxy != null) {
       mNativeProxy.onCatalystInstanceDestroy();
       mNativeProxy = null;
+    }
+
+    if (mReactBatchObserver != null) {
+      mReactBatchObserver.onCatalystInstanceDestroy();
     }
   }
 
@@ -161,6 +167,8 @@ public class NodesManager implements EventDispatcherListener {
     // Events are handled in the native modules thread in the `onEventDispatch()` method.
     // This method indirectly uses `mChoreographerCallback` which was created after event registration, creating race condition
     mUIManager.getEventDispatcher().addListener(this);
+
+    mReactBatchObserver = new ReactBatchObserver(mContext, mUIManager, mUIImplementation, this);
   }
 
   public void onHostPause() {
