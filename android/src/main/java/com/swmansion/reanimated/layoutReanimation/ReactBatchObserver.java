@@ -38,7 +38,8 @@ public class ReactBatchObserver implements UIManagerListener {
             Field shadowRegistry = clazz.getDeclaredField("mShadowNodeRegistry");
             shadowRegistry.setAccessible(true);
             ShadowNodeRegistry shadowNodeRegistry = (ShadowNodeRegistry)shadowRegistry.get(mUIImplementation);
-            shadowNodeRegistry.addRootNode(new FakeRootShadowNode());
+            shadowNodeRegistry.addRootNode(new FakeFirstRootShadowNode());
+            shadowNodeRegistry.addRootNode(new FakeLastRootShadowNode());
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
