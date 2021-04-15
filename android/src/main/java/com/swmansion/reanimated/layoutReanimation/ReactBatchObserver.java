@@ -79,7 +79,7 @@ public class ReactBatchObserver {
             BiFunction<AnimatedRoot, Integer> lambda = (AnimatedRoot root, Integer tag) -> {
                 Snapshooter snapshooter = new Snapshooter(tag);
                 ViewTraverser.traverse(root, (view) -> {
-                    snapshooter.takeSnapshot(view);
+                    snapshooter.takeSnapshot(view, nativeViewHierarchyManager);
                 });
                 mAnimationsManager.startAnimationWithFirstSnapshot(snapshooter);
             };
@@ -92,7 +92,7 @@ public class ReactBatchObserver {
                 Snapshooter snapshooter = new Snapshooter(tag);
                 if (root != null) {
                     ViewTraverser.traverse(root, (view) -> {
-                        snapshooter.takeSnapshot(view);
+                        snapshooter.takeSnapshot(view, nativeViewHierarchyManager);
                     });
                 }
                 mAnimationsManager.addSecondSnapshot(snapshooter);

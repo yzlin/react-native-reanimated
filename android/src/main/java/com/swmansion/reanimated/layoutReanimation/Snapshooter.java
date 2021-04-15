@@ -1,6 +1,9 @@
 package com.swmansion.reanimated.layoutReanimation;
 
 import android.view.View;
+
+import com.facebook.react.uimanager.NativeViewHierarchyManager;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,7 +17,18 @@ public class Snapshooter {
         listOfViews = new ArrayList<>();
     }
 
-    void takeSnapshot(View view) {
+    public static final String width = "width";
+    public static final String height = "height";
+    public static final String pathToTheRootView = "pathToTheRootView";
+    public static final String originX = "originX";
+    public static final String originY = "originY";
+    public static final String globalOriginX = "globalOriginX";
+    public static final String globalOriginY = "globalOriginY";
+    public static final String parent = "parent";
+    public static final String viewManager = "viewManager";
+    public static final String parentViewManager = "parentViewManager";
+
+    void takeSnapshot(View view, NativeViewHierarchyManager nativeViewHierarchyManager) {
         HashMap<String, Object> values = new HashMap<>();
 
         if (view instanceof AnimatedRoot) {
@@ -24,21 +38,25 @@ public class Snapshooter {
                 pathToRootView.add(current);
                 current = (View)current.getParent();
             } while (current != view.getRootView());
-            values.put("pathToRootView", pathToRootView);
+            values.put(pathToTheRootView, pathToRootView);
         }
 
-        values.put("width", view.getWidth());
-        values.put("height", view.getHeight());
-        values.put("originX", view.getLeft());
-        values.put("originY", view.getTop());
+        values.put(width, view.getWidth());
+        values.put(height, view.getHeight());
+        values.put(originX, view.getLeft());
+        values.put(originY, view.getTop());
 
         int[] location = new int[2];
         view.getLocationOnScreen(location);
-        values.put("globalOriginX", location[0]);
-        values.put("globalOriginY", location[1]);
+        values.put(globalOriginX, location[0]);
+        values.put(globalOriginY, location[1]);
 
-        values.put("parent", (View)view.getParent());
+        View parentView = (View)view.getParent();
+        values.put(parent, (View)view.getParent());
 
+        // TODO add viewManager
+        values.put(viewManager, nativeViewHierarchyManager.resolveViewManager(view.getId()));
+        values.put(parentViewManager, nativeViewHierarchyManager.resolveViewManager(parentView.getId()));
 
         listOfViews.add(view);
         capturedValues.put(view.getId(), values);

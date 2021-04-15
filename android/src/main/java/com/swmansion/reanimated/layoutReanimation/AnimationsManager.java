@@ -3,12 +3,19 @@ package com.swmansion.reanimated.layoutReanimation;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-
-import androidx.annotation.Dimension;
-
+import android.view.ViewParent;
+import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.uimanager.IViewManagerWithChildren;
+import com.facebook.react.uimanager.IllegalViewOperationException;
+import com.facebook.react.uimanager.ReactStylesDiffMap;
+import com.facebook.react.uimanager.RootView;
 import com.facebook.react.uimanager.UIImplementation;
 import com.facebook.react.uimanager.UIManagerModule;
+import com.facebook.react.uimanager.ViewManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,17 +97,35 @@ public class AnimationsManager {
             HashMap<String, Object> targetValues = second.capturedValues.get(view.getId());
 
             if (startValues != null && targetValues != null) { //interpolate
-                double currentWidth = ((Double)targetValues.get("width")) * progress + ((Double)startValues.get("width"))  * (1.0 - progress);
-                double currentHeight = ((Double)targetValues.get("height")) * progress + ((Double)startValues.get("height")) * (1.0 - progress);
+                double currentWidth = ((Double)targetValues.get(Snapshooter.width)) * progress + ((Double)startValues.get(Snapshooter.width))  * (1.0 - progress);
+                double currentHeight = ((Double)targetValues.get(Snapshooter.height)) * progress + ((Double)startValues.get(Snapshooter.height)) * (1.0 - progress);
 
-                double currentX = ((Double)targetValues.get("originX")) * progress + ((Double)startValues.get("originX")) * (1.0 - progress);
-                double currentY = ((Double)targetValues.get("originY")) * progress + ((Double)startValues.get("originY")) * (1.0 - progress);
+                double currentX = ((Double)targetValues.get(Snapshooter.originX)) * progress + ((Double)startValues.get(Snapshooter.originX)) * (1.0 - progress);
+                double currentY = ((Double)targetValues.get(Snapshooter.originY)) * progress + ((Double)startValues.get(Snapshooter.originY)) * (1.0 - progress);
 
-                // TODO how to update view properly
+                HashMap<String, Object> props = new HashMap<>();
+                props.put(Snapshooter.width, currentWidth);
+                props.put(Snapshooter.height, currentHeight);
+                props.put(Snapshooter.originX, currentX);
+                props.put(Snapshooter.originY, currentY);
+                ViewManager viewManager = (ViewManager) targetValues.get(Snapshooter.viewManager);
+                ViewManager parentViewManager = (ViewManager) targetValues.get(Snapshooter.parentViewManager);
+                View parentView = (View) targetValues.get(Snapshooter.parent);
+                setNewProps(props, view, viewManager, parentViewManager, parentView.getId());
             }
 
             if (startValues == null && targetValues != null) { // appearing
-                //TODO
+                int depth = 0; // distance to deepest appearing ancestor or AnimatedRoot
+                if (targetValues.get("depth") == null) {
+                    View deepestView = view;
+                    while ((!(deepestView instanceof AnimatedRoot)) && first.capturedValues.get(((View)deepestView.getParent()).getId()) == null) {
+                        deepestView = (View)deepestView.getParent();
+                        depth++;
+                    }
+                }
+                depth = (Integer)targetValues.get("depth");
+                HashMap<String, Double> data = prepareDataForAnimationWorklet(targetValues);
+                Map<String, Object> newProps = mNativeMethodsHolder.getStyleWhileMounting(tag, (float)progress, data, depth);
             }
 
             if (startValues != null && targetValues == null) { // disappearing
@@ -124,8 +149,8 @@ public class AnimationsManager {
     
     public HashMap<String, Double> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
         HashMap<String, Double> preparedValues = new HashMap<>();
-        ArrayList<String> keys = (ArrayList<String>) Arrays.asList("width", "height", "originX", "originY",
-                "globalOriginX", "globalOriginY");
+        ArrayList<String> keys = (ArrayList<String>) Arrays.asList(Snapshooter.width, Snapshooter.height, Snapshooter.originX,
+                Snapshooter.originY, Snapshooter.globalOriginX, Snapshooter.globalOriginY);
         for (String key : keys) {
             preparedValues.put(key, (Double)values.get(key));
         }
@@ -141,5 +166,113 @@ public class AnimationsManager {
 
     public void setNativeMethods(NativeMethodsHolder nativeMethods) {
         mNativeMethodsHolder = nativeMethods;
+    }
+
+    public void setNewProps(Map<String, Object> props,
+                            View view,
+                            ViewManager viewManager,
+                            ViewManager parentViewManager,
+                            Integer parentTag) {
+        int x = (Integer)props.get(Snapshooter.originX);
+        int y = (Integer)props.get(Snapshooter.originY);
+        int width = (Integer)props.get(Snapshooter.width);
+        int height = (Integer)props.get(Snapshooter.height);
+        updateLayout(view, parentViewManager, parentTag, view.getId(), x, y, width, height);
+        props.remove(Snapshooter.originX);
+        props.remove(Snapshooter.originY);
+        props.remove(Snapshooter.width);
+        props.remove(Snapshooter.height);
+
+        if (props.size() == 0) {
+            return;
+        }
+
+        JavaOnlyMap javaOnlyMap = new JavaOnlyMap();
+        for (String key : props.keySet()) {
+            addProp(javaOnlyMap, key, props.get(key));
+        }
+
+        viewManager.updateProperties(view, new ReactStylesDiffMap(javaOnlyMap));
+    }
+
+    private static void addProp(WritableMap propMap, String key, Object value) {
+        if (value == null) {
+            propMap.putNull(key);
+        } else if (value instanceof Double) {
+            propMap.putDouble(key, (Double) value);
+        } else if (value instanceof Integer) {
+            propMap.putInt(key, (Integer) value);
+        } else if (value instanceof Number) {
+            propMap.putDouble(key, ((Number) value).doubleValue());
+        } else if (value instanceof Boolean) {
+            propMap.putBoolean(key, (Boolean) value);
+        } else if (value instanceof String) {
+            propMap.putString(key, (String) value);
+        } else if (value instanceof ReadableArray) {
+            propMap.putArray(key, (ReadableArray) value);
+        } else if (value instanceof ReadableMap) {
+            propMap.putMap(key, (ReadableMap) value);
+        } else {
+            throw new IllegalStateException("Unknown type of animated value [Layout Aniamtions]");
+        }
+    }
+
+    public void updateLayout(View viewToUpdate, ViewManager parentViewManager,
+            int parentTag, int tag, int x, int y, int width, int height) {
+
+
+        // Even though we have exact dimensions, we still call measure because some platform views
+        // (e.g.
+        // Switch) assume that method will always be called before onLayout and onDraw. They use it to
+        // calculate and cache information used in the draw pass. For most views, onMeasure can be
+        // stubbed out to only call setMeasuredDimensions. For ViewGroups, onLayout should be stubbed
+        // out to not recursively call layout on its children: React Native already handles doing
+        // that.
+        //
+        // Also, note measure and layout need to be called *after* all View properties have been
+        // updated
+        // because of caching and calculation that may occur in onMeasure and onLayout. Layout
+        // operations should also follow the native view hierarchy and go top to bottom for
+        // consistency
+        // with standard layout passes (some views may depend on this).
+
+        viewToUpdate.measure(
+                View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY));
+
+        // We update the layout of the ReactRootView when there is a change in the layout of its
+        // child.
+        // This is required to re-measure the size of the native View container (usually a
+        // FrameLayout) that is configured with layout_height = WRAP_CONTENT or layout_width =
+        // WRAP_CONTENT
+        //
+        // This code is going to be executed ONLY when there is a change in the size of the Root
+        // View defined in the js side. Changes in the layout of inner views will not trigger an
+        // update
+        // on the layout of the Root View.
+        ViewParent parent = viewToUpdate.getParent();
+        if (parent instanceof RootView) {
+            parent.requestLayout();
+        }
+
+        // Check if the parent of the view has to layout the view, or the child has to lay itself out.
+        if (parentTag % 10 == 1) { // ParentIsARoot
+            IViewManagerWithChildren parentViewManagerWithChildren;
+            if (parentViewManager instanceof IViewManagerWithChildren) {
+                parentViewManagerWithChildren = (IViewManagerWithChildren) parentViewManager;
+            } else {
+                throw new IllegalViewOperationException(
+                        "Trying to use view with tag "
+                                + parentTag
+                                + " as a parent, but its Manager doesn't implement IViewManagerWithChildren");
+            }
+            if (parentViewManagerWithChildren != null
+                    && !parentViewManagerWithChildren.needsCustomLayoutForChildren()) {
+                viewToUpdate.layout(x, y, x + width, y + height);
+            }
+        } else {
+            viewToUpdate.layout(x, y, x + width, y + height);
+        }
+
     }
 }
