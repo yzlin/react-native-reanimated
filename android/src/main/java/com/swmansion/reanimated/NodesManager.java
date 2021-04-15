@@ -118,6 +118,10 @@ public class NodesManager implements EventDispatcherListener {
 
   private NativeProxy mNativeProxy;
 
+  public ReactBatchObserver getReactBatchObserver() {
+    return mReactBatchObserver;
+  }
+
   public void onCatalystInstanceDestroy() {
     if (mNativeProxy != null) {
       mNativeProxy.onCatalystInstanceDestroy();

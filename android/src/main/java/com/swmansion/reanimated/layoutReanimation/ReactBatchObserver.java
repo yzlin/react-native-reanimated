@@ -35,13 +35,14 @@ public class ReactBatchObserver {
     private UIImplementation mUIImplementation;
     private NodesManager mNodesManager;
     private HashSet<Integer> mAffectedAnimatedRoots = new HashSet<Integer>();
-    private AnimationsManager animationsManager;
+    private AnimationsManager mAnimationsManager;
 
     public ReactBatchObserver(ReactContext context, UIManagerModule uiManager, UIImplementation uiImplementation, NodesManager nodesManager) {
         mContext = context;
         mUIImplementation = uiImplementation;
         mUIManager = uiManager;
         mNodesManager = nodesManager;
+        mAnimationsManager = new AnimationsManager(mContext, mUIImplementation, mUIManager);
 
         // Register hooks similar to whar we have on iOS willLayout and willMount
         try {
@@ -80,7 +81,7 @@ public class ReactBatchObserver {
                 ViewTraverser.traverse(root, (view) -> {
                     snapshooter.takeSnapshot(view);
                 });
-                animationsManager.startAnimationWithFirstSnapshot(snapshooter);
+                mAnimationsManager.startAnimationWithFirstSnapshot(snapshooter);
             };
             goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
         });
@@ -94,8 +95,8 @@ public class ReactBatchObserver {
                         snapshooter.takeSnapshot(view);
                     });
                 }
-                animationsManager.addSecondSnapshot(snapshooter);
-                animationsManager.notifyAboutProgress(0, tag);
+                mAnimationsManager.addSecondSnapshot(snapshooter);
+                mAnimationsManager.notifyAboutProgress(0, tag);
             };
             goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
         });
@@ -122,8 +123,14 @@ public class ReactBatchObserver {
         mContext = null;
         mUIManager = null;
         mUIImplementation.removeLayoutUpdateListener();
+        mAnimationsManager.onCatalystInstanceDestroy();
+        mAnimationsManager = null;
         mUIImplementation = null;
         mNodesManager = null;
+    }
+
+    public AnimationsManager getAnimationsManager() {
+        return mAnimationsManager;
     }
 
     class FakeFirstRootShadowNode extends LayoutShadowNode {

@@ -14,10 +14,13 @@ import com.facebook.react.turbomodule.core.interfaces.TurboModule;
 import com.facebook.react.turbomodule.core.interfaces.TurboModuleRegistry;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.swmansion.reanimated.layoutReanimation.AnimationsManager;
+import com.swmansion.reanimated.layoutReanimation.NativeMethodsHolder;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +92,34 @@ public class NativeProxy {
 
   public native boolean isAnyHandlerWaitingForEvent(String eventName);
 
+  // LayoutReanimation
+  public native void startAnimationForTag(int tag);
+  public native void removeConfigForTag(int tag);
+  public native Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth);
+  public native Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth);
+
+  private void notifyAboutEnd(int tag, int cancelledInt) {
+    ReactApplicationContext context = mContext.get();
+    if (context != null) {
+      context.getNativeModule(ReanimatedModule.class)
+              .getNodesManager()
+              .getReactBatchObserver()
+              .getAnimationsManager()
+              .notifyAboutEnd(tag, (cancelledInt == 0)? false : true);
+    }
+  }
+
+  private void notifyAboutProgress(double progress, int tag) {
+    ReactApplicationContext context = mContext.get();
+    if (context != null) {
+      context.getNativeModule(ReanimatedModule.class)
+              .getNodesManager()
+              .getReactBatchObserver()
+              .getAnimationsManager()
+              .notifyAboutProgress(progress, tag);
+    }
+  }
+
   @DoNotStrip
   private void requestRender(AnimationFrameCallback callback) {
     mNodesManager.postOnAnimation(callback);
@@ -133,5 +164,47 @@ public class NativeProxy {
   public void prepare() {
     mNodesManager = mContext.get().getNativeModule(ReanimatedModule.class).getNodesManager();
     installJSIBindings();
+    AnimationsManager animationsManager = mContext.get()
+            .getNativeModule(ReanimatedModule.class)
+            .getNodesManager()
+            .getReactBatchObserver()
+            .getAnimationsManager();
+
+    WeakReference<NativeProxy> weakNativeProxy = new WeakReference<>(this);
+    animationsManager.setNativeMethods(new NativeMethodsHolder() {
+      @Override
+      public void startAnimationForTag(int tag) {
+        NativeProxy nativeProxy = weakNativeProxy.get();
+        if (nativeProxy != null) {
+          nativeProxy.startAnimationForTag(tag);
+        }
+      }
+
+      @Override
+      public void removeConfigForTag(int tag) {
+        NativeProxy nativeProxy = weakNativeProxy.get();
+        if (nativeProxy != null) {
+          nativeProxy.removeConfigForTag(tag);
+        }
+      }
+
+      @Override
+      public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth) {
+        NativeProxy nativeProxy = weakNativeProxy.get();
+        if (nativeProxy != null) {
+          return nativeProxy.getStyleWhileMounting(tag, progress, values, depth);
+        }
+        return new HashMap<String, Object>();
+      }
+
+      @Override
+      public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth) {
+        NativeProxy nativeProxy = weakNativeProxy.get();
+        if (nativeProxy != null) {
+          return nativeProxy.getStyleWhileUnmounting(tag, progress, values, depth);
+        }
+        return new HashMap<String, Object>();
+      }
+    });
   }
 }
