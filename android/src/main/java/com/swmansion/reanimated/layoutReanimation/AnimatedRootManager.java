@@ -9,6 +9,8 @@ import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.UIImplementation;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewGroupManager;
+import com.facebook.react.uimanager.annotations.ReactProp;
+import com.facebook.react.uimanager.annotations.ReactPropGroup;
 import com.facebook.react.uimanager.events.EventDispatcher;
 
 class ReaShadowNode extends LayoutShadowNode {
@@ -47,5 +49,15 @@ public class AnimatedRootManager extends ViewGroupManager<AnimatedRoot> {
 
     public @NonNull LayoutShadowNode createShadowNodeInstance(@NonNull ReactApplicationContext context) {
         return new ReaShadowNode();
+    }
+
+    @ReactProp(name = "animated")
+    public void setAnimated(AnimatedRoot view, boolean animated) {
+        view.shouldBeAnimated = animated;
+    }
+
+    @ReactProp(name = "isShallow")
+    public void setShallow(AnimatedRoot view, boolean shallow) {
+        view.isShallow = shallow;
     }
 }

@@ -1,5 +1,10 @@
 package com.swmansion.reanimated.layoutReanimation;
 
+import android.os.Build;
+import android.view.View;
+
+import androidx.annotation.RequiresApi;
+
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.UIManager;
 import com.facebook.react.bridge.UIManagerListener;
@@ -16,8 +21,12 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 
+// Use java BiFunction when minSdk is Bumped to 24
+interface BiFunction<A, B> {
+    void exec(A a, B b);
+}
 
-public class ReactBatchObserver implements UIManagerListener {
+public class ReactBatchObserver {
 
     static HashSet<Integer> animatedRoots = new HashSet<Integer>();
 
@@ -26,6 +35,7 @@ public class ReactBatchObserver implements UIManagerListener {
     private UIImplementation mUIImplementation;
     private NodesManager mNodesManager;
     private HashSet<Integer> mAffectedAnimatedRoots = new HashSet<Integer>();
+    private AnimationsManager animationsManager;
 
     public ReactBatchObserver(ReactContext context, UIManagerModule uiManager, UIImplementation uiImplementation, NodesManager nodesManager) {
         mContext = context;
@@ -33,6 +43,7 @@ public class ReactBatchObserver implements UIManagerListener {
         mUIManager = uiManager;
         mNodesManager = nodesManager;
 
+        // Register hooks similar to whar we have on iOS willLayout and willMount
         try {
             Class clazz = mUIImplementation.getClass();
             Field shadowRegistry = clazz.getDeclaredField("mShadowNodeRegistry");
@@ -43,25 +54,68 @@ public class ReactBatchObserver implements UIManagerListener {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    public void willMount() {
+        final HashSet<Integer> affectedTags = new HashSet<>(mAffectedAnimatedRoots);
+        mAffectedAnimatedRoots = new HashSet<>();
+
+        BiFunction<NativeViewHierarchyManager, BiFunction<AnimatedRoot, Integer>> goThroughAffectedWithLambda = (hierarchyManager, lambda) -> {
+            for (Integer tag : affectedTags) {
+                View view = hierarchyManager.resolveView(tag);
+                if (view == null) {
+                    lambda.exec(null, tag);
+                    continue;
+                }
+                if (view instanceof AnimatedRoot) {
+                    lambda.exec((AnimatedRoot)view, tag);
+                }
+            }
+        };
+
+        //TODO use weakRefs here
+        mUIManager.prependUIBlock(nativeViewHierarchyManager -> {
+            BiFunction<AnimatedRoot, Integer> lambda = (AnimatedRoot root, Integer tag) -> {
+                Snapshooter snapshooter = new Snapshooter(tag);
+                ViewTraverser.traverse(root, (view) -> {
+                    snapshooter.takeSnapshot(view);
+                });
+                animationsManager.startAnimationWithFirstSnapshot(snapshooter);
+            };
+            goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
+        });
+
+        //TODO use weakRefs inside the lambda
+        mUIManager.addUIBlock(nativeViewHierarchyManager -> {
+            BiFunction<AnimatedRoot, Integer> lambda = (AnimatedRoot root, Integer tag) -> {
+                Snapshooter snapshooter = new Snapshooter(tag);
+                if (root != null) {
+                    ViewTraverser.traverse(root, (view) -> {
+                        snapshooter.takeSnapshot(view);
+                    });
+                }
+                animationsManager.addSecondSnapshot(snapshooter);
+                animationsManager.notifyAboutProgress(0, tag);
+            };
+            goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
+        });
 
     }
 
-    private void findAffected() {
-    }
-
-    @Override
-    public void willDispatchViewUpdates(UIManager uiManager) {
-
-    }
-
-    @Override
-    public void didDispatchMountItems(UIManager uiManager) {
-
-    }
-
-    @Override
-    public void didScheduleMountItems(UIManager uiManager) {
-
+    public void willLayout() {
+        mAffectedAnimatedRoots = new HashSet<>();
+        HashSet<Integer> tags = new HashSet<>(ReactBatchObserver.animatedRoots);
+        for (Integer tag : tags) {
+            if (mUIImplementation.resolveShadowNode(tag) != null) {
+                ReactShadowNode sn = mUIImplementation.resolveShadowNode(tag);
+                if (sn.hasUpdates()) {
+                    mAffectedAnimatedRoots.add(tag);
+                }
+            } else {
+                mAffectedAnimatedRoots.add(tag);
+                ReactBatchObserver.animatedRoots.remove(tag);
+            }
+        }
     }
 
     public void onCatalystInstanceDestroy() {
@@ -80,19 +134,7 @@ public class ReactBatchObserver implements UIManagerListener {
 
         @Override
         public void calculateLayout(float width, float height) {
-            mAffectedAnimatedRoots = new HashSet<>();
-            HashSet<Integer> tags = new HashSet<>(ReactBatchObserver.animatedRoots);
-            for (Integer tag : tags) {
-                if (mUIImplementation.resolveShadowNode(tag) != null) {
-                    ReactShadowNode sn = mUIImplementation.resolveShadowNode(tag);
-                    if (sn.hasUpdates()) {
-                        mAffectedAnimatedRoots.add(tag);
-                    }
-                } else {
-                    mAffectedAnimatedRoots.add(tag);
-                    ReactBatchObserver.animatedRoots.remove(tag);
-                }
-            }
+            willLayout();
         }
     }
 
@@ -104,24 +146,7 @@ public class ReactBatchObserver implements UIManagerListener {
 
         @Override
         public void calculateLayout(float width, float height) {
-            HashSet<Integer> affectedTags = new HashSet<>(mAffectedAnimatedRoots);
-            mAffectedAnimatedRoots = new HashSet<>();
-
-            mUIManager.prependUIBlock(new UIBlock() {
-                @Override
-                public void execute(NativeViewHierarchyManager nativeViewHierarchyManager) {
-                    // TODO
-                }
-            });
-
-            mUIManager.addUIBlock(new UIBlock() {
-                @Override
-                public void execute(NativeViewHierarchyManager nativeViewHierarchyManager) {
-                    // TODO
-                }
-            });
-
-
+            willMount();
         }
     }
 
