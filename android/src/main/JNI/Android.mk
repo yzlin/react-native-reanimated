@@ -21,6 +21,7 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Common/cpp/headers/Registries
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Common/cpp/headers/SharedItems
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Common/cpp/headers/SpecTools
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Common/cpp/headers/Tools
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Common/cpp/headers/LayoutAnimations
 LOCAL_C_INCLUDES += $(HERMES_ENGINE)/android/include
 
 LOCAL_CFLAGS += -DONANDROID -fexceptions -frtti

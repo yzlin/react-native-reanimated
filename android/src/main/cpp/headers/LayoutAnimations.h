@@ -6,37 +6,39 @@
 #define REANIMATEDEXAMPLE_LayoutAnimations_H
 #include <fbjni/fbjni.h>
 #include <jsi/jsi.h>
+#include "JNIHelper.h"
 
 namespace reanimated
 {
 
 using namespace facebook::jni;
 using namespace facebook;
-using namespace react;
 
-
-class LayoutAnimationProxy : public jni::HybridClass<LayoutAnimationProxy> {
+class LayoutAnimations : public jni::HybridClass<LayoutAnimations> {
  public:
   static auto constexpr kJavaDescriptor =
-      "Lcom/swmansion/reanimated/layoutReanimation/LayoutAnimationProxy;";
+      "Lcom/swmansion/reanimated/layoutReanimation/LayoutAnimations;";
   static jni::local_ref<jhybriddata> initHybrid(
         jni::alias_ref<jhybridobject> jThis);
   static void registerNatives();
 
   void startAnimationForTag(int tag);
   void removeConfigForTag(int tag);
-  jni::local_ref<JMap<JString, JObject>> getStyleWhileMounting(int tag, float progress, alias_ref<JMap<JString, JDouble>> values, int depth);
-  jni::local_ref<JMap<JString, JObject>> getStyleWhileUnmounting(int tag, float progress, alias_ref<JMap<JString, JDouble>> values, int depth);
+  jni::local_ref<JMap<JString, JObject>> getStyleWhileMounting(int tag, double progress, alias_ref<JMap<JString, JDouble>> values, int depth);
+  jni::local_ref<JMap<JString, JObject>> getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<JString, JDouble>> values, int depth);
 
   void setWeakUIRuntime(std::weak_ptr<jsi::Runtime> wrt);
 
+  void notifyAboutProgress(double progress, int tag);
+  void notifyAboutEnd(int tag, int cancelled);
+
  private:
   friend HybridBase;
-  jni::global_ref<LayoutAnimationProxy::javaobject> javaPart_;
+  jni::global_ref<LayoutAnimations::javaobject> javaPart_;
   std::weak_ptr<jsi::Runtime> weakUIRuntime;
 
-  explicit LayoutAnimationProxy(jni::alias_ref<LayoutAnimationProxy::jhybridobject> jThis);
+  explicit LayoutAnimations(jni::alias_ref<LayoutAnimations::jhybridobject> jThis);
 };
 
-);
+};
 #endif //REANIMATEDEXAMPLE_LayoutAnimations_H

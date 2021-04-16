@@ -14,6 +14,7 @@
 #include "Scheduler.h"
 #include "AndroidScheduler.h"
 #include "LayoutAnimations.h"
+#include "JNIHelper.h"
 
 namespace reanimated {
 
@@ -85,7 +86,7 @@ class NativeProxy : public jni::HybridClass<NativeProxy> {
         jlong jsContext,
         jni::alias_ref<facebook::react::CallInvokerHolder::javaobject> jsCallInvokerHolder,
         jni::alias_ref<AndroidScheduler::javaobject> scheduler,
-        jni::alias_ref<LayoutAnimations::javaobject> LayoutAnimations);
+        jni::alias_ref<LayoutAnimations::javaobject> layoutAnimations);
   static void registerNatives();
 
 
@@ -96,7 +97,7 @@ class NativeProxy : public jni::HybridClass<NativeProxy> {
   std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker_;
   std::shared_ptr<NativeReanimatedModule> _nativeReanimatedModule;
   std::shared_ptr<Scheduler> scheduler_;
-  jni::global_ref<LayoutAnimations::javaobject> LayoutAnimations;
+  jni::global_ref<LayoutAnimations::javaobject> layoutAnimations;
 
 
   void installJSIBindings();
@@ -111,7 +112,8 @@ class NativeProxy : public jni::HybridClass<NativeProxy> {
       jni::alias_ref<NativeProxy::jhybridobject> jThis,
       jsi::Runtime *rt,
       std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker,
-      std::shared_ptr<Scheduler> scheduler);
+      std::shared_ptr<Scheduler> scheduler,
+      jni::global_ref<LayoutAnimations::javaobject> _layoutAnimations);
 };
 
 

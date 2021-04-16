@@ -31,8 +31,8 @@ public class LayoutAnimations {
     // LayoutReanimation
     public native void startAnimationForTag(int tag);
     public native void removeConfigForTag(int tag);
-    public native Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth);
-    public native Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth);
+    public native Map<String, Object> getStyleWhileMounting(int tag, double progress, HashMap<String, Double> values, int depth);
+    public native Map<String, Object> getStyleWhileUnmounting(int tag, double progress, HashMap<String, Double> values, int depth);
 
     private void notifyAboutEnd(int tag, int cancelledInt) {
         ReactApplicationContext context = mContext.get();
