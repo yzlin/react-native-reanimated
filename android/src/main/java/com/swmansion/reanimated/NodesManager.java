@@ -123,13 +123,13 @@ public class NodesManager implements EventDispatcherListener {
   }
 
   public void onCatalystInstanceDestroy() {
+    if (mReactBatchObserver != null) {
+      mReactBatchObserver.onCatalystInstanceDestroy();
+    }
+
     if (mNativeProxy != null) {
       mNativeProxy.onCatalystInstanceDestroy();
       mNativeProxy = null;
-    }
-
-    if (mReactBatchObserver != null) {
-      mReactBatchObserver.onCatalystInstanceDestroy();
     }
   }
 

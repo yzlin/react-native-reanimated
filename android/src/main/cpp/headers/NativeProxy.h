@@ -13,10 +13,12 @@
 
 #include "Scheduler.h"
 #include "AndroidScheduler.h"
+#include "LayoutAnimations.h"
 
 namespace reanimated {
 
 using namespace facebook;
+using namespace facebook::jni;
 
 class AnimationFrameCallback : public HybridClass<AnimationFrameCallback> {
  public:
@@ -82,7 +84,8 @@ class NativeProxy : public jni::HybridClass<NativeProxy> {
         jni::alias_ref<jhybridobject> jThis,
         jlong jsContext,
         jni::alias_ref<facebook::react::CallInvokerHolder::javaobject> jsCallInvokerHolder,
-        jni::alias_ref<AndroidScheduler::javaobject> scheduler);
+        jni::alias_ref<AndroidScheduler::javaobject> scheduler,
+        jni::alias_ref<LayoutAnimations::javaobject> LayoutAnimations);
   static void registerNatives();
 
 
@@ -93,6 +96,8 @@ class NativeProxy : public jni::HybridClass<NativeProxy> {
   std::shared_ptr<facebook::react::CallInvoker> jsCallInvoker_;
   std::shared_ptr<NativeReanimatedModule> _nativeReanimatedModule;
   std::shared_ptr<Scheduler> scheduler_;
+  jni::global_ref<LayoutAnimations::javaobject> LayoutAnimations;
+
 
   void installJSIBindings();
   bool isAnyHandlerWaitingForEvent(std::string);

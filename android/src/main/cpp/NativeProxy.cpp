@@ -13,6 +13,7 @@
 #include "AndroidScheduler.h"
 #include <android/log.h>
 #include "PlatformDepMethodsHolder.h"
+#include "LayoutAnimationsProxy.h"
 
 namespace reanimated
 {
@@ -90,9 +91,25 @@ void NativeProxy::installJSIBindings()
     scrollTo(viewTag, x, y, animated);
   };
 
-  std::unique_ptr<jsi::Runtime> animatedRuntime = facebook::hermes::makeHermesRuntime();
+  std::shared_ptr<jsi::Runtime> animatedRuntime = facebook::hermes::makeHermesRuntime();
 
   std::shared_ptr<ErrorHandler> errorHandler = std::make_shared<AndroidErrorHandler>(scheduler_);
+
+    // Layout Animations Start
+
+  auto notifyAboutProgress = [=](int tag, float progress) {
+    this->LayoutAnimations->notifyAboutProgress(progress, tag);
+  };
+
+  auto notifyAboutEnd = [=](int tag, bool isCancelled) {
+    this->LayoutAnimations->notifyAboutEnd(tag, (isCancelled)? 1 : 0));
+  };
+
+  std::shared_ptr<LayoutAnimationsProxy> layoutAnimationsProxy = std::make_shared<LayoutAnimationsProxy>(notifyAboutProgress, notifyAboutEnd);
+  std::weak_ptr<jsi::Runtime> wrt = animatedRuntime;
+  layoutAnimations->cthis->setWeakRuntime(wrt);
+
+    // Layout Animations End
 
   PlatformDepMethodsHolder platformDepMethodsHolder = {
     requestRender,
@@ -104,9 +121,10 @@ void NativeProxy::installJSIBindings()
 
   auto module = std::make_shared<NativeReanimatedModule>(jsCallInvoker_,
                                                          scheduler_,
-                                                         std::move(animatedRuntime),
+                                                         animatedRuntime,
                                                          errorHandler,
                                                          propObtainer,
+                                                         layoutAnimationsProxy,
                                                          platformDepMethodsHolder);
 
   _nativeReanimatedModule = module;

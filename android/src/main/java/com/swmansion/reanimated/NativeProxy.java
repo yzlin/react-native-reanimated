@@ -5,23 +5,18 @@ import androidx.annotation.Nullable;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;
-import com.facebook.react.bridge.JSIModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl;
-import com.facebook.react.turbomodule.core.interfaces.TurboModule;
-import com.facebook.react.turbomodule.core.interfaces.TurboModuleRegistry;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.swmansion.reanimated.layoutReanimation.AnimationsManager;
+import com.swmansion.reanimated.layoutReanimation.LayoutAnimations;
 import com.swmansion.reanimated.layoutReanimation.NativeMethodsHolder;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class NativeProxy {
@@ -80,45 +75,17 @@ public class NativeProxy {
 
   public NativeProxy(ReactApplicationContext context) {
     CallInvokerHolderImpl holder = (CallInvokerHolderImpl)context.getCatalystInstance().getJSCallInvokerHolder();
-
+    LayoutAnimations LayoutAnimations = new LayoutAnimations(context);
     mScheduler = new Scheduler(context);
-    mHybridData = initHybrid(context.getJavaScriptContextHolder().get(), holder, mScheduler);
+    mHybridData = initHybrid(context.getJavaScriptContextHolder().get(), holder, mScheduler, LayoutAnimations);
     mContext = new WeakReference<>(context);
-    prepare();
+    prepare(LayoutAnimations);
   }
 
-  private native HybridData initHybrid(long jsContext, CallInvokerHolderImpl jsCallInvokerHolder, Scheduler scheduler);
+  private native HybridData initHybrid(long jsContext, CallInvokerHolderImpl jsCallInvokerHolder, Scheduler scheduler, LayoutAnimations LayoutAnimations);
   private native void installJSIBindings();
 
   public native boolean isAnyHandlerWaitingForEvent(String eventName);
-
-  // LayoutReanimation
-  public native void startAnimationForTag(int tag);
-  public native void removeConfigForTag(int tag);
-  public native Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth);
-  public native Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth);
-
-  private void notifyAboutEnd(int tag, int cancelledInt) {
-    ReactApplicationContext context = mContext.get();
-    if (context != null) {
-      context.getNativeModule(ReanimatedModule.class)
-              .getNodesManager()
-              .getReactBatchObserver()
-              .getAnimationsManager()
-              .notifyAboutEnd(tag, (cancelledInt == 0)? false : true);
-    }
-  }
-
-  private void notifyAboutProgress(double progress, int tag) {
-    ReactApplicationContext context = mContext.get();
-    if (context != null) {
-      context.getNativeModule(ReanimatedModule.class)
-              .getNodesManager()
-              .getReactBatchObserver()
-              .getAnimationsManager()
-              .notifyAboutProgress(progress, tag);
-    }
-  }
 
   @DoNotStrip
   private void requestRender(AnimationFrameCallback callback) {
@@ -161,7 +128,7 @@ public class NativeProxy {
     mHybridData.resetNative();
   }
 
-  public void prepare() {
+  public void prepare(LayoutAnimations LayoutAnimations) {
     mNodesManager = mContext.get().getNativeModule(ReanimatedModule.class).getNodesManager();
     installJSIBindings();
     AnimationsManager animationsManager = mContext.get()
@@ -170,38 +137,38 @@ public class NativeProxy {
             .getReactBatchObserver()
             .getAnimationsManager();
 
-    WeakReference<NativeProxy> weakNativeProxy = new WeakReference<>(this);
+    WeakReference<LayoutAnimations> weakLayoutAnimations = new WeakReference<>(LayoutAnimations);
     animationsManager.setNativeMethods(new NativeMethodsHolder() {
       @Override
       public void startAnimationForTag(int tag) {
-        NativeProxy nativeProxy = weakNativeProxy.get();
-        if (nativeProxy != null) {
-          nativeProxy.startAnimationForTag(tag);
+        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
+        if (LayoutAnimations != null) {
+          LayoutAnimations.startAnimationForTag(tag);
         }
       }
 
       @Override
       public void removeConfigForTag(int tag) {
-        NativeProxy nativeProxy = weakNativeProxy.get();
-        if (nativeProxy != null) {
-          nativeProxy.removeConfigForTag(tag);
+        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
+        if (LayoutAnimations != null) {
+          LayoutAnimations.removeConfigForTag(tag);
         }
       }
 
       @Override
       public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth) {
-        NativeProxy nativeProxy = weakNativeProxy.get();
-        if (nativeProxy != null) {
-          return nativeProxy.getStyleWhileMounting(tag, progress, values, depth);
+        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
+        if (LayoutAnimations != null) {
+          return LayoutAnimations.getStyleWhileMounting(tag, progress, values, depth);
         }
         return new HashMap<String, Object>();
       }
 
       @Override
       public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth) {
-        NativeProxy nativeProxy = weakNativeProxy.get();
-        if (nativeProxy != null) {
-          return nativeProxy.getStyleWhileUnmounting(tag, progress, values, depth);
+        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
+        if (LayoutAnimations != null) {
+          return LayoutAnimations.getStyleWhileUnmounting(tag, progress, values, depth);
         }
         return new HashMap<String, Object>();
       }
