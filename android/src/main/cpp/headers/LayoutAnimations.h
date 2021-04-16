@@ -24,8 +24,8 @@ class LayoutAnimations : public jni::HybridClass<LayoutAnimations> {
 
   void startAnimationForTag(int tag);
   void removeConfigForTag(int tag);
-  jni::local_ref<JMap<JString, JObject>> getStyleWhileMounting(int tag, double progress, alias_ref<JMap<JString, JDouble>> values, int depth);
-  jni::local_ref<JMap<JString, JObject>> getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<JString, JDouble>> values, int depth);
+  jni::local_ref<JMap<JString, JObject>> getStyleWhileMounting(int tag, double progress, alias_ref<JMap<JString, JInteger>> values, int depth);
+  jni::local_ref<JMap<JString, JObject>> getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<JString, JInteger>> values, int depth);
 
   void setWeakUIRuntime(std::weak_ptr<jsi::Runtime> wrt);
 

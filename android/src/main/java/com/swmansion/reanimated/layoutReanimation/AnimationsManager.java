@@ -126,7 +126,7 @@ public class AnimationsManager {
                     targetValues.put("depth", depth);
                 }
                 depth = (Integer)targetValues.get("depth");
-                HashMap<String, Double> data = prepareDataForAnimationWorklet(targetValues);
+                HashMap<String, Integer> data = prepareDataForAnimationWorklet(targetValues);
                 Map<String, Object> newProps = mNativeMethodsHolder.getStyleWhileMounting(tag, (float)progress, data, depth);
                 ViewManager viewManager = (ViewManager) targetValues.get(Snapshooter.viewManager);
                 ViewManager parentViewManager = (ViewManager) targetValues.get(Snapshooter.parentViewManager);
@@ -169,7 +169,7 @@ public class AnimationsManager {
                     }
                 }
                 depth = (Integer)startValues.get("depth");
-                HashMap<String, Double> data = prepareDataForAnimationWorklet(startValues);
+                HashMap<String, Integer> data = prepareDataForAnimationWorklet(startValues);
                 Map<String, Object> newProps = mNativeMethodsHolder.getStyleWhileUnmounting(tag, (float)progress, data, depth);
                 ViewManager viewManager = (ViewManager) startValues.get(Snapshooter.viewManager);
                 ViewManager parentViewManager = (ViewManager) startValues.get(Snapshooter.parentViewManager);
@@ -192,20 +192,20 @@ public class AnimationsManager {
         }
     }
     
-    public HashMap<String, Double> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
-        HashMap<String, Double> preparedValues = new HashMap<>();
+    public HashMap<String, Integer> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
+        HashMap<String, Integer> preparedValues = new HashMap<>();
         ArrayList<String> keys = (ArrayList<String>) Arrays.asList(Snapshooter.width, Snapshooter.height, Snapshooter.originX,
                 Snapshooter.originY, Snapshooter.globalOriginX, Snapshooter.globalOriginY);
         for (String key : keys) {
-            preparedValues.put(key, (Double)values.get(key));
+            preparedValues.put(key, (int)values.get(key));
         }
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         mContext.getCurrentActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         int height = displaymetrics.heightPixels;
         int width = displaymetrics.widthPixels;
-        preparedValues.put("windowWidth", (double)width);
-        preparedValues.put("windowHeight", (double)height);
+        preparedValues.put("windowWidth", width);
+        preparedValues.put("windowHeight", height);
         return preparedValues;
     }
 

@@ -156,7 +156,7 @@ public class NativeProxy {
       }
 
       @Override
-      public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Double> values, int depth) {
+      public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
           return LayoutAnimations.getStyleWhileMounting(tag, progress, values, depth);
@@ -165,7 +165,7 @@ public class NativeProxy {
       }
 
       @Override
-      public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Double> values, int depth) {
+      public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
           return LayoutAnimations.getStyleWhileUnmounting(tag, progress, values, depth);
