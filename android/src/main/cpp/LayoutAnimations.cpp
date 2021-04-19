@@ -40,7 +40,7 @@ void LayoutAnimations::removeConfigForTag(int tag) {
     }
 }
 
-jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileMounting(int tag, double progress, alias_ref<JMap<jstring, JInteger>> values, int depth) {
+jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileMounting(int tag, double progress, alias_ref<JMap<jstring, jstring>> values, int depth) {
     if (auto rt = this->weakUIRuntime.lock()) {
         jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
         if (!layoutAnimationRepositoryAsValue.isUndefined()) {
@@ -48,18 +48,18 @@ jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileMounting(i
           jsi::Object target(*rt);
 
           for (const auto& entry : *values) {
-            target.setProperty(*rt, entry.first->toStdString().c_str(), entry.second->intValue());
+            target.setProperty(*rt, entry.first->toStdString().c_str(), std::stoi(entry.second->toStdString()));
           }
 
           jsi::Value value = getMountingStyle.call(*rt, jsi::Value(tag), jsi::Value(progress), target, jsi::Value(depth));
           jsi::Object props = value.asObject(*rt);
-          return ConvertToPropsMap(*rt, props);
+          return JNIHelper::ConvertToPropsMap(*rt, props);
          }
     }
-    return PropsMap::create();
+    return JNIHelper::PropsMap::create();
 }
 
-jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<jstring, JInteger>> values, int depth) {
+jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<jstring, jstring>> values, int depth) {
      if (auto rt = this->weakUIRuntime.lock()) {
         jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
         if (!layoutAnimationRepositoryAsValue.isUndefined()) {
@@ -67,15 +67,15 @@ jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileUnmounting
           jsi::Object initial(*rt);
 
           for (const auto& entry : *values) {
-            initial.setProperty(*rt, entry.first->toStdString().c_str(), entry.second->intValue());
+            initial.setProperty(*rt, entry.first->toStdString().c_str(),  std::stoi(entry.second->toStdString()));
           }
 
           jsi::Value value = getMountingStyle.call(*rt, jsi::Value(tag), jsi::Value(progress), initial, jsi::Value(depth));
           jsi::Object props = value.asObject(*rt);
-          return ConvertToPropsMap(*rt, props);
+          return JNIHelper::ConvertToPropsMap(*rt, props);
         }
     }
-    return PropsMap::create();
+    return JNIHelper::PropsMap::create();
 }
 
 void LayoutAnimations::notifyAboutProgress(double progress, int tag) {

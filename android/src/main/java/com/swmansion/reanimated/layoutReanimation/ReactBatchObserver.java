@@ -44,7 +44,9 @@ public class ReactBatchObserver {
         mNodesManager = nodesManager;
         mAnimationsManager = new AnimationsManager(mContext, mUIImplementation, mUIManager);
 
-        // Register hooks similar to whar we have on iOS willLayout and willMount
+        // Register hooks similar to what we have on iOS willLayout and willMount
+
+        mContext.
         try {
             Class clazz = mUIImplementation.getClass();
             Field shadowRegistry = clazz.getDeclaredField("mShadowNodeRegistry");

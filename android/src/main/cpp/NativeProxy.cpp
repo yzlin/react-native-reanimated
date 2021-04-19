@@ -177,7 +177,7 @@ void NativeProxy::updateProps(jsi::Runtime &rt, int viewTag, const jsi::Object &
   auto method = javaPart_
                     ->getClass()
                     ->getMethod<void(int, JMap<JString, JObject>::javaobject)>("updateProps");
-  method(javaPart_.get(), viewTag, ConvertToPropsMap(rt, props).get());
+  method(javaPart_.get(), viewTag, JNIHelper::ConvertToPropsMap(rt, props).get());
 }
 
 void NativeProxy::scrollTo(int viewTag, double x, double y, bool animated)

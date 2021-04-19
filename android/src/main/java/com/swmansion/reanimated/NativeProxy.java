@@ -18,6 +18,7 @@ import com.swmansion.reanimated.layoutReanimation.NativeMethodsHolder;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class NativeProxy {
 
@@ -159,7 +160,11 @@ public class NativeProxy {
       public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
-          return LayoutAnimations.getStyleWhileMounting(tag, progress, values, depth);
+          HashMap<String, String> preparedValues = new HashMap<>();
+          for (String key : values.keySet()) {
+            preparedValues.put(key, values.get(key).toString());
+          }
+          return LayoutAnimations.getStyleWhileMounting(tag, progress, preparedValues, depth);
         }
         return new HashMap<String, Object>();
       }
@@ -168,7 +173,11 @@ public class NativeProxy {
       public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
-          return LayoutAnimations.getStyleWhileUnmounting(tag, progress, values, depth);
+          HashMap<String, String> preparedValues = new HashMap<>();
+          for (String key : values.keySet()) {
+            preparedValues.put(key, values.get(key).toString());
+          }
+          return LayoutAnimations.getStyleWhileUnmounting(tag, progress, preparedValues, depth);
         }
         return new HashMap<String, Object>();
       }
