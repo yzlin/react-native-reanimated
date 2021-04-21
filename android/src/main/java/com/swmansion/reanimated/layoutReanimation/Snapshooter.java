@@ -10,7 +10,7 @@ import java.util.HashMap;
 public class Snapshooter {
     public Integer tag;
     public ArrayList<View> listOfViews;
-    public HashMap<Integer, HashMap<String, Object>> capturedValues;
+    public HashMap<Integer, HashMap<String, Object>> capturedValues = new HashMap<>();
 
     Snapshooter(Integer tag) {
         this.tag = tag;

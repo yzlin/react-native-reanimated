@@ -1,10 +1,14 @@
 package com.swmansion.reanimated.layoutReanimation;
 
+import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+
+import androidx.annotation.RequiresApi;
+
 import com.facebook.react.bridge.JavaOnlyMap;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
@@ -98,11 +102,11 @@ public class AnimationsManager {
             HashMap<String, Object> targetValues = second.capturedValues.get(view.getId());
 
             if (startValues != null && targetValues != null) { //interpolate
-                double currentWidth = ((Double)targetValues.get(Snapshooter.width)) * progress + ((Double)startValues.get(Snapshooter.width))  * (1.0 - progress);
-                double currentHeight = ((Double)targetValues.get(Snapshooter.height)) * progress + ((Double)startValues.get(Snapshooter.height)) * (1.0 - progress);
+                double currentWidth = ((Integer)targetValues.get(Snapshooter.width)) * progress + ((Integer)startValues.get(Snapshooter.width))  * (1.0 - progress);
+                double currentHeight = ((Integer)targetValues.get(Snapshooter.height)) * progress + ((Integer)startValues.get(Snapshooter.height)) * (1.0 - progress);
 
-                double currentX = ((Double)targetValues.get(Snapshooter.originX)) * progress + ((Double)startValues.get(Snapshooter.originX)) * (1.0 - progress);
-                double currentY = ((Double)targetValues.get(Snapshooter.originY)) * progress + ((Double)startValues.get(Snapshooter.originY)) * (1.0 - progress);
+                double currentX = ((Integer)targetValues.get(Snapshooter.originX)) * progress + ((Integer)startValues.get(Snapshooter.originX)) * (1.0 - progress);
+                double currentY = ((Integer)targetValues.get(Snapshooter.originY)) * progress + ((Integer)startValues.get(Snapshooter.originY)) * (1.0 - progress);
 
                 HashMap<String, Object> props = new HashMap<>();
                 props.put(Snapshooter.width, currentWidth);
@@ -116,7 +120,7 @@ public class AnimationsManager {
             }
 
             if (startValues == null && targetValues != null) { // appearing
-                int depth = 0; // distance to deepest appearing ancestor or AnimatedRoot
+                int depth = 0; // distance to the highest appearing ancestor or AnimatedRoot
                 if (targetValues.get("depth") == null) {
                     View deepestView = view;
                     while ((!(deepestView instanceof AnimatedRoot)) && first.capturedValues.get(((View)deepestView.getParent()).getId()) == null) {
@@ -194,8 +198,9 @@ public class AnimationsManager {
     
     public HashMap<String, Integer> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
         HashMap<String, Integer> preparedValues = new HashMap<>();
-        ArrayList<String> keys = (ArrayList<String>) Arrays.asList(Snapshooter.width, Snapshooter.height, Snapshooter.originX,
-                Snapshooter.originY, Snapshooter.globalOriginX, Snapshooter.globalOriginY);
+
+        ArrayList<String> keys = new ArrayList<String>(Arrays.asList(Snapshooter.width, Snapshooter.height, Snapshooter.originX,
+                Snapshooter.originY, Snapshooter.globalOriginX, Snapshooter.globalOriginY));
         for (String key : keys) {
             preparedValues.put(key, (int)values.get(key));
         }
@@ -218,10 +223,10 @@ public class AnimationsManager {
                             ViewManager viewManager,
                             ViewManager parentViewManager,
                             Integer parentTag) {
-        int x = (Integer)props.get(Snapshooter.originX);
-        int y = (Integer)props.get(Snapshooter.originY);
-        int width = (Integer)props.get(Snapshooter.width);
-        int height = (Integer)props.get(Snapshooter.height);
+        int x = (props.get(Snapshooter.originX) != null)? ((Double)props.get(Snapshooter.originX)).intValue() : view.getLeft();
+        int y = (props.get(Snapshooter.originY) != null)? ((Double)props.get(Snapshooter.originY)).intValue() : view.getTop();
+        int width = (props.get(Snapshooter.width) != null)? ((Double)props.get(Snapshooter.width)).intValue() : view.getWidth();
+        int height = (props.get(Snapshooter.height) != null)? ((Double)props.get(Snapshooter.height)).intValue() : view.getHeight();
         updateLayout(view, parentViewManager, parentTag, view.getId(), x, y, width, height);
         props.remove(Snapshooter.originX);
         props.remove(Snapshooter.originY);

@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.UIManager;
 import com.facebook.react.bridge.UIManagerListener;
+import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.facebook.react.uimanager.LayoutShadowNode;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
 import com.facebook.react.uimanager.ReactShadowNode;
@@ -46,17 +47,25 @@ public class ReactBatchObserver {
 
         // Register hooks similar to what we have on iOS willLayout and willMount
 
-        mContext.
-        try {
-            Class clazz = mUIImplementation.getClass();
-            Field shadowRegistry = clazz.getDeclaredField("mShadowNodeRegistry");
-            shadowRegistry.setAccessible(true);
-            ShadowNodeRegistry shadowNodeRegistry = (ShadowNodeRegistry)shadowRegistry.get(mUIImplementation);
-            shadowNodeRegistry.addRootNode(new FakeFirstRootShadowNode());
-            shadowNodeRegistry.addRootNode(new FakeLastRootShadowNode());
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        mContext.runOnNativeModulesQueueThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Class clazz = mUIImplementation.getClass();
+                    Field shadowRegistry = clazz.getDeclaredField("mShadowNodeRegistry");
+                    shadowRegistry.setAccessible(true);
+                    ShadowNodeRegistry shadowNodeRegistry = (ShadowNodeRegistry)shadowRegistry.get(mUIImplementation);
+                    ReactShadowNode firstRootShadowNode = new FakeFirstRootShadowNode();
+                    firstRootShadowNode.setMeasureSpecs(23,434);
+                    ReactShadowNode lastRootShadowNode = new FakeLastRootShadowNode();
+                    lastRootShadowNode.setMeasureSpecs(13, 34);
+                    shadowNodeRegistry.addRootNode(firstRootShadowNode);
+                    shadowNodeRegistry.addRootNode(lastRootShadowNode);
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     public void willMount() {
@@ -65,8 +74,11 @@ public class ReactBatchObserver {
 
         BiFunction<NativeViewHierarchyManager, BiFunction<AnimatedRoot, Integer>> goThroughAffectedWithLambda = (hierarchyManager, lambda) -> {
             for (Integer tag : affectedTags) {
-                View view = hierarchyManager.resolveView(tag);
-                if (view == null) {
+                View view = null;
+                try {
+                    view = hierarchyManager.resolveView(tag);
+                } catch (IllegalViewOperationException e) { }
+                if (view == null || view.getParent() == null) {
                     lambda.exec(null, tag);
                     continue;
                 }
@@ -80,9 +92,12 @@ public class ReactBatchObserver {
         mUIManager.prependUIBlock(nativeViewHierarchyManager -> {
             BiFunction<AnimatedRoot, Integer> lambda = (AnimatedRoot root, Integer tag) -> {
                 Snapshooter snapshooter = new Snapshooter(tag);
-                ViewTraverser.traverse(root, (view) -> {
-                    snapshooter.takeSnapshot(view, nativeViewHierarchyManager);
-                });
+                if (root != null) {
+                    ViewTraverser.traverse(root, (view) -> {
+                        snapshooter.takeSnapshot(view, nativeViewHierarchyManager);
+                    });
+                }
+
                 mAnimationsManager.startAnimationWithFirstSnapshot(snapshooter);
             };
             goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
