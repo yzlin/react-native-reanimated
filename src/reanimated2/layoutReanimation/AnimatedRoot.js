@@ -1,7 +1,7 @@
 import { requireNativeComponent, findNodeHandle } from 'react-native';
 import React from 'react';
 import { runOnUI, makeMutable } from '../core';
-import { withTiming } from '../animations';
+import { withTiming, withStyleAnimation } from '../animations';
 import { OpacityAnimation, ReverseAnimation } from './defaultAnimations';
 
 const REALayoutView = requireNativeComponent('REALayoutView');
@@ -75,7 +75,8 @@ runOnUI(
                     console.error(`${key} animation for a tag: ${tag} it not a function!`);
                 }
 
-                const animation = (configs[tag][key])(yogaValues, depth); // it should be an animation factory as it has been created on RN side
+                const animation = withStyleAnimation(configs[tag][key], yogaValues, 0);// it should be an animation factory as it has been created on RN side
+                console.log("animationObjectKeys", Object.keys(animation));
                 const sv = configs[tag].sv;
                 const originalCallback = animation.callback;
 

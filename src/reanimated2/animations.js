@@ -163,8 +163,8 @@ export function cancelAnimation(sharedValue) {
   sharedValue.value = sharedValue.value; // eslint-disable-line no-self-assign
 }
 
-export function withStyleAnimation(styleFactory, callback) {
-  return defineAnimation({}, (yogaValues, depth) => {
+export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
+  return defineAnimation({}, () => {
     'worklet'
 
     const styleAnimations = styleFactory(yogaValues);
