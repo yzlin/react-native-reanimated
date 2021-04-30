@@ -163,6 +163,71 @@ export function cancelAnimation(sharedValue) {
   sharedValue.value = sharedValue.value; // eslint-disable-line no-self-assign
 }
 
+export function withStyleAnimation(styleFactory, callback) {
+  return defineAnimation({}, (yogaValues, depth) => {
+    'worklet'
+
+    const styleAnimations = styleFactory(yogaValues);
+
+    const onFrame = (animation, now) => {
+      const stillGoing = false;
+      for (const key of styleAnimations) {
+        const currentAnimation = animation.styleAnimations[key];
+        if (!currentAnimation.finished) {
+          const finished = currentAnimation.onFrame(currentAnimation, now);
+          if (finished) {
+            currentAnimation.finished = true;
+          } else {
+            stillGoing = true;
+          }
+          animation.current[key] = currentAnimation.current;
+        }
+      }
+      return !stillGoing;
+    };
+
+    const onStart = (animation, value, now, previousAnimation) => {
+      for (const key of styleAnimations) {
+        let prevAnimation = null;
+        if (previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
+          const prevAnimation = prevAnimation.styleAnimations[key];
+        }
+        let prevVal = 0;
+        if (prevAnimation != null) {
+          prevVal = prevAnimation.current;
+        }
+        if (value[key]) {
+          prevVal = value[key];
+        }
+        const currentAnimation = animation.styleAnimations[key];
+        currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
+      }
+    }
+
+    return {
+      isHigherOrder: true,
+      onFrame,
+      onStart,
+      current: {},
+      styleAnimations,
+      callback,
+    };
+  });
+}
+
+// TODO it should work only if there was no animation before.
+export function withStartValue(startValue, animation) {
+  'worklet'
+  return defineAnimation(startValue, () => {
+    'worklet'
+    if (!_WORKLET && typeof animation === 'function') {
+      animation = animation();
+    }
+    animation.current = startValue;
+    return animation;
+  });
+}
+
 export function withTiming(toValue, userConfig, callback) {
   'worklet';
 

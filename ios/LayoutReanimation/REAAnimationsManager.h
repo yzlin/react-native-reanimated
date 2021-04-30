@@ -15,14 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithUIManager:(RCTUIManager*)uiManager;
 
-- (void)startAnimationWithFirstSnapshot:(REASnapshooter*)snapshooter;
-- (void)addSecondSnapshot:(REASnapshooter*)snapshooter;
+- (void)notifyAboutChangeWithBeforeSnapshots:(REASnapshooter*)beforeSnapshooter afterSnapshooter:(REASnapshooter*)afterSnapshooter;
 
 - (void)setRemovingConfigBlock:(void (^)(NSNumber *tag))block;
-- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* initial, NSNumber* depth))block;
-- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target, NSNumber* depth))block;
-- (void)setAnimationStartingBlock:(void (^)(NSNumber *tag))startAnimation;
-- (void)notifyAboutProgress:(NSNumber*)progress tag:(NSNumber*)tag;
+- (void)setAnimationStartingBlock:(void (^)(NSNumber *tag, BOOL isMounting, NSDictionary* target, NSNumber* depth))startAnimation;
+- (void)notifyAboutProgress:(NSDictionary *)newStyle tag:(NSNumber*)tag;
 - (void)notifyAboutEnd:(NSNumber*)tag cancelled:(BOOL)cancelled;
 - (void)addBlockOnAnimationEnd:(NSNumber*)tag block:(void (^)(void))block;
 

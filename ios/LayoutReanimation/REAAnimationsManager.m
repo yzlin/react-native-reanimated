@@ -12,9 +12,7 @@
 
 @interface REAAnimationsManager ()
 
-@property (atomic, nullable) void(^startAnimationForTag)(NSNumber *);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileMounting)(NSNumber *, NSNumber*, NSDictionary*, NSNumber*);
-@property (atomic, nullable) NSMutableDictionary*(^getStyleWhileUnmounting)(NSNumber *, NSNumber*, NSDictionary*, NSNumber*);
+@property (atomic, nullable) void(^startAnimationForTag)(NSNumber *, BOOL, NSDictionary *, NSNumber*);
 @property (atomic, nullable) void(^removeConfigForTag)(NSNumber *);
 
 @end
@@ -39,31 +37,29 @@
 
 - (void)invalidate
 {
-  _getStyleWhileUnmounting = nil;
-  _getStyleWhileMounting = nil;
   _startAnimationForTag = nil;
   _removeConfigForTag = nil;
   _blocksForTags = nil;
   _uiManager = nil;
 }
 
-- (void)startAnimationWithFirstSnapshot:(REASnapshooter*)snapshooter
+- (void)notifyAboutChangeWithBeforeSnapshots:(REASnapshooter*)before afterSnapshooter:(REASnapshooter*)after
 {
-  _firstSnapshots[snapshooter.tag] = nil;
-  _secondSnapshots[snapshooter.tag] = nil;
-  _firstSnapshots[snapshooter.tag] = snapshooter;
-  _startAnimationForTag(snapshooter.tag);
+  REASnapshooter *prevBefore = _firstSnapshots[before.tag];
+  REASnapshooter *prevAfter = _secondSnapshots[before.tag];
+  // TODO: Do we want to sometimes skip an update?
+  _firstSnapshots[before.tag] = before;
+  _secondSnapshots[before.tag] = after;
+  BOOL isMounting = true;
+  if ([after.capturedValues count] == 0) {
+    isMounting = false;
+  }
+  REASnapshooter *valueableSnapshooter = (isMounting)? after : before;
+  UIView * rootView = valueableSnapshooter.listView.lastObject;
+  NSDictionary * yogaValues = [self prepareDataForAnimatingWorklet: valueableSnapshooter.capturedValues[[REASnapshooter idFor:rootView]]];
+  _startAnimationForTag(before.tag, isMounting, yogaValues, @(0));
 }
 
-- (void)addSecondSnapshot:(REASnapshooter*)snapshooter
-{
-  _secondSnapshots[snapshooter.tag] = snapshooter;
-  if ([snapshooter.capturedValues count] == 0) { // Root config should be removed on next unmounting animation
-    [self addBlockOnAnimationEnd:snapshooter.tag block:^{
-      _removeConfigForTag(snapshooter.tag);
-    }];
-  }
-}
 
 - (void)addBlockOnAnimationEnd:(NSNumber*)tag block:(void (^)(void))block {
   if (!_blocksForTags[tag]) {
@@ -72,19 +68,9 @@
   [_blocksForTags[tag] addObject:block];
 }
 
-- (void)setAnimationStartingBlock:(void (^)(NSNumber *tag))startAnimation
+- (void)setAnimationStartingBlock:(void (^)(NSNumber * tag, BOOL isMounting, NSDictionary* yogaValues, NSNumber* depth))startAnimation
 {
   _startAnimationForTag = startAnimation;
-}
-
-- (void)setAnimationMountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* target, NSNumber* depth))block
-{
-  _getStyleWhileMounting = block;
-}
-
-- (void)setAnimationUnmountingBlock:(NSMutableDictionary* (^)(NSNumber *tag, NSNumber* progress, NSDictionary* initial, NSNumber* depth))block
-{
-  _getStyleWhileUnmounting = block;
 }
 
 - (void)setRemovingConfigBlock:(void (^)(NSNumber *tag))block
@@ -92,10 +78,8 @@
   _removeConfigForTag = block;
 }
 
-- (void)notifyAboutProgress:(NSNumber*)progressNumber tag:(NSNumber*)tag
+- (void)notifyAboutProgress:(NSDictionary *)newStyle tag:(NSNumber*)tag
 {
-  double progress = [progressNumber doubleValue];
-  NSLog(@"%@: %.21Lg", @"progress", (long double) progress);
   REASnapshooter* first = _firstSnapshots[tag];
   REASnapshooter* second = _secondSnapshots[tag];
   if (first == nil || second == nil) { // animation is not ready
@@ -118,31 +102,7 @@
   for (UIView *view in allViews) {
     NSMutableDictionary<NSString*, NSNumber*>* startValues = first.capturedValues[[REASnapshooter idFor:view]];
     NSMutableDictionary<NSString*, NSNumber*>* targetValues = second.capturedValues[[REASnapshooter idFor:view]];
-    
-    // TODO let ViewManager handle animation progress based on view snapshots
-    if (startValues != nil && targetValues != nil) { //interpolate
-      // TODO make it more flexiable
-      // TODO interpolate transform matrix
-      
-      if ([view isKindOfClass:[REAHeroView class]] && !startValues[@"corrected"]) { // Hero changes origin
-        startValues[@"corrected"] = @(YES);
-        UIView *newParent = (UIView*)targetValues[@"parent"];
-        UIView *windowView = UIApplication.sharedApplication.keyWindow;
-        CGPoint point = CGPointMake([startValues[@"globalOriginX"] doubleValue], [startValues[@"globalOriginY"] doubleValue]);
-        CGPoint correctedOrigin = [windowView convertPoint:point toView:newParent];
-        startValues[@"originX"] = [NSNumber numberWithDouble:correctedOrigin.x];
-        startValues[@"originY"] = [NSNumber numberWithDouble:correctedOrigin.y];
-      }
-      
-      double currentWidth = [targetValues[@"width"] doubleValue] * progress + [startValues[@"width"] doubleValue] * (1.0 - progress);
-      double currentHeight = [targetValues[@"height"] doubleValue] * progress + [startValues[@"height"] doubleValue] * (1.0 - progress);
 
-      double currentX = [targetValues[@"originX"] doubleValue] * progress + [startValues[@"originX"] doubleValue] * (1.0 - progress);
-      double currentY = [targetValues[@"originY"] doubleValue] * progress + [startValues[@"originY"] doubleValue] * (1.0 - progress);
-      
-      view.bounds = CGRectMake(0, 0, currentWidth, currentHeight);
-      view.center = CGPointMake(currentX + currentWidth/2.0, currentY + currentHeight/2.0);
-    }
     // Let's assume for now that this is a View componenet
     NSMutableDictionary* dataComponenetsByName = [_uiManager valueForKey:@"_componentDataByName"];
     RCTComponentData *componentData = dataComponenetsByName[@"RCTView"];
@@ -159,10 +119,10 @@
         targetValues[@"depth"] = [NSNumber numberWithDouble:depth];
       }
       depth = [targetValues[@"depth"] doubleValue];
-    
-      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
-      NSMutableDictionary* newProps = _getStyleWhileMounting(tag, [NSNumber numberWithDouble:progress], preparedValues, [NSNumber numberWithDouble: depth]);
-      [self setNewProps:newProps forView:view withComponentData:componentData];
+      
+      if ([view isKindOfClass:[REAAnimationRootView class]]) {
+        [self setNewProps:[newStyle mutableCopy] forView:view withComponentData:componentData];
+      }
     }
     
     if (startValues != nil && targetValues == nil) { // disappearing
@@ -216,10 +176,9 @@
         }
       }
       depth = [startValues[@"depth"] doubleValue];
-      
-      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
-      NSMutableDictionary* newProps = _getStyleWhileUnmounting(tag, [NSNumber numberWithDouble:progress], preparedValues, startValues[@"depth"]);
-      [self setNewProps:newProps forView:view withComponentData:componentData];
+      if ([view isKindOfClass:[REAAnimationRootView class]]) {
+        [self setNewProps:[newStyle mutableCopy] forView:view withComponentData:componentData];
+      }
     }
   }
 }

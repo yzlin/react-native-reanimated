@@ -61,6 +61,8 @@
             block(animtionRoot, tag);
         }
     };
+  
+    __block NSMutableDictionary * snapshooterDict = [NSMutableDictionary new];
     
     [self.uiManager prependUIBlock:^(RCTUIManager *uiManager, NSDictionary<NSNumber *,UIView *> *viewRegistry) {
       // TODO use weak self
@@ -75,7 +77,7 @@
           [REAViewTraverser traverse:view withBlock:^(UIView* view) {
             [snapshooter takeSnapshot: view];
           }];
-          [_animationsManager startAnimationWithFirstSnapshot: snapshooter];
+          snapshooterDict[tag] = snapshooter;
         };
       
         goThroughAffectedWithBlock(viewRegistry, block);
@@ -93,8 +95,7 @@
             }];
           }
           
-          [_animationsManager addSecondSnapshot: snapshooter];
-          [_animationsManager notifyAboutProgress:0 tag:tag]; // prepare for the first frame
+          [_animationsManager notifyAboutChangeWithBeforeSnapshots:snapshooterDict[tag] afterSnapshooter:snapshooter];
         };
         goThroughAffectedWithBlock(viewRegistry, block);
     }];

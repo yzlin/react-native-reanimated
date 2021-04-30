@@ -17,21 +17,11 @@ export class AnimatedLayout extends React.Component {
         if (tag == null || this.alreadyConfigured) return;
         this.alreadyConfigured = true;
         console.log("config For a tag", tag);
-        let {animation, mounting, unmounting} = this.props;
-        if (animation == null) {
-            animation = withTiming(1);
-        }
-        if (mounting == null) {
-            mounting = OpacityAnimation;
-        }
-        if (unmounting == null) {
-            unmounting = ReverseAnimation(mounting);
-        }
-
+        let {mounting, unmounting} = this.props;
+    
         const config = {
-            animation,
-            mounting,
-            unmounting,
+            mountingAnimation: mounting,
+            unmountingAnimation: unmounting,
             sv: this.sv,
         }
         runOnUI(() => {
@@ -69,7 +59,7 @@ runOnUI(
                 configs[tag].sv.value = 0;
                 delete configs[tag];
             },
-            startAnimationForTag(tag) { 
+            startAnimationForTag(tag, isMounting, yogaValues, depth) { 
                 // TODO use previous animation values like velocity
                 // probably we need to store a vector as we don't know a direction
                 if (configs[tag] == null) {
@@ -79,42 +69,21 @@ runOnUI(
                 if (typeof configs[tag].animation != 'function') {
                     console.error(`Animation for a tag: ${tag} it not a function!`);
                 }
-                const animation = (configs[tag].animation)(); // it should be an animation factory as it has been created on RN side
+                const key = isMounting ? 'mountingAnimation' : 'unmountingAnimation';
+                const animation = (configs[tag][key])(yogaValues, depth); // it should be an animation factory as it has been created on RN side
                 const sv = configs[tag].sv;
                 const originalCallback = animation.callback;
+                
                 animation.callback = (finished) => {
-                    if (finished) {
-                        _stopObservingProgress(tag);
-                        sv.value = 0;
-                    }
+                    _stopObservingProgress(tag, finished);
+
                     if (originalCallback) {
-                        originalCallback();
+                        originalCallback(finished);
                     }
                 }
-                _startObservingProgress(tag, sv);
-                sv.value = 0;
                 configs[tag].sv.value = animation;
-                
-            },
-            getMountingStyle(tag, progress, targetData, depth) {
-                if (configs[tag] == null) {
-                    return {}; // :(
-                }
-                
-                return configs[tag].mounting(progress, targetData, depth, true);
-            },
-            getUnmountingStyle(tag, progress, initialData, depth) {
-                if (configs[tag] == null) {
-                    return {}; // :(
-                }
-                return configs[tag].unmounting(progress, initialData, depth, false);
+                _startObservingProgress(tag, sv);
             },
         };  
     }
 )();
-
-/*
-
-    <AnimatedRoot animation={withTiming(1)} >
-    </AnimatedRoot>
-*/

@@ -140,9 +140,10 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
   // Layout Animations start
   __weak REAAnimationsManager *animationsManager = reanimatedModule.reactBatchObserver.animationsManager;
   
-  auto notifyAboutProgress = [=](int tag, float progress) {
+  auto notifyAboutProgress = [=](int tag, jsi::Object newStyle) {
     if (animationsManager) {
-      [animationsManager notifyAboutProgress:[NSNumber numberWithFloat: progress] tag:[NSNumber numberWithInt: tag]];
+      NSDictionary *propsDict = convertJSIObjectToNSDictionary(*animatedRuntime, newStyle);
+      [animationsManager notifyAboutProgress:propsDict tag:[NSNumber numberWithInt: tag]];
     }
   };
   
@@ -154,61 +155,24 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
   
   std::shared_ptr<LayoutAnimationsProxy> layoutAnimationsProxy = std::make_shared<LayoutAnimationsProxy>(notifyAboutProgress, notifyAboutEnd);
   std::weak_ptr<jsi::Runtime> wrt = animatedRuntime;
-  [animationsManager setAnimationStartingBlock:^(NSNumber * _Nonnull tag) {
+  [animationsManager setAnimationStartingBlock:^(NSNumber * _Nonnull tag, BOOL isMounting,  NSDictionary* _Nonnull values, NSNumber* depth) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return;
     }
+    jsi::Object yogaValues(*rt);
+    for (NSString *key in values.allKeys) {
+      NSNumber* value = values[key];
+      yogaValues.setProperty(*rt, [key UTF8String], [value doubleValue]);
+    }
+    
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function startAnimationForTag = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "startAnimationForTag");
-      startAnimationForTag.call(*rt, jsi::Value([tag intValue]));
+      startAnimationForTag.call(*rt, jsi::Value(isMounting), jsi::Value([tag intValue]), yogaValues, jsi::Value([depth intValue]));
     }
   }];
-  
-  [animationsManager setAnimationMountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values, NSNumber* depth) {
-    std::shared_ptr<jsi::Runtime> rt = wrt.lock();
-    if (wrt.expired()) {
-      return [NSMutableDictionary new];
-    }
-    jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
-    if (!layoutAnimationRepositoryAsValue.isUndefined()) {
-      jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
-      jsi::Object target(*rt);
-      for (NSString *key in values.allKeys) {
-        NSNumber* value = values[key];
-        target.setProperty(*rt, [key UTF8String], [value doubleValue]);
-      }
-      
-      jsi::Value value = getMountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), target, jsi::Value([depth doubleValue]));
-      jsi::Object props = value.asObject(*rt);
-      NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
-      return [propsDict mutableCopy];
-    }
-    return [NSMutableDictionary new];
-  }];
-  
-  [animationsManager setAnimationUnmountingBlock:^NSMutableDictionary * _Nonnull(NSNumber* _Nonnull tag, NSNumber* _Nonnull progress,  NSDictionary* _Nonnull values, NSNumber* depth) {
-    std::shared_ptr<jsi::Runtime> rt = wrt.lock();
-    if (wrt.expired()) {
-      return [NSMutableDictionary new];
-    }
-    jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
-    if (!layoutAnimationRepositoryAsValue.isUndefined()) {
-      jsi::Function getUnmountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getUnmountingStyle");
-      jsi::Object initial(*rt);
-      for (NSString *key in values.allKeys) {
-        NSNumber* value = values[key];
-        initial.setProperty(*rt, [key UTF8String], [value doubleValue]);
-      }
-      
-      jsi::Value value = getUnmountingStyle.call(*rt, jsi::Value([tag intValue]), jsi::Value([progress doubleValue]), initial, jsi::Value([depth doubleValue]));
-      jsi::Object props = value.asObject(*rt);
-      NSDictionary *propsDict = convertJSIObjectToNSDictionary(*rt, props);
-      return [propsDict mutableCopy];
-    }
-    return [NSMutableDictionary new];
-  }];
+
   
   [animationsManager setRemovingConfigBlock:^(NSNumber* _Nonnull tag) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();

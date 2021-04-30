@@ -12,6 +12,7 @@ import setAndForwardRef from './setAndForwardRef';
 import invariant from 'fbjs/lib/invariant';
 import { adaptViewConfig } from './ConfigHelper';
 import { RNRenderer } from './reanimated2/platform-specific/RNRenderer';
+import { AnimatedLayout } from './reanimated2/layoutReanimation/AnimatedRoot';
 
 const NODE_MAPPING = new Map();
 
@@ -57,13 +58,18 @@ function flattenArray(array) {
   return resultArr;
 }
 
-export default function createAnimatedComponent(Component) {
+export default function createAnimatedComponent(ComponentCand) {
   invariant(
     typeof Component !== 'function' ||
       (Component.prototype && Component.prototype.isReactComponent),
     '`createAnimatedComponent` does not support stateless functional components; ' +
       'use a class component instead.'
   );
+
+  let Component = ComponentCand;
+  if (Component === View) {
+    Component = AnimatedLayout;
+  }
 
   class AnimatedComponent extends React.Component {
     _invokeAnimatedPropsCallbackOnMount = false;
@@ -281,6 +287,9 @@ export default function createAnimatedComponent(Component) {
       styles.forEach((style) => {
         if (style?.viewDescriptor) {
           style.viewDescriptor.value = { tag: viewTag, name: viewName };
+          this.mountingAnimation = style.mountingAnimation;
+          this.unmountingAnimation = style.unmountingAnimation;
+
           if (process.env.JEST_WORKER_ID) {
             /**
              * We need to connect Jest's TestObject instance whose contains just props object
@@ -300,7 +309,7 @@ export default function createAnimatedComponent(Component) {
       if (this.props.animatedProps?.viewDescriptor) {
         this.props.animatedProps.viewDescriptor.value = {
           tag: viewTag,
-          name: viewName,
+          name: viewName, // TODO send it to Animated root
         };
       }
     }
@@ -440,6 +449,12 @@ export default function createAnimatedComponent(Component) {
         web: {},
         default: { collapsable: false },
       });
+
+      if (Component === AnimatedLayout) {
+        props.mounting = this.mountingAnimation;
+        props.unmounting = this.unmountingAnimation;
+      }
+
       return (
         <Component {...props} ref={this._setComponentRef} {...platformProps} />
       );

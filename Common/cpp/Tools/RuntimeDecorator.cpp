@@ -161,7 +161,7 @@ void RuntimeDecorator::decorateUIRuntime(jsi::Runtime &rt,
     if (layoutProxy.expired()) {
       return jsi::Value::undefined();
     }
-    proxy->startObserving(args[0].asNumber(), args[1].asObject(rt).getHostObject<MutableValue>(rt));
+    proxy->startObserving(args[0].asNumber(), args[1].asObject(rt).getHostObject<MutableValue>(rt), rt);
     return jsi::Value::undefined();
   };
   jsi::Value _startObservingProgress = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_startObservingProgress"), 0, clb7);
@@ -177,7 +177,7 @@ void RuntimeDecorator::decorateUIRuntime(jsi::Runtime &rt,
     if (layoutProxy.expired()) {
       return jsi::Value::undefined();
     }
-    proxy->stopObserving(args[0].asNumber());
+    proxy->stopObserving(args[0].asNumber(), args[1].getBool());
     return jsi::Value::undefined();
   };
   jsi::Value _stopObservingProgress = jsi::Function::createFromHostFunction(rt, jsi::PropNameID::forAscii(rt, "_stopObservingProgress"), 0, clb8);
