@@ -1,4 +1,4 @@
-import { requireNativeComponent, findNodeHandle } from 'react-native';
+import { requireNativeComponent, findNodeHandle, unstable_enableLogBox } from 'react-native';
 import React from 'react';
 import { runOnUI, makeMutable } from '../core';
 import { withTiming, withStyleAnimation } from '../animations';

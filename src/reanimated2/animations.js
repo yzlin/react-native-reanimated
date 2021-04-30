@@ -170,6 +170,7 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
     const styleAnimations = styleFactory(yogaValues);
 
     const onFrame = (animation, now) => {
+      console.log("onFrame");
       const stillGoing = false;
       for (const key of styleAnimations) {
         const currentAnimation = animation.styleAnimations[key];
@@ -187,7 +188,9 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
     };
 
     const onStart = (animation, value, now, previousAnimation) => {
+      console.log("start");
       for (const key of styleAnimations) {
+        console.log("onStart key", key);
         let prevAnimation = null;
         if (previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
           const prevAnimation = prevAnimation.styleAnimations[key];
@@ -200,6 +203,7 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
           prevVal = value[key];
         }
         const currentAnimation = animation.styleAnimations[key];
+        console.log("onStart key end", key);
         currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
       }
     }
