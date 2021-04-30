@@ -10,7 +10,7 @@ const Screens = [
   {
     name: "ModalNewAPI",
     screen: ModalNewAPI,
-  },
+  }, 
   {
     name: 'Spring Layout Animation',
     screen: SpringLayoutAnimation,

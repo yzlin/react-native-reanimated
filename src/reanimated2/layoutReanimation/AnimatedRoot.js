@@ -63,17 +63,22 @@ runOnUI(
                 // TODO use previous animation values like velocity
                 // probably we need to store a vector as we don't know a direction
                 if (configs[tag] == null) {
+                    console.log("dupa", tag);
                     return; // :(
                 }
 
-                if (typeof configs[tag].animation != 'function') {
-                    console.error(`Animation for a tag: ${tag} it not a function!`);
-                }
+                console.log("animation will be started", tag, JSON.stringify(yogaValues));
+
                 const key = isMounting ? 'mountingAnimation' : 'unmountingAnimation';
+
+                if (typeof configs[tag][key] != 'function') {
+                    console.error(`${key} animation for a tag: ${tag} it not a function!`);
+                }
+
                 const animation = (configs[tag][key])(yogaValues, depth); // it should be an animation factory as it has been created on RN side
                 const sv = configs[tag].sv;
                 const originalCallback = animation.callback;
-                
+
                 animation.callback = (finished) => {
                     _stopObservingProgress(tag, finished);
 
@@ -81,6 +86,7 @@ runOnUI(
                         originalCallback(finished);
                     }
                 }
+                console.log("animation has been started", tag, JSON.stringify(yogaValues));
                 configs[tag].sv.value = animation;
                 _startObservingProgress(tag, sv);
             },

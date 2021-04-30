@@ -169,7 +169,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function startAnimationForTag = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "startAnimationForTag");
-      startAnimationForTag.call(*rt, jsi::Value(isMounting), jsi::Value([tag intValue]), yogaValues, jsi::Value([depth intValue]));
+      startAnimationForTag.call(*rt, jsi::Value([tag intValue]), jsi::Value(isMounting), yogaValues, jsi::Value([depth intValue]));
     }
   }];
 

@@ -1,24 +1,22 @@
-import { faTextWidth } from '@fortawesome/free-solid-svg-icons';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Dimensions } from 'react-native';
-import Animated, { useAnimatedStyle, AnimatedLayout, withTiming, withStartValue} from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, withTiming, withStartValue} from 'react-native-reanimated';
 
 const {width, height} = Dimensions;
 
 function AnimatedView() {
 
-    useAnimatedStyle({
+    const style = useAnimatedStyle({
         entering: (targetValues) => {
             'worklet'
             return {
                 originX: withStartValue(-width, withTiming(targetValues.originX, {duration: 2000})),
-                opacity: withStartValue(0, withTiming(1, {duration: 1500}));
+                opacity: withStartValue(0, withTiming(1, {duration: 1500})),
             };
         }, 
         steady : () => {
             'worklet'
             return {
-                height: 
             };
         },
         exiting: (startingValues) => {

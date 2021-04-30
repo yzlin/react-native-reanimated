@@ -418,6 +418,11 @@ function jestStyleUpdater(
 export function useAnimatedStyle(updaterOrUpdaterObject, dependencies, adapters) {
   const viewDescriptor = useSharedValue({ tag: -1, name: null }, false);
   const updater = typeof updaterOrUpdaterObject === 'object'? updaterOrUpdaterObject.steady : updaterOrUpdaterObject;
+  
+  if (typeof updaterOrUpdaterObject === 'object') {
+    console.log("nice 000");
+  }
+
   const initRef = useRef(null);
   const inputs = Object.values(updater._closure);
   const viewRef = useRef(null);
@@ -535,7 +540,7 @@ export function useAnimatedStyle(updaterOrUpdaterObject, dependencies, adapters)
     if (typeof updaterOrUpdaterObject === 'object') {
       res = { 
         ...res, 
-        mountingAnimtion: updaterOrUpdaterObject.entering,
+        mountingAnimation: updaterOrUpdaterObject.entering,
         unmoutingAnimation: updaterOrUpdaterObject.exiting,
       };
     }

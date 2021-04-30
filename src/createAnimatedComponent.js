@@ -1,5 +1,5 @@
 import React from 'react';
-import { findNodeHandle, Platform, StyleSheet } from 'react-native';
+import { View, findNodeHandle, Platform, StyleSheet } from 'react-native';
 import ReanimatedEventEmitter from './ReanimatedEventEmitter';
 
 import AnimatedEvent from './reanimated1/core/AnimatedEvent';
@@ -60,16 +60,11 @@ function flattenArray(array) {
 
 export default function createAnimatedComponent(ComponentCand) {
   invariant(
-    typeof Component !== 'function' ||
-      (Component.prototype && Component.prototype.isReactComponent),
+    typeof ComponentCand !== 'function' ||
+      (ComponentCand.prototype && ComponentCand.prototype.isReactComponent),
     '`createAnimatedComponent` does not support stateless functional components; ' +
       'use a class component instead.'
   );
-
-  let Component = ComponentCand;
-  if (Component === View) {
-    Component = AnimatedLayout;
-  }
 
   class AnimatedComponent extends React.Component {
     _invokeAnimatedPropsCallbackOnMount = false;
@@ -287,8 +282,6 @@ export default function createAnimatedComponent(ComponentCand) {
       styles.forEach((style) => {
         if (style?.viewDescriptor) {
           style.viewDescriptor.value = { tag: viewTag, name: viewName };
-          this.mountingAnimation = style.mountingAnimation;
-          this.unmountingAnimation = style.unmountingAnimation;
 
           if (process.env.JEST_WORKER_ID) {
             /**
@@ -394,6 +387,10 @@ export default function createAnimatedComponent(ComponentCand) {
               if (style.viewRef.current === null) {
                 style.viewRef.current = this;
               }
+              console.log("keys", Object.keys(style));
+              if (style.mountingAnimation) console.log("nice Style")
+              this.mountingAnimation = style.mountingAnimation;
+              this.unmountingAnimation = style.unmountingAnimation;
               return style.initial;
             } else {
               return style;
@@ -450,7 +447,14 @@ export default function createAnimatedComponent(ComponentCand) {
         default: { collapsable: false },
       });
 
+      let Component = ComponentCand;
+      if (this.mountingAnimation) {
+        console.log("Nice 2");
+        Component = AnimatedLayout;
+      }
+
       if (Component === AnimatedLayout) {
+        console.log("Nice");
         props.mounting = this.mountingAnimation;
         props.unmounting = this.unmountingAnimation;
       }
@@ -462,7 +466,7 @@ export default function createAnimatedComponent(ComponentCand) {
   }
 
   AnimatedComponent.displayName = `AnimatedComponent(${
-    Component.displayName || Component.name || 'Component'
+    ComponentCand.displayName || ComponentCand.name || 'Component'
   })`;
 
   return React.forwardRef(function AnimatedComponentWrapper(props, ref) {

@@ -43,7 +43,7 @@
         return;
     }
     
-    int depth = (animatedRoot.isShallow)? 2 : 1e9;
+    int depth = 1e9;
     [REAViewTraverser traverse:view withBlock:block shouldSkipAnimationRoots:false depth:depth];
 }
 
