@@ -18,7 +18,7 @@ export class AnimatedLayout extends React.Component {
         this.alreadyConfigured = true;
         console.log("config For a tag", tag);
         let {mounting, unmounting} = this.props;
-    
+
         const config = {
             mountingAnimation: mounting,
             unmountingAnimation: unmounting,
@@ -75,7 +75,8 @@ runOnUI(
                     console.error(`${key} animation for a tag: ${tag} it not a function!`);
                 }
 
-                const animation = withStyleAnimation(configs[tag][key], yogaValues, 0);// it should be an animation factory as it has been created on RN side
+                const styleFactory = configs[tag][key];
+                const animation = withStyleAnimation(styleFactory, yogaValues, 0);// it should be an animation factory as it has been created on RN side
                 console.log("animationObjectKeys", Object.keys(animation));
                 const sv = configs[tag].sv;
                 const originalCallback = animation.callback;

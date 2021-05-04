@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Dimensions } from 'react-native';
 import Animated, { useAnimatedStyle, withTiming, withStartValue} from 'react-native-reanimated';
 
-const {width, height} = Dimensions;
+const {width, height} = Dimensions.get('window');
 
 function AnimatedView() {
 
@@ -21,6 +21,8 @@ function AnimatedView() {
         },
         exiting: (startingValues) => {
             'worklet'
+            console.log("starting Values ", startingValues);
+            console.log("width", width);
             return {
                 originX: withStartValue(startingValues.originX, withTiming(width, {duration: 3000})),
                 opacity: withStartValue(1, withTiming(0.5, {duration: 2000})),

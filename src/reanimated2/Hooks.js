@@ -541,7 +541,7 @@ export function useAnimatedStyle(updaterOrUpdaterObject, dependencies, adapters)
       res = { 
         ...res, 
         mountingAnimation: updaterOrUpdaterObject.entering,
-        unmoutingAnimation: updaterOrUpdaterObject.exiting,
+        unmountingAnimation: updaterOrUpdaterObject.exiting,
       };
     }
     return res;

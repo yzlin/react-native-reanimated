@@ -2,6 +2,7 @@
 import { Easing } from './Easing';
 import { isColor, convertToHSVA, toRGBA } from './Colors';
 import NativeReanimated from './NativeReanimated';
+import { objectTypeAnnotation } from 'babel-types';
 
 let IN_STYLE_UPDATER = false;
 
@@ -164,15 +165,18 @@ export function cancelAnimation(sharedValue) {
 }
 
 export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
+  'worklet'
   return defineAnimation({}, () => {
     'worklet'
 
     const styleAnimations = styleFactory(yogaValues);
 
+    console.log("styleAnimations ", styleAnimations);
+
     const onFrame = (animation, now) => {
       console.log("onFrame");
-      const stillGoing = false;
-      for (const key of styleAnimations) {
+      let stillGoing = false;
+      Object.keys(styleAnimations).forEach((key) => {
         const currentAnimation = animation.styleAnimations[key];
         if (!currentAnimation.finished) {
           const finished = currentAnimation.onFrame(currentAnimation, now);
@@ -183,17 +187,17 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
           }
           animation.current[key] = currentAnimation.current;
         }
-      }
+      });
       return !stillGoing;
     };
 
     const onStart = (animation, value, now, previousAnimation) => {
       console.log("start");
-      for (const key of styleAnimations) {
+      Object.keys(styleAnimations).forEach((key) => {
         console.log("onStart key", key);
         let prevAnimation = null;
-        if (previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
-          const prevAnimation = prevAnimation.styleAnimations[key];
+        if (previousAnimation && previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
+          prevAnimation = previousAnimation.styleAnimations[key];
         }
         let prevVal = 0;
         if (prevAnimation != null) {
@@ -205,7 +209,7 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
         const currentAnimation = animation.styleAnimations[key];
         console.log("onStart key end", key);
         currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
-      }
+      });
     }
 
     return {
@@ -220,7 +224,7 @@ export function withStyleAnimation(styleFactory, yogaValues, depth, callback) {
 }
 
 // TODO it should work only if there was no animation before.
-export function withStartValue(startValue, animation) {
+export function withStartValue(startValue, animation) { 
   'worklet'
   return defineAnimation(startValue, () => {
     'worklet'
