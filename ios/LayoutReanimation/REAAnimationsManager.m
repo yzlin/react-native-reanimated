@@ -9,28 +9,38 @@
 #import <React/RCTComponentData.h>
 #import "REAAnimationRootView.h"
 #import "REAHeroView.h"
+#import <React/UIView+React.h>
+#import <React/UIView+Private.h>
 
 @interface REAAnimationsManager ()
 
-@property (atomic, nullable) void(^startAnimationForTag)(NSNumber *, BOOL, NSDictionary *, NSNumber*);
+@property (atomic, nullable) void(^startAnimationForTag)(NSNumber *, NSString *, NSDictionary *, NSNumber*);
 @property (atomic, nullable) void(^removeConfigForTag)(NSNumber *);
 
 @end
 
+typedef NS_ENUM(NSInteger, ViewState) {
+    Appearing,
+    Disappearing,
+    Layout,
+    Inactive,
+    ToRemove,
+};
+
 @implementation REAAnimationsManager {
   RCTUIManager* _uiManager;
-  NSMutableDictionary<NSNumber*, REASnapshooter*>* _firstSnapshots;
-  NSMutableDictionary<NSNumber*, REASnapshooter*>* _secondSnapshots;
-  NSMutableDictionary<NSNumber*, NSMutableArray*>* _blocksForTags;
+  NSMutableDictionary<NSNumber*, NSNumber *>* _states;
+  NSMutableDictionary<NSNumber*, UIView *>* _viewForTag;
+  NSMutableDictionary<NSNumber*, NSNumber *>* _animatedLayout;
 }
 
 - (instancetype)initWithUIManager:(RCTUIManager *)uiManager
 {
   if (self = [super init]) {
     _uiManager = uiManager;
-    _firstSnapshots = [NSMutableDictionary new];
-    _secondSnapshots = [NSMutableDictionary new];
-    _blocksForTags = [NSMutableDictionary new];
+    _states = [NSMutableDictionary new];
+    _viewForTag = [NSMutableDictionary new];
+    _animatedLayout = [NSMutableDictionary new];
   }
   return self;
 }
@@ -39,36 +49,84 @@
 {
   _startAnimationForTag = nil;
   _removeConfigForTag = nil;
-  _blocksForTags = nil;
   _uiManager = nil;
+  _states = nil;
+  _animatedLayout = nil;
+  _viewForTag = nil;
 }
 
 - (void)notifyAboutChangeWithBeforeSnapshots:(REASnapshooter*)before afterSnapshooter:(REASnapshooter*)after
 {
-  REASnapshooter *prevBefore = _firstSnapshots[before.tag];
-  REASnapshooter *prevAfter = _secondSnapshots[before.tag];
-  // TODO: Do we want to sometimes skip an update?
-  _firstSnapshots[before.tag] = before;
-  _secondSnapshots[before.tag] = after;
-  BOOL isMounting = true;
-  if ([after.capturedValues count] == 0) {
-    isMounting = false;
+  NSMutableArray<UIView*>* allViews = [[NSMutableArray alloc] initWithArray:before.listView];
+  [allViews addObjectsFromArray:after.listView];
+  allViews = [[NSOrderedSet orderedSetWithArray:allViews].array mutableCopy];
+  
+  //update view for tag and setAnimatedLayout
+  for (UIView * view in allViews) {
+    if (_states[view.reactTag] == nil) {
+      _states[view.reactTag] = [NSNumber numberWithInt:Inactive];
+    }
+    _viewForTag[view.reactTag] = view;
+    _animatedLayout[view.reactTag] = before.tag;
   }
-  REASnapshooter *valueableSnapshooter = (isMounting)? after : before;
-  UIView * rootView = valueableSnapshooter.listView.lastObject;
-  NSDictionary * yogaValues = [self prepareDataForAnimatingWorklet: valueableSnapshooter.capturedValues[[REASnapshooter idFor:rootView]]];
-  _startAnimationForTag(before.tag, isMounting, yogaValues, @(0));
+  
+  // attach all orphan views
+  for (UIView * view in allViews) {
+    if (view.superview != nil) {
+      continue;
+    }
+    if ([view isKindOfClass:[REAAnimationRootView class]]) {
+      NSArray<UIView *> *pathToTheRoot = (NSArray<UIView *>*)before.capturedValues[[REASnapshooter idFor:view]][@"pathToWindow"];
+      for (int i = 1; i < [pathToTheRoot count]; ++i) {
+        UIView * current = pathToTheRoot[i-1];
+        UIView * parent = pathToTheRoot[i];
+        if (current.superview == nil) {
+          [parent addSubview:current];
+        }
+      }
+    } else {
+      UIView * parent = (UIView*) before.capturedValues[[REASnapshooter idFor:view]][@"parent"];
+      [parent addSubview:view];
+    }
+  }
+  
+  for (UIView * view in allViews) {
+    ViewState viewState = [_states[view.reactTag] intValue];
+    if (viewState == Appearing || viewState == Disappearing || viewState == ToRemove) {
+      continue; // Maybe we should update an animation instead of skipping
+    }
+    NSMutableDictionary * startValues = before.capturedValues[[REASnapshooter idFor:view]];
+    NSMutableDictionary * targetValues = before.capturedValues[[REASnapshooter idFor:view]];
+    NSString * type = @"entering";
+    
+    if (viewState == Inactive) { // it can be a fresh view
+      if (startValues == nil && targetValues != nil) {
+        NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
+        _startAnimationForTag(view.reactTag, type, preparedValues, @(0));
+      }
+      if (startValues != nil && targetValues == nil) {
+        _states[view.reactTag] = [NSNumber numberWithInt:ToRemove];
+      }
+      continue;
+    }
+    // View must be in Layout State
+    type = @"layout";
+    if (targetValues == nil && startValues != nil) {
+      _states[view.reactTag] = [NSNumber numberWithInt: Disappearing];
+      type = @"exiting";
+      NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
+      _startAnimationForTag(view.reactTag, type, preparedValues, @(0));
+      continue;
+    }
+    
+    NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
+    _startAnimationForTag(view.reactTag, type, preparedValues, @(0));
+  }
+  
+  [self removeLeftovers: before.tag];
 }
 
-
-- (void)addBlockOnAnimationEnd:(NSNumber*)tag block:(void (^)(void))block {
-  if (!_blocksForTags[tag]) {
-    _blocksForTags[tag] = [NSMutableArray new];
-  }
-  [_blocksForTags[tag] addObject:block];
-}
-
-- (void)setAnimationStartingBlock:(void (^)(NSNumber * tag, BOOL isMounting, NSDictionary* yogaValues, NSNumber* depth))startAnimation
+- (void)setAnimationStartingBlock:(void (^)(NSNumber * tag, NSString * type, NSDictionary* yogaValues, NSNumber* depth))startAnimation
 {
   _startAnimationForTag = startAnimation;
 }
@@ -80,121 +138,29 @@
 
 - (void)notifyAboutProgress:(NSDictionary *)newStyle tag:(NSNumber*)tag
 {
-  REASnapshooter* first = _firstSnapshots[tag];
-  REASnapshooter* second = _secondSnapshots[tag];
-  if (first == nil || second == nil) { // animation is not ready
-    return;
+  ViewState state = [_states[tag] intValue];
+  if (state == Inactive) {
+    _states[tag] = [NSNumber numberWithInt:Appearing];
   }
   
-  NSMutableSet<NSString*>* allViewsSet = [NSMutableSet new];
-  NSMutableArray<UIView *>* allViews = [NSMutableArray new];
-  for (UIView *view in first.listView) {
-    [allViews addObject:view];
-    [allViewsSet addObject:[REASnapshooter idFor:view]];
-  }
-  for (UIView *view in second.listView) {
-    if (![allViewsSet containsObject:[REASnapshooter idFor:view]]) {
-      [allViewsSet addObject:[REASnapshooter idFor:view]];
-      [allViews addObject:view];
-    }
-  }
-  
-  for (UIView *view in allViews) {
-    NSMutableDictionary<NSString*, NSNumber*>* startValues = first.capturedValues[[REASnapshooter idFor:view]];
-    NSMutableDictionary<NSString*, NSNumber*>* targetValues = second.capturedValues[[REASnapshooter idFor:view]];
-
-    // Let's assume for now that this is a View componenet
-    NSMutableDictionary* dataComponenetsByName = [_uiManager valueForKey:@"_componentDataByName"];
-    RCTComponentData *componentData = dataComponenetsByName[@"RCTView"];
-    
-    if (startValues == nil && targetValues != nil) { // appearing
-      
-      double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
-      if (targetValues[@"depth"] == nil) {
-        UIView *lowestAppearingAncestor = view;
-        while (![lowestAppearingAncestor isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[REASnapshooter idFor:lowestAppearingAncestor.superview]] == nil) {
-          lowestAppearingAncestor = lowestAppearingAncestor.superview;
-          depth++;
-        }
-        targetValues[@"depth"] = [NSNumber numberWithDouble:depth];
-      }
-      depth = [targetValues[@"depth"] doubleValue];
-      
-      if ([view isKindOfClass:[REAAnimationRootView class]]) {
-        [self setNewProps:[newStyle mutableCopy] forView:view withComponentData:componentData];
-      }
-    }
-    
-    if (startValues != nil && targetValues == nil) { // disappearing
-      // TODO allow nested AnimationRoots to disapprear diffrently
-      
-      double depth = 0; // distance to lowest appearing ancestor or AnimatedRoot
-      if (startValues[@"depth"] == nil) {
-        UIView *lowestDisappearingAncestor = view;
-        while (![lowestDisappearingAncestor isKindOfClass:[REAAnimationRootView class]] && second.capturedValues[[REASnapshooter idFor:(UIView*)first.capturedValues[[REASnapshooter idFor: lowestDisappearingAncestor]][@"parent"]]] == nil) {
-          lowestDisappearingAncestor = (UIView*)first.capturedValues[[REASnapshooter idFor: lowestDisappearingAncestor]][@"parent"];
-          depth++;
-        }
-        startValues[@"depth"] = [NSNumber numberWithDouble:depth];
-        
-        if ([view isKindOfClass:[REAAnimationRootView class]] && first.capturedValues[[REASnapshooter idFor:(UIView*)startValues[@"parent"]]] == nil) {
-          // If I'm a root and I don't have any roots above me
-          
-          if (view.superview == nil) {
-            NSMutableArray * viewsToDetach = [NSMutableArray new];
-            
-            NSMutableArray * pathToWindow = ((NSMutableArray *)startValues[@"pathToWindow"]);
-            for (int i = 1; i < [pathToWindow count]; ++i) {
-              UIView *current = pathToWindow[i-1];
-              
-              if (current != view && [current isKindOfClass:[REAAnimationRootView class]]) {
-                break;
-              }
-              
-              UIView *nextView = pathToWindow[i];
-              if (current.superview == nil) {
-                [viewsToDetach addObject:current];
-                [nextView addSubview:current];
-              }
-            }
-            
-            [self addBlockOnAnimationEnd:tag block:^{
-              for (UIView * current in viewsToDetach) {
-                [current removeFromSuperview];
-              }
-            }];
-          }
-          
-        } else {
-          if (view.superview == nil) {
-            [((UIView*)startValues[@"parent"]) addSubview:view];
-            [self addBlockOnAnimationEnd:tag block:^{
-              [view removeFromSuperview];
-            }];
-          }
-
-        }
-      }
-      depth = [startValues[@"depth"] doubleValue];
-      if ([view isKindOfClass:[REAAnimationRootView class]]) {
-        [self setNewProps:[newStyle mutableCopy] forView:view withComponentData:componentData];
-      }
-    }
-  }
+  NSMutableDictionary* dataComponenetsByName = [_uiManager valueForKey:@"_componentDataByName"];
+  RCTComponentData *componentData = dataComponenetsByName[@"RCTView"];
+  [self setNewProps:[newStyle mutableCopy] forView:_viewForTag[tag] withComponentData:componentData];
 }
 
 - (void)notifyAboutEnd:(NSNumber*)tag cancelled:(BOOL)cancelled
 {
-  if (_blocksForTags[tag] != nil) {
-    for (void(^block)(void) in _blocksForTags[tag]) {
-      block();
-    }
-    [_blocksForTags removeObjectForKey:tag];
-  }
-  
   if (!cancelled) {
-    [_firstSnapshots removeObjectForKey:tag];
-    [_secondSnapshots removeObjectForKey:tag];
+    // Clean data and subtree if possible;
+    
+    //Update State
+    ViewState state = [_states[tag] intValue];
+    if (state == Appearing) {
+      _states[tag] = [NSNumber numberWithInt:Layout];
+    }
+    if (state == Disappearing) {
+      _states[tag] = [NSNumber numberWithInt:ToRemove];
+    }
   }
   
 }

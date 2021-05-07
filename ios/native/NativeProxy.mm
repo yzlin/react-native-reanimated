@@ -155,7 +155,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
   
   std::shared_ptr<LayoutAnimationsProxy> layoutAnimationsProxy = std::make_shared<LayoutAnimationsProxy>(notifyAboutProgress, notifyAboutEnd);
   std::weak_ptr<jsi::Runtime> wrt = animatedRuntime;
-  [animationsManager setAnimationStartingBlock:^(NSNumber * _Nonnull tag, BOOL isMounting,  NSDictionary* _Nonnull values, NSNumber* depth) {
+  [animationsManager setAnimationStartingBlock:^(NSNumber * _Nonnull tag, NSString * type,  NSDictionary* _Nonnull values, NSNumber* depth) {
     std::shared_ptr<jsi::Runtime> rt = wrt.lock();
     if (wrt.expired()) {
       return;
@@ -169,7 +169,7 @@ std::shared_ptr<NativeReanimatedModule> createReanimatedModule(std::shared_ptr<C
     jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
     if (!layoutAnimationRepositoryAsValue.isUndefined()) {
       jsi::Function startAnimationForTag = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "startAnimationForTag");
-      startAnimationForTag.call(*rt, jsi::Value([tag intValue]), jsi::Value(isMounting), yogaValues, jsi::Value([depth intValue]));
+      startAnimationForTag.call(*rt, jsi::Value([tag intValue]), jsi::String::createFromAscii(*rt, std::string([type UTF8String])), yogaValues, jsi::Value([depth intValue]));
     }
   }];
 

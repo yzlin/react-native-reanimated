@@ -53,9 +53,4 @@ RCT_CUSTOM_VIEW_PROPERTY(animated, BOOL, REAAnimationRootView)
     view.shouldBeAnimated = [RCTConvert BOOL:json];
 }
 
-RCT_CUSTOM_VIEW_PROPERTY(isSingleComponet, BOOL, REAAnimationRootView)
-{
-    view.isSingleComponent = [RCTConvert BOOL:json];
-}
-
 @end

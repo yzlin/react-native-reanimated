@@ -8,6 +8,8 @@
 #import "REASnapshooter.h"
 #import "REAHeroView.h"
 #import "REAAnimationRootView.h"
+#import <React/UIView+Private.h>
+#import <React/UIView+React.h>
 
 @implementation REASnapshooter 
 
@@ -62,7 +64,7 @@
     NSString *heroId = ((REAHeroView*)view).heroId;
     return heroId;
   }
-  return [[NSNumber numberWithUnsignedLong:[[NSValue valueWithNonretainedObject:view] hash]] stringValue];
+  return [view.reactTag stringValue];
 }
 
 @end

@@ -1,3 +1,18 @@
+export const DefaultEntering = (targetValues) => {
+    'worklet'
+    return {};
+};
+
+export const DefaultLayout = (targetValues) => {
+    'worklet'
+    return {};
+};
+
+export const DefaultExiting = (startValues) => {
+    'worklet'
+    return {};
+};
+
 export function ReverseAnimation(animation) {
     'worklet'
     return (progress, values, depth, isMounting, isReversed) => {

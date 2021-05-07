@@ -415,14 +415,8 @@ function jestStyleUpdater(
   }
 }
 
-export function useAnimatedStyle(updaterOrUpdaterObject, dependencies, adapters) {
+export function useAnimatedStyle(updater, dependencies, adapters) {
   const viewDescriptor = useSharedValue({ tag: -1, name: null }, false);
-  const updater = typeof updaterOrUpdaterObject === 'object'? updaterOrUpdaterObject.steady : updaterOrUpdaterObject;
-  
-  if (typeof updaterOrUpdaterObject === 'object') {
-    console.log("nice 000");
-  }
-
   const initRef = useRef(null);
   const inputs = Object.values(updater._closure);
   const viewRef = useRef(null);
@@ -536,15 +530,7 @@ export function useAnimatedStyle(updaterOrUpdaterObject, dependencies, adapters)
   if (process.env.JEST_WORKER_ID) {
     return { viewDescriptor, initial, viewRef, animatedStyle };
   } else {
-    let res = { viewDescriptor, initial, viewRef };
-    if (typeof updaterOrUpdaterObject === 'object') {
-      res = { 
-        ...res, 
-        mountingAnimation: updaterOrUpdaterObject.entering,
-        unmountingAnimation: updaterOrUpdaterObject.exiting,
-      };
-    }
-    return res;
+    return { viewDescriptor, initial, viewRef };
   }
 }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, findNodeHandle, Platform, StyleSheet } from 'react-native';
+import { findNodeHandle, Platform, StyleSheet } from 'react-native';
 import ReanimatedEventEmitter from './ReanimatedEventEmitter';
 
 import AnimatedEvent from './reanimated1/core/AnimatedEvent';
@@ -12,7 +12,7 @@ import setAndForwardRef from './setAndForwardRef';
 import invariant from 'fbjs/lib/invariant';
 import { adaptViewConfig } from './ConfigHelper';
 import { RNRenderer } from './reanimated2/platform-specific/RNRenderer';
-import { AnimatedLayout } from './reanimated2/layoutReanimation/AnimatedRoot';
+import { DefaultEntering, DefaultExinting, DefaultLayout } from './reanimated2/layoutReanimation/AnimatedRoot';
 
 const NODE_MAPPING = new Map();
 
@@ -58,10 +58,10 @@ function flattenArray(array) {
   return resultArr;
 }
 
-export default function createAnimatedComponent(ComponentCand) {
+export default function createAnimatedComponent(Component) {
   invariant(
-    typeof ComponentCand !== 'function' ||
-      (ComponentCand.prototype && ComponentCand.prototype.isReactComponent),
+    typeof Component !== 'function' ||
+      (Component.prototype && Component.prototype.isReactComponent),
     '`createAnimatedComponent` does not support stateless functional components; ' +
       'use a class component instead.'
   );
@@ -75,12 +75,14 @@ export default function createAnimatedComponent(ComponentCand) {
       if (process.env.JEST_WORKER_ID) {
         this.animatedStyle = { value: {} };
       }
+      this.sv = makeMutable({});
     }
 
     componentWillUnmount() {
       this._detachPropUpdater();
       this._propsAnimated && this._propsAnimated.__detach();
       this._detachNativeEvents();
+      this.sv = null;
     }
 
     componentDidMount() {
@@ -282,7 +284,6 @@ export default function createAnimatedComponent(ComponentCand) {
       styles.forEach((style) => {
         if (style?.viewDescriptor) {
           style.viewDescriptor.value = { tag: viewTag, name: viewName };
-
           if (process.env.JEST_WORKER_ID) {
             /**
              * We need to connect Jest's TestObject instance whose contains just props object
@@ -302,7 +303,7 @@ export default function createAnimatedComponent(ComponentCand) {
       if (this.props.animatedProps?.viewDescriptor) {
         this.props.animatedProps.viewDescriptor.value = {
           tag: viewTag,
-          name: viewName, // TODO send it to Animated root
+          name: viewName,
         };
       }
     }
@@ -340,6 +341,22 @@ export default function createAnimatedComponent(ComponentCand) {
     _setComponentRef = setAndForwardRef({
       getForwardedRef: () => this.props.forwardedRef,
       setLocalRef: (ref) => {
+        // TODO update config
+        const tag = findNodeHandle(ref);
+        const layout = this.props.layout ? this.props.layout : DefaultLayout;
+        const entering = this.props.entering ? this.props.entering : DefaultEntering;
+        const exiting = this.props.exiting ? this.props.exiting : DefaultExinting;
+        const config = {
+            layout,
+            entering,
+            exiting,
+            sv: this.sv,
+        }
+        runOnUI(() => {
+            'worklet'
+            global.LayoutAnimationRepository.registerConfig(tag, config);
+        })();
+
         if (ref !== this._component) {
           this._component = ref;
         }
@@ -387,10 +404,6 @@ export default function createAnimatedComponent(ComponentCand) {
               if (style.viewRef.current === null) {
                 style.viewRef.current = this;
               }
-              console.log("keys", Object.keys(style));
-              if (style.mountingAnimation) console.log("nice Style")
-              this.mountingAnimation = style.mountingAnimation;
-              this.unmountingAnimation = style.unmountingAnimation;
               return style.initial;
             } else {
               return style;
@@ -446,19 +459,6 @@ export default function createAnimatedComponent(ComponentCand) {
         web: {},
         default: { collapsable: false },
       });
-
-      let Component = ComponentCand;
-      if (this.mountingAnimation) {
-        console.log("Nice 2");
-        Component = AnimatedLayout;
-      }
-
-      if (Component === AnimatedLayout) {
-        console.log("Nice");
-        props.mounting = this.mountingAnimation;
-        props.unmounting = this.unmountingAnimation;
-      }
-
       return (
         <Component {...props} ref={this._setComponentRef} {...platformProps} />
       );
@@ -466,7 +466,7 @@ export default function createAnimatedComponent(ComponentCand) {
   }
 
   AnimatedComponent.displayName = `AnimatedComponent(${
-    ComponentCand.displayName || ComponentCand.name || 'Component'
+    Component.displayName || Component.name || 'Component'
   })`;
 
   return React.forwardRef(function AnimatedComponentWrapper(props, ref) {
