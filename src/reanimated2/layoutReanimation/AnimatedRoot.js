@@ -47,9 +47,10 @@ runOnUI(
                 }
 
                 const styleFactory = configs[tag][type];
-                const animation = withStyleAnimation(styleFactory, yogaValues, 0);// it should be an animation factory as it has been created on RN side
                 console.log("animationObjectKeys", Object.keys(animation));
                 const sv = configs[tag].sv;
+                sv._value = styleFactory.initialValues;
+                const animation = withStyleAnimation(styleFactory.animations);
 
                 animation.callback = (finished) => {
                     if (finished) {

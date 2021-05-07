@@ -11,15 +11,46 @@ export const DefaultEntering = (targetValues) => {
     }
 };
 
-export const DefaultLayout = (targetValues) => {
+export const DefaultLayout = (values) => {
     'worklet'
-    return {};
+    return {
+        initialValues = {},
+        animations: {},
+    }
 };
 
 export const DefaultExiting = (startValues) => {
     'worklet'
-    return {};
+    return {
+        initialValues = {
+            originX: startValues.originX,
+            originY: startValues.originY,
+            width: startValues.width,
+            height: startValues.height,
+        },
+        animations: {},
+    }
 };
+
+export const 
+
+export const Layout = (values) => {
+    'worklet'
+    return {
+        initialValues = {
+            originX: values.boriginX,
+            originY: values.boriginY,
+            width: values.bwidth,
+            height: values.bheight,
+        },
+        animations: {
+            originX: withStartValue(values.boriginX, withTiming(values.originX)),
+            originY: withStartValue(values.boriginY, withTiming(values.originY)),
+            width: withStartValue(values.bwidth, withTiming(values.width)),
+            height: withStartValue(values.bheight, withTiming(values.height)),
+        },
+    }
+}
 
 export function ReverseAnimation(animation) {
     'worklet'

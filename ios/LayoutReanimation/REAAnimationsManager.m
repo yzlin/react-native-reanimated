@@ -127,7 +127,14 @@ typedef NS_ENUM(NSInteger, ViewState) {
       continue;
     }
     
-    NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
+    NSDictionary* preparedStartValues = [self prepareDataForAnimatingWorklet:startValues];
+    NSDictionary* preparedTargetValues = [self prepareDataForAnimatingWorklet:targetValues];
+    NSMutableDictionary * preparedValues = [NSMutableDictionary new];
+    [preparedValues addEntriesFromDictionary:preparedTargetValues];
+    for (NSString* key in preparedStartValues.allKeys) {
+      preparedValues[[NSString stringWithFormat:@"%@%@", @"b", key]] = preparedStartValues[key];
+    }
+    
     _startAnimationForTag(view.reactTag, type, preparedValues, @(0));
   }
   
