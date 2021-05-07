@@ -11,11 +11,15 @@
 #import "REAHeroView.h"
 #import <React/UIView+React.h>
 #import <React/UIView+Private.h>
+#import "REAViewTraverser.h"
 
 @interface REAAnimationsManager ()
 
 @property (atomic, nullable) void(^startAnimationForTag)(NSNumber *, NSString *, NSDictionary *, NSNumber*);
 @property (atomic, nullable) void(^removeConfigForTag)(NSNumber *);
+
+- (void)removeLeftovers:(NSNumber*)tag;
+- (void)scheduleCleaning;
 
 @end
 
@@ -32,6 +36,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
   NSMutableDictionary<NSNumber*, NSNumber *>* _states;
   NSMutableDictionary<NSNumber*, UIView *>* _viewForTag;
   NSMutableDictionary<NSNumber*, NSNumber *>* _animatedLayout;
+  NSMutableSet<NSNumber*>* _toRemove;
 }
 
 - (instancetype)initWithUIManager:(RCTUIManager *)uiManager
@@ -41,6 +46,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
     _states = [NSMutableDictionary new];
     _viewForTag = [NSMutableDictionary new];
     _animatedLayout = [NSMutableDictionary new];
+    _toRemove = [NSMutableSet new];
   }
   return self;
 }
@@ -53,10 +59,12 @@ typedef NS_ENUM(NSInteger, ViewState) {
   _states = nil;
   _animatedLayout = nil;
   _viewForTag = nil;
+  _toRemove = nil;
 }
 
 - (void)notifyAboutChangeWithBeforeSnapshots:(REASnapshooter*)before afterSnapshooter:(REASnapshooter*)after
 {
+  // TODO native view which are not a part of React may not have reactTag use NSData instead;
   NSMutableArray<UIView*>* allViews = [[NSMutableArray alloc] initWithArray:before.listView];
   [allViews addObjectsFromArray:after.listView];
   allViews = [[NSOrderedSet orderedSetWithArray:allViews].array mutableCopy];
@@ -126,6 +134,68 @@ typedef NS_ENUM(NSInteger, ViewState) {
   [self removeLeftovers: before.tag];
 }
 
+- (void)scheduleCleaning
+{
+  __weak REAAnimationsManager *weakSelf = self;
+  dispatch_async(dispatch_get_main_queue(), ^{
+    if (weakSelf == nil) {
+      return;
+    }
+    NSMutableSet<NSNumber*> * toRemove = _toRemove;
+    _toRemove = [NSMutableSet new];
+    
+    NSMutableSet<NSNumber *>* candidates = [NSMutableSet new];
+    for (NSNumber * tag in toRemove) {
+      UIView * view = _viewForTag[tag];
+      if (view == nil) {
+        continue;
+      }
+      [candidates addObject: _animatedLayout[tag]];
+    }
+    
+    for (NSNumber * tag in candidates) {
+      [self removeLeftovers:tag];
+    }
+  });
+}
+
+- (BOOL) dfs:(UIView *) view disapperingAbove:(BOOL)disappearingAbove
+{
+  BOOL active = false;
+  ViewState state = [_states[view.reactTag] intValue];
+  BOOL disappearing = state == ToRemove || state == Disappearing;
+  
+  for (UIView* child in view.subviews) {
+    active |= [self dfs:child disapperingAbove:(disappearingAbove || disappearing)];
+  }
+  
+  if (!disappearingAbove && state == ToRemove && !active) {
+    [REAViewTraverser traverse:view withBlock:^(UIView * _Nonnull current) {
+      [_states removeObjectForKey:current.reactTag];
+      [_animatedLayout removeObjectForKey:current.reactTag];
+      [_viewForTag removeObjectForKey:current.reactTag];
+      _removeConfigForTag(current.reactTag);
+      if (view.reactTag == current.reactTag) { // TODO If it's lowest animation layout then remove also path to the root
+        [view removeFromSuperview];
+      }
+      for (UIView * child in view.subviews) {
+        [child removeFromSuperview];
+      }
+      
+    }];
+  }
+  
+  return active || (!disappearing);
+}
+
+- (void)removeLeftovers:(NSNumber*)tag
+{
+  UIView * view = _viewForTag[tag];
+  if (view == nil) {
+    return;
+  }
+}
+
 - (void)setAnimationStartingBlock:(void (^)(NSNumber * tag, NSString * type, NSDictionary* yogaValues, NSNumber* depth))startAnimation
 {
   _startAnimationForTag = startAnimation;
@@ -151,8 +221,6 @@ typedef NS_ENUM(NSInteger, ViewState) {
 - (void)notifyAboutEnd:(NSNumber*)tag cancelled:(BOOL)cancelled
 {
   if (!cancelled) {
-    // Clean data and subtree if possible;
-    
     //Update State
     ViewState state = [_states[tag] intValue];
     if (state == Appearing) {
@@ -160,9 +228,10 @@ typedef NS_ENUM(NSInteger, ViewState) {
     }
     if (state == Disappearing) {
       _states[tag] = [NSNumber numberWithInt:ToRemove];
+      [_toRemove addObject:tag];
+      [self scheduleCleaning];
     }
   }
-  
 }
 
 - (void)setNewProps:(NSMutableDictionary *)newProps forView:(UIView*)view withComponentData:(RCTComponentData*)componentData
@@ -192,7 +261,6 @@ typedef NS_ENUM(NSInteger, ViewState) {
     [newProps removeObjectForKey:@"originY"];
   }
   [componentData setProps:newProps forView:view];
-
 }
 
 - (NSDictionary*) prepareDataForAnimatingWorklet:(NSMutableDictionary*)values

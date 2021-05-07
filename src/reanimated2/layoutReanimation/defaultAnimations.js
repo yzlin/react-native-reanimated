@@ -1,6 +1,14 @@
 export const DefaultEntering = (targetValues) => {
     'worklet'
-    return {};
+    return {
+        initialValues = {
+            originX: targetValues.originX,
+            originY: targetValues.originY,
+            width: targetValues.width,
+            height: targetValues.height,
+        },
+        animations: {},
+    }
 };
 
 export const DefaultLayout = (targetValues) => {
