@@ -1,7 +1,9 @@
+import { withStartValue, withTiming } from '../animations';
+
 export const DefaultEntering = (targetValues) => {
     'worklet'
     return {
-        initialValues = {
+        initialValues: {
             originX: targetValues.originX,
             originY: targetValues.originY,
             width: targetValues.width,
@@ -14,7 +16,7 @@ export const DefaultEntering = (targetValues) => {
 export const DefaultLayout = (values) => {
     'worklet'
     return {
-        initialValues = {},
+        initialValues: {},
         animations: {},
     }
 };
@@ -22,7 +24,7 @@ export const DefaultLayout = (values) => {
 export const DefaultExiting = (startValues) => {
     'worklet'
     return {
-        initialValues = {
+        initialValues: {
             originX: startValues.originX,
             originY: startValues.originY,
             width: startValues.width,
@@ -32,12 +34,10 @@ export const DefaultExiting = (startValues) => {
     }
 };
 
-export const 
-
 export const Layout = (values) => {
     'worklet'
     return {
-        initialValues = {
+        initialValues: {
             originX: values.boriginX,
             originY: values.boriginY,
             width: values.bwidth,

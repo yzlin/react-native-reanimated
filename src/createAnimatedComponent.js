@@ -12,7 +12,8 @@ import setAndForwardRef from './setAndForwardRef';
 import invariant from 'fbjs/lib/invariant';
 import { adaptViewConfig } from './ConfigHelper';
 import { RNRenderer } from './reanimated2/platform-specific/RNRenderer';
-import { DefaultEntering, DefaultExinting, DefaultLayout } from './reanimated2/layoutReanimation/AnimatedRoot';
+import { DefaultEntering, DefaultExinting, DefaultLayout } from './reanimated2/layoutReanimation/defaultAnimations';
+import { makeMutable, runOnUI } from './reanimated2/core';
 
 const NODE_MAPPING = new Map();
 

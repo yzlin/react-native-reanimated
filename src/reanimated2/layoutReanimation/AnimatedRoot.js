@@ -12,7 +12,7 @@ export class AnimatedLayout extends React.Component {
 
     render() {
         return (
-            <REALayoutView {...this.props} animated={true && !(this.props.animated === 'false')} />
+            <REALayoutView collapsable={false} {...this.props} animated={true && !(this.props.animated === 'false')} />
         );
     }
 
@@ -49,7 +49,10 @@ runOnUI(
                 const styleFactory = configs[tag][type];
                 console.log("animationObjectKeys", Object.keys(animation));
                 const sv = configs[tag].sv;
+                _stopObservingProgress(tag, false);
+                _startObservingProgress(tag, sv);
                 sv._value = styleFactory.initialValues;
+                _stopObservingProgress(tag, false);
                 const animation = withStyleAnimation(styleFactory.animations);
 
                 animation.callback = (finished) => {
