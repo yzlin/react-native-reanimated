@@ -12,7 +12,7 @@ import setAndForwardRef from './setAndForwardRef';
 import invariant from 'fbjs/lib/invariant';
 import { adaptViewConfig } from './ConfigHelper';
 import { RNRenderer } from './reanimated2/platform-specific/RNRenderer';
-import { DefaultEntering, DefaultExinting, DefaultLayout } from './reanimated2/layoutReanimation/defaultAnimations';
+import { DefaultEntering, DefaultExiting, DefaultLayout } from './reanimated2/layoutReanimation/defaultAnimations';
 import { makeMutable, runOnUI } from './reanimated2/core';
 
 const NODE_MAPPING = new Map();
@@ -344,19 +344,23 @@ export default function createAnimatedComponent(Component) {
       setLocalRef: (ref) => {
         // TODO update config
         const tag = findNodeHandle(ref);
-        const layout = this.props.layout ? this.props.layout : DefaultLayout;
-        const entering = this.props.entering ? this.props.entering : DefaultEntering;
-        const exiting = this.props.exiting ? this.props.exiting : DefaultExinting;
-        const config = {
-            layout,
-            entering,
-            exiting,
-            sv: this.sv,
+        if ((this.props.layout || this.props.entering || this.props.exiting) && tag != null) {
+          console.log("trying to register config for", tag);
+          const layout = this.props.layout ? this.props.layout : DefaultLayout;
+          const entering = this.props.entering ? this.props.entering : DefaultEntering;
+          const exiting = this.props.exiting ? this.props.exiting : DefaultExiting;
+          const config = {
+              layout,
+              entering,
+              exiting,
+              sv: this.sv,
+          }
+          runOnUI(() => {
+              'worklet'
+              global.LayoutAnimationRepository.registerConfig(tag, config);
+          })();
         }
-        runOnUI(() => {
-            'worklet'
-            global.LayoutAnimationRepository.registerConfig(tag, config);
-        })();
+       
 
         if (ref !== this._component) {
           this._component = ref;

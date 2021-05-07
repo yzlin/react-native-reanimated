@@ -99,12 +99,13 @@ typedef NS_ENUM(NSInteger, ViewState) {
   }
   
   for (UIView * view in allViews) {
+    int tag = [view.reactTag intValue];
     ViewState viewState = [_states[view.reactTag] intValue];
     if (viewState == Appearing || viewState == Disappearing || viewState == ToRemove) {
       continue; // Maybe we should update an animation instead of skipping
     }
     NSMutableDictionary * startValues = before.capturedValues[[REASnapshooter idFor:view]];
-    NSMutableDictionary * targetValues = before.capturedValues[[REASnapshooter idFor:view]];
+    NSMutableDictionary * targetValues = after.capturedValues[[REASnapshooter idFor:view]];
     NSString * type = @"entering";
     
     if (viewState == Inactive) { // it can be a fresh view

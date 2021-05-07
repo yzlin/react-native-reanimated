@@ -30,6 +30,7 @@ runOnUI(
             configs,
             registerConfig(tag, config) {
                 configs[tag] = config;
+                console.log("registered config for", tag);
             },
             removeConfig(tag) {
                 configs[tag].sv.value = {};
@@ -46,14 +47,14 @@ runOnUI(
                     console.error(`${type} animation for a tag: ${tag} it not a function!`);
                 }
 
-                const styleFactory = configs[tag][type];
-                console.log("animationObjectKeys", Object.keys(animation));
+                const style = configs[tag][type](yogaValues);
+                console.log("animationObjectKeys", Object.keys(style));
                 const sv = configs[tag].sv;
                 _stopObservingProgress(tag, false);
                 _startObservingProgress(tag, sv);
-                sv._value = styleFactory.initialValues;
+                sv._value = style.initialValues;
                 _stopObservingProgress(tag, false);
-                const animation = withStyleAnimation(styleFactory.animations);
+                const animation = withStyleAnimation(style.animations);
 
                 animation.callback = (finished) => {
                     if (finished) {
