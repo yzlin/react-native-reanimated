@@ -100,14 +100,20 @@ typedef NS_ENUM(NSInteger, ViewState) {
   
   for (UIView * view in allViews) {
     int tag = [view.reactTag intValue];
-    ViewState viewState = [_states[view.reactTag] intValue];
-    if (viewState == Appearing || viewState == Disappearing || viewState == ToRemove) {
-      continue; // Maybe we should update an animation instead of skipping
-    }
+    NSString * type = @"entering";
     NSMutableDictionary * startValues = before.capturedValues[[REASnapshooter idFor:view]];
     NSMutableDictionary * targetValues = after.capturedValues[[REASnapshooter idFor:view]];
-    NSString * type = @"entering";
     
+    ViewState viewState = [_states[view.reactTag] intValue];
+    if (viewState == Appearing || viewState == Disappearing || viewState == ToRemove) {
+      if (viewState == Appearing && startValues != nil && targetValues == nil) {
+        _states[view.reactTag] = [NSNumber numberWithInt: Disappearing];
+        type = @"exiting";
+        NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:startValues];
+        _startAnimationForTag(view.reactTag, type, preparedValues, @(0));      }
+      continue; // Maybe we should update an animation instead of skipping
+    }
+  
     if (viewState == Inactive) { // it can be a fresh view
       if (startValues == nil && targetValues != nil) {
         NSDictionary* preparedValues = [self prepareDataForAnimatingWorklet:targetValues];
