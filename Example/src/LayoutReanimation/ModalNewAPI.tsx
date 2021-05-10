@@ -12,10 +12,12 @@ function AnimatedView() {
         const animations = {
             originX: withStartValue(-width, withTiming(targetValues.originX, {duration: 3000})),
             opacity: withStartValue(0, withTiming(1, {duration: 2000})),
+            borderRadius: withStartValue(10, withTiming(30, { duration: 3000 })),
         };
         const initialValues = {
             originX: -width,
             opacity: 0,
+            borderRadius: 10,
         };
         return {
            initialValues,
