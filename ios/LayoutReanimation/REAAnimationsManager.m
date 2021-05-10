@@ -173,7 +173,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
   });
 }
 
-- (BOOL) dfs:(UIView *) view disapperingAbove:(BOOL)disappearingAbove
+- (BOOL) dfs:(UIView *)view disapperingAbove:(BOOL)disappearingAbove
 {
   BOOL active = false;
   ViewState state = [_states[view.reactTag] intValue];
@@ -196,10 +196,10 @@ typedef NS_ENUM(NSInteger, ViewState) {
         [child removeFromSuperview];
       }
       
-    }];
+    } shouldSkipAnimationRoots:false depth:(1e9)];
   }
   
-  return active || (!disappearing);
+  return active || (!ToRemove);
 }
 
 - (void)removeLeftovers:(NSNumber*)tag
@@ -208,6 +208,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
   if (view == nil) {
     return;
   }
+  [self dfs:view disapperingAbove:false];
 }
 
 - (void)setAnimationStartingBlock:(void (^)(NSNumber * tag, NSString * type, NSDictionary* yogaValues, NSNumber* depth))startAnimation

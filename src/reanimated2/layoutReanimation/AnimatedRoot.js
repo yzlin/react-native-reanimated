@@ -33,7 +33,6 @@ runOnUI(
                 console.log("registered config for", tag);
             },
             removeConfig(tag) {
-                configs[tag].sv.value = {};
                 delete configs[tag];
             },
             startAnimationForTag(tag, type, yogaValues) { 
