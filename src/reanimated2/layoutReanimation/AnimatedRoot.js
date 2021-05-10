@@ -54,7 +54,7 @@ runOnUI(
                 _startObservingProgress(tag, sv);
                 sv._value = style.initialValues;
                 _stopObservingProgress(tag, false);
-                const animation = withStyleAnimation(style.animations);
+                const animation = withStyleAnimation(style.animations, style.initialValues);
 
                 animation.callback = (finished) => {
                     if (finished) {

@@ -1,7 +1,7 @@
 import { SlideFromRightIOS } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/TransitionPresets';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Dimensions } from 'react-native';
-import Animated, { AnimatedLayout, withTiming, withStartValue} from 'react-native-reanimated';
+import Animated, { AnimatedLayout, withTiming, withStartValue, withDelay} from 'react-native-reanimated';
 
 const {width, height} = Dimensions.get('window');
 
@@ -10,9 +10,9 @@ function AnimatedView() {
     const entering = (targetValues) => {
         'worklet'
         const animations = {
-            originX: withStartValue(-width, withTiming(targetValues.originX, {duration: 3000})),
-            opacity: withStartValue(0, withTiming(1, {duration: 2000})),
-            borderRadius: withStartValue(10, withTiming(30, { duration: 3000 })),
+            originX: withTiming(targetValues.originX, {duration: 3000}),
+            opacity: withTiming(1, {duration: 2000}),
+            borderRadius: withDelay(4000, withTiming(30, { duration: 3000 })),
         };
         const initialValues = {
             originX: -width,

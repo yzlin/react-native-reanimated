@@ -164,7 +164,7 @@ export function cancelAnimation(sharedValue) {
   sharedValue.value = sharedValue.value; // eslint-disable-line no-self-assign
 }
 
-export function withStyleAnimation(styleAnimations, callback) {
+export function withStyleAnimation(styleAnimations, initialStyle, callback) {
   'worklet'
   return defineAnimation({}, () => {
     'worklet'
@@ -202,6 +202,9 @@ export function withStyleAnimation(styleAnimations, callback) {
         }
         if (value[key]) {
           prevVal = value[key];
+        }
+        if (initialStyle[key]) {
+          prevVal = initialStyle[key];
         }
         const currentAnimation = animation.styleAnimations[key];
         console.log("onStart key end", key);

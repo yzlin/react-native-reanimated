@@ -44,10 +44,10 @@ export const Layout = (values) => {
             height: values.bheight,
         },
         animations: {
-            originX: withStartValue(values.boriginX, withTiming(values.originX)),
-            originY: withStartValue(values.boriginY, withTiming(values.originY)),
-            width: withStartValue(values.bwidth, withTiming(values.width)),
-            height: withStartValue(values.bheight, withTiming(values.height)),
+            originX: withTiming(values.originX),
+            originY: withTiming(values.originY),
+            width: withTiming(values.width),
+            height: withTiming(values.height),
         },
     }
 }
