@@ -52,7 +52,10 @@ runOnUI(
                 const sv = configs[tag].sv;
                 _stopObservingProgress(tag, false);
                 _startObservingProgress(tag, sv);
-                sv._value = style.initialValues;
+                sv._value = Object.assign({}, sv._value, style.initialValues);
+                console.log("_initialValues", JSON.stringify(style.initialValues));
+                console.log("_value", JSON.stringify(Object.assign({}, sv._value, style.initialValues)));
+                console.log("_valuew", JSON.stringify(sv._value));
                 _stopObservingProgress(tag, false);
                 const animation = withStyleAnimation(style.animations);
 

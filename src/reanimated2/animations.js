@@ -192,7 +192,7 @@ export function withStyleAnimation(styleAnimations) {
             } else {
               stillGoing = true;
             }
-            animation.current[transform][i][type] = currentAnimation.current;
+            animation.current.transform[i][type] = currentAnimation.current;
           }
         } else {
           if (!currentAnimation.finished) {
@@ -226,7 +226,8 @@ export function withStyleAnimation(styleAnimations) {
           for (let i = 0; i < transform.length; i++) { // duplication of code to avoid function calls
             let prevAnimation = null;
             const type = Object.keys(transform[i])[0];
-            if (prevTransform.length > i) {
+            console.log("type", type);
+            if (prevTransform && prevTransform.length > i) {
               const prevTransformStep = prevTransform[i];
               const prevType = Object.keys(prevTransformStep)[0];
               if (prevType === type) {

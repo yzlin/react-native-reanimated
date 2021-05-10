@@ -1,7 +1,7 @@
 import { SlideFromRightIOS } from '@react-navigation/stack/lib/typescript/src/TransitionConfigs/TransitionPresets';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Dimensions } from 'react-native';
-import Animated, { AnimatedLayout, withTiming, withStartValue, withDelay} from 'react-native-reanimated';
+import Animated, { AnimatedLayout, withTiming, withStartValue, withDelay, layout} from 'react-native-reanimated';
 
 const {width, height} = Dimensions.get('window');
 
@@ -13,11 +13,13 @@ function AnimatedView() {
             originX: withTiming(targetValues.originX, {duration: 3000}),
             opacity: withTiming(1, {duration: 2000}),
             borderRadius: withDelay(4000, withTiming(30, { duration: 3000 })),
+          //  transform: [{rotate: withTiming('90deg', {duration: 4000})}, {scale: withTiming(0.5, {duration: 3500})}],
         };
         const initialValues = {
             originX: -width,
             opacity: 0,
             borderRadius: 10,
+           // transform: [{rotate: '90deg', scale: 0.5}],
         };
         return {
            initialValues,
@@ -45,7 +47,7 @@ function AnimatedView() {
     }
 
     return (
-        <Animated.View style={[styles.animatedView]} {...{entering, exiting}} >
+        <Animated.View style={[styles.animatedView]} {...{entering, exiting, layout}} >
             <Text> kk </Text>
         </Animated.View>
     );
