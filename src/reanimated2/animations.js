@@ -216,6 +216,7 @@ export function withStyleAnimation(styleAnimations) {
       console.log("start");
       Object.keys(styleAnimations).forEach((key) => {
         if (key === 'transform') {
+          animation.current.transform = [];
           const transform = styleAnimations.transform;
           let prevTransform = null;
           let valueTransform = value.transform;
@@ -242,6 +243,9 @@ export function withStyleAnimation(styleAnimations) {
             if (valueTransform != null && valueTransform.length > i && valueTransform[i][type]) {
               prevVal = valueTransform[i][type];
             }
+            const obj = {};
+            obj[type] = prevVal;
+            animation.current.transform[i] = obj;
             const currentAnimation = transform[i][type];
             console.log("onStart key end", key);
             currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
@@ -259,6 +263,7 @@ export function withStyleAnimation(styleAnimations) {
           if (value[key]) {
             prevVal = value[key];
           }
+          animation.current[key] = prevVal;
           const currentAnimation = animation.styleAnimations[key];
           console.log("onStart key end", key);
           currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);

@@ -13,13 +13,13 @@ function AnimatedView() {
             originX: withTiming(targetValues.originX, {duration: 3000}),
             opacity: withTiming(1, {duration: 2000}),
             borderRadius: withDelay(4000, withTiming(30, { duration: 3000 })),
-          //  transform: [{rotate: withTiming('90deg', {duration: 4000})}, {scale: withTiming(0.5, {duration: 3500})}],
+            transform: [{rotate: withTiming('0deg', {duration: 4000})}, {scale: withTiming(1, {duration: 3500})}],
         };
         const initialValues = {
             originX: -width,
             opacity: 0,
             borderRadius: 10,
-           // transform: [{rotate: '90deg', scale: 0.5}],
+            transform: [{rotate: '90deg'}, {scale: 0.5}],
         };
         return {
            initialValues,
