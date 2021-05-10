@@ -164,7 +164,7 @@ export function cancelAnimation(sharedValue) {
   sharedValue.value = sharedValue.value; // eslint-disable-line no-self-assign
 }
 
-export function withStyleAnimation(styleAnimations, initialStyle, callback) {
+export function withStyleAnimation(styleAnimations) {
   'worklet'
   return defineAnimation({}, () => {
     'worklet'
@@ -175,14 +175,38 @@ export function withStyleAnimation(styleAnimations, initialStyle, callback) {
       let stillGoing = false;
       Object.keys(styleAnimations).forEach((key) => {
         const currentAnimation = animation.styleAnimations[key];
-        if (!currentAnimation.finished) {
-          const finished = currentAnimation.onFrame(currentAnimation, now);
-          if (finished) {
-            currentAnimation.finished = true;
-          } else {
-            stillGoing = true;
+        if (key === 'transform') {
+          const transform = animation.styleAnimations.transform;
+          for (let i = 0; i < transform.length; i++) {
+            const type = Object.keys(transform[i])[0];
+            const currentAnimation = transform[i][type];
+            if (currentAnimation.finished) {
+              continue;
+            }
+            const finished = currentAnimation.onFrame(currentAnimation, now);
+            if (finished) {
+              currentAnimation.finished = true;
+              if (currentAnimation.callback) {
+                currentAnimation.callback(true);
+              }
+            } else {
+              stillGoing = true;
+            }
+            animation.current[transform][i][type] = currentAnimation.current;
           }
-          animation.current[key] = currentAnimation.current;
+        } else {
+          if (!currentAnimation.finished) {
+            const finished = currentAnimation.onFrame(currentAnimation, now);
+            if (finished) {
+              currentAnimation.finished = true;
+              if (currentAnimation.callback) {
+                currentAnimation.callback(true);
+              }
+            } else {
+              stillGoing = true;
+            }
+            animation.current[key] = currentAnimation.current;
+          }
         }
       });
       return !stillGoing;
@@ -191,25 +215,81 @@ export function withStyleAnimation(styleAnimations, initialStyle, callback) {
     const onStart = (animation, value, now, previousAnimation) => {
       console.log("start");
       Object.keys(styleAnimations).forEach((key) => {
-        console.log("onStart key", key);
-        let prevAnimation = null;
-        if (previousAnimation && previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
-          prevAnimation = previousAnimation.styleAnimations[key];
+        if (key === 'transform') {
+          const transform = styleAnimations.transform;
+          let prevTransform = null;
+          let valueTransform = value.transform;
+          if (previousAnimation && previousAnimation.styleAnimations && previousAnimation.styleAnimations.transform) {
+            prevAnimation = previousAnimation.styleAnimations.transform;
+          }
+
+          for (let i = 0; i < transform.length; i++) { // duplication of code to avoid function calls
+            let prevAnimation = null;
+            const type = Object.keys(transform[i])[0];
+            if (prevTransform.length > i) {
+              const prevTransformStep = prevTransform[i];
+              const prevType = Object.keys(prevTransformStep)[0];
+              if (prevType === type) {
+                prevAnimation = prevTransformStep[prevType];
+              }
+            }
+
+            let prevVal = 0;
+            if (prevAnimation != null) {
+              prevVal = prevAnimation.current;
+            }
+            if (valueTransform != null && valueTransform.length > i && valueTransform[i][type]) {
+              prevVal = valueTransform[i][type];
+            }
+            const currentAnimation = transform[i][type];
+            console.log("onStart key end", key);
+            currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
+          }
+        } else {
+          console.log("onStart key", key);
+          let prevAnimation = null;
+          if (previousAnimation && previousAnimation.styleAnimations && previousAnimation.styleAnimations[key]) {
+            prevAnimation = previousAnimation.styleAnimations[key];
+          }
+          let prevVal = 0;
+          if (prevAnimation != null) {
+            prevVal = prevAnimation.current;
+          }
+          if (value[key]) {
+            prevVal = value[key];
+          }
+          const currentAnimation = animation.styleAnimations[key];
+          console.log("onStart key end", key);
+          currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
         }
-        let prevVal = 0;
-        if (prevAnimation != null) {
-          prevVal = prevAnimation.current;
-        }
-        if (value[key]) {
-          prevVal = value[key];
-        }
-        if (initialStyle[key]) {
-          prevVal = initialStyle[key];
-        }
-        const currentAnimation = animation.styleAnimations[key];
-        console.log("onStart key end", key);
-        currentAnimation.onStart(currentAnimation, prevVal, now, prevAnimation);
       });
+    }
+
+    const callback = (finished) => {
+      if (!finished) {
+        Object.keys(styleAnimations).forEach((key) => {
+          const currentAnimation = styleAnimations[key];
+          if (key === 'transform') {
+            const transform = styleAnimations.transform;
+            for (let i = 0; i < transform.length; i++) {
+              const type = Object.keys(transform[i])[0];
+              const currentAnimation = transform[i][type];
+              if (currentAnimation.finished) {
+                continue;
+              }
+              if (currentAnimation.callback) {
+                currentAnimation.callback(false);
+              }
+            }
+          } else {
+            if (!currentAnimation.finished) {
+              if (currentAnimation.callback) {
+                currentAnimation.callback(false);
+              }
+            }
+          }
+        });
+      }
     }
 
     return {
