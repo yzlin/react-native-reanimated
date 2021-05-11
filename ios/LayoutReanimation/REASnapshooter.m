@@ -11,7 +11,9 @@
 #import <React/UIView+Private.h>
 #import <React/UIView+React.h>
 
-@implementation REASnapshooter 
+int Id = 1e9;
+
+@implementation REASnapshooter
 
 -(instancetype)initWithTag:(NSNumber*)tag capturableProps:(NSSet*)capturableProps
 {
@@ -63,6 +65,10 @@
   if ([view isKindOfClass:[REAHeroView class]]) {
     NSString *heroId = ((REAHeroView*)view).heroId;
     return heroId;
+  }
+  if (view.reactTag == nil) {
+    // TODO find a better solution
+    view.reactTag = [NSNumber numberWithInt:--Id];
   }
   return [view.reactTag stringValue];
 }

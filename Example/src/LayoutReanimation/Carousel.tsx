@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet, Image } from 'react-native';
 import Animated, { 
-    useAnimatedStyle, 
-    AnimatedLayout, 
-    withTiming, 
-    withSpring, 
-    ReverseAnimation,  
-    SlideAnimation,
+    Layout,
+    SlideInRight,
+    SlideOutRight,
+    AnimatedLayout,
 } from 'react-native-reanimated';
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 const DATA = [
     {
@@ -33,18 +33,13 @@ const DATA = [
 function AnimatedView({pokemon}) {
 
     return (
-        <AnimatedLayout 
-        animation={withSpring(1)} 
-        mounting={SlideAnimation('right')} 
-        unmounting={SlideAnimation('right')} >
-            <Animated.View style={[styles.animatedView]} >
-                <Image source={pokemon.img} />
-                <View>
-                    <Text> { pokemon.firstType } </Text>
-                    <Text> { pokemon.secondType }</Text>
-                </View>
+        <Animated.View entering={SlideInRight} exiting={SlideOutRight} style={[styles.animatedView]} >
+            <AnimatedImage entering={SlideInRight.delay(300).springify()} source={pokemon.img} />
+            <Animated.View entering={SlideInRight.delay(500).springify()} exiting={SlideOutRight}>
+                <Text> { pokemon.firstType } </Text>
+                <Text> { pokemon.secondType }</Text>
             </Animated.View>
-        </AnimatedLayout>
+        </Animated.View>
     );
 }
 
@@ -56,7 +51,9 @@ export function Carousel(): React.ReactElement {
         <View style={{flexDirection: 'column-reverse'}}>
             <Button title="toggle" onPress={() => { incrementIndex((prev) => ((prev+1) % DATA.length))}}/>
             <View style={{height: 400, alignItems: 'center', justifyContent: 'center', borderWidth: 1}}>
-                <AnimatedView key={currentIndex} pokemon={DATA[currentIndex]} />
+                <AnimatedLayout> 
+                    <AnimatedView key={currentIndex} pokemon={DATA[currentIndex]} />
+                </AnimatedLayout>
             </View>
         </View>
     );

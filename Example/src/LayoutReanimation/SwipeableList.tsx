@@ -2,13 +2,6 @@ import React, { useState } from 'react';
 import {View, Button, Text, ScrollView, StyleSheet } from 'react-native';
 import Animated, { AnimatedLayout, ZoomOut, Layout} from 'react-native-reanimated';
 
-function unmounting(progress, initialValues, depth) {
-    'worklet'
-    return {
-        height: (1-progress) * initialValues.height,
-    }
-}
-
 const FRUITS = [
     'banana',
     'strawberry',
@@ -27,7 +20,7 @@ export function SwipeableList() {
                     { 
                         fruits.map(value => {
                            return (
-                                <Animated.View layout={Layout} exiting={ZoomOut} key={value} style={[Styles.item, {backgroundColor: value==='kiwi'? 'green' : 'yellow'}]} >
+                                <Animated.View layout={Layout.delay(300)} exiting={ZoomOut} key={value} style={[Styles.item, {backgroundColor: value==='kiwi'? 'green' : 'yellow'}]} >
                                     <Text> { value } </Text>
                                     <Button title="remove" onPress={
                                         () => {
