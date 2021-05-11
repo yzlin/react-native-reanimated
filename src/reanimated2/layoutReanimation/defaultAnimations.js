@@ -424,3 +424,95 @@ export class SlideOutRight extends BaseAnimationBuilder {
     }
 }
 
+export class SlideInDown extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideInRight();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    originY: delayFunction(delay, animation(values.originY, config)),
+                },
+                initialValues: {
+                    originY: values.originY-height,
+                }
+            };
+        }
+    }
+}
+
+export class SlideOutUp extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideOutRight();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    originY: delayFunction(delay, animation(values.originY + height, config)),
+                },
+                initialValues: {}
+            };
+        }
+    }
+}
+
+export class OpacityIn extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideOutRight();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    opacity: delayFunction(delay, animation(1, config)),
+                },
+                initialValues: {
+                    opacity: 0,
+                }
+            };
+        }
+    }
+}
+
+export class OpacityOut extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideOutRight();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    opacity: delayFunction(delay, animation(0, config)),
+                },
+                initialValues: {}
+            };
+        }
+    }
+}
+

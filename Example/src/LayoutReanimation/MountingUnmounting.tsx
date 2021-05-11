@@ -1,7 +1,7 @@
 import { isCompletionStatement } from 'babel-types';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { AnimatedLayout } from 'react-native-reanimated';
+import Animated, { AnimatedLayout, SlideInRight, SlideOutRight, SlideInDown, SlideOutUp, OpacityIn, OpacityOut } from 'react-native-reanimated';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -9,10 +9,10 @@ function AnimatedView() {
 
     return (
         <Animated.View>
-            <Animated.View style={styles.left} />
-            <Animated.View style={styles.top} />
-            <Animated.View style={styles.animatedView} >
-                <AnimatedText> kk </AnimatedText>
+            <Animated.View collapsable={false} key="left" entering={SlideInRight} style={styles.left} />
+            <Animated.View collapsable={false} key="top" entering={SlideInDown} exiting={SlideOutUp} style={styles.top} />
+            <Animated.View collapsable={false} key="center" exiting={SlideOutRight} style={styles.animatedView} >
+                <AnimatedText entering={OpacityIn} exiting={OpacityOut}> kk </AnimatedText>
             </Animated.View>
         </Animated.View>
     );
@@ -50,8 +50,8 @@ const styles = StyleSheet.create({
         transform:[
             {translateX: -50},
             {translateY: 100},
-            { skewY: 15},
-            {translateY: 32},
+            { skewY: '45deg'},
+            {translateY: 25},
         ],
     },
     top: {
@@ -60,9 +60,10 @@ const styles = StyleSheet.create({
         borderWidth: 3,
         borderColor: '#001a72',
         borderBottomWidth: 0,
+        borderLeftWidth: 0,
         transform:[
-            { skewX: 15},
-            {translateX: -16},
+            { skewX: '45deg'},
+            {translateX: -25},
         ],
     }
 });
