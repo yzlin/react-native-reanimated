@@ -346,9 +346,22 @@ export default function createAnimatedComponent(Component) {
         const tag = findNodeHandle(ref);
         if ((this.props.layout || this.props.entering || this.props.exiting) && tag != null) {
           console.log("trying to register config for", tag);
-          const layout = this.props.layout ? this.props.layout : DefaultLayout;
-          const entering = this.props.entering ? this.props.entering : DefaultEntering;
-          const exiting = this.props.exiting ? this.props.exiting : DefaultExiting;
+          let layout = this.props.layout ? this.props.layout : DefaultLayout;
+          let entering = this.props.entering ? this.props.entering : DefaultEntering;
+          let exiting = this.props.exiting ? this.props.exiting : DefaultExiting;
+
+          if (layout.build) {
+            layout = layout.build();
+          }
+
+          if (entering.build) {
+            entering = entering.build();
+          }
+
+          if (exiting.build) {
+            exiting = exiting.build();
+          }
+
           const config = {
               layout,
               entering,

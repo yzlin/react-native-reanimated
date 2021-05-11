@@ -1,4 +1,4 @@
-import { withStartValue, withTiming } from '../animations';
+import { withDelay, withSpring, withTiming } from '../animations';
 
 export const DefaultEntering = (targetValues) => {
     'worklet'
@@ -34,91 +34,168 @@ export const DefaultExiting = (startValues) => {
     }
 };
 
-export const Layout = (values) => {
-    'worklet'
-    return {
-        initialValues: {
-            originX: values.boriginX,
-            originY: values.boriginY,
-            width: values.bwidth,
-            height: values.bheight,
-        },
-        animations: {
-            originX: withTiming(values.originX),
-            originY: withTiming(values.originY),
-            width: withTiming(values.width),
-            height: withTiming(values.height),
-        },
-    }
-}
-
-export function ReverseAnimation(animation) {
-    'worklet'
-    return (progress, values, depth, isMounting, isReversed) => {
-        'worklet'
-        return animation(1-progress, values, depth, isMounting, !isReversed);
-    }
-}
-
-export function ComposeAnimation(animations) {
-    'worklet'
-    return (progress, values, depth, isMounting, isReversed) => {
-        'worklet'
-        return Object.assign.apply(null, animations.map(animation => animation(progress, values, depth, isMounting, isReversed)));
-    }
-}
-
-export function OpacityAnimation(progress, initial, depth, isMounting, isReversed) {
-    'worklet'
-    if (depth > 0) {
-        return {};
-    }
-    return {
-        opacity: (progress),
-    };
-}
-
-export function SlideAnimation(direction) {
-    'worklet'
-    let modX = 0;
-    let modY = 0;
-
-    if (direction === 'right') {
-        modX = -1;
+export class Layout {
+    static duration(r) {
+        const instance = new Layout();
+        return instance.duration(r);
     }
 
-    if (direction === 'left') {
-        modX = 1;
+    duration(t) {
+        this.durationV = t;
+        return this;
     }
 
-    if (direction === 'up') {
-        modY = -1;
+    static easing(r) {
+        const instance = new Layout();
+        return instance.easing(r);
     }
 
-    if (direction === 'down') {
-        modY = 1;
+    easing(e) {
+        this.easingV = e;
+        return this;
     }
 
-    return (progrezz, values, depth, isMounting, isReversed) => {
-        'worklet';
-        let progress = progrezz;
-        let mutableModX = modX;
-        let mutableModY = modY;
-        console.log("values", values);
-        if (depth > 0) return {};
-        if (!isMounting) {
-            if (!isReversed) {
-                progress = 1 - progress;
-            }
-            mutableModX *= -1;
-            mutableModY *= -1;
-        }
-        const startX = values.originX + mutableModX * values.windowWidth;
-        const startY = values.originY + mutableModY * values.windowHeight;
-        return {
-            originX: (1-progress) * startX + (progress) * values.originX,
-            originY: (1-progress) * startY + (progress) * values.originY, 
+    static delay(r) {
+        const instance = new Layout();
+        return instance.delay(r);
+    }
+
+    delay(d) {
+        this.delayV = d;
+        return this;
+    }
+
+    static springify() {
+        const instance = new Layout();
+        return instance.springify();
+    }
+
+    springify() {
+        this.type = withSpring;
+        return this;
+    }
+
+    static damping(r) {
+        const instance = new Layout();
+        return instance.damping(r);
+    }
+
+    damping(d) {
+        this.dampingV = d;
+        return this;
+    }
+
+    static mass(r) {
+        const instance = new Layout();
+        return instance.mass(r);
+    }
+
+    mass(m) {
+        this.massV = m;
+        return this;
+    }
+
+    static stiffness(r) {
+        const instance = new Layout();
+        return instance.stiffness(r);
+    }
+
+    stiffness(s) {
+        this.stiffnessV = s;
+        return this;
+    }
+
+    static overshootClamping(r) {
+        const instance = new Layout();
+        return instance.overshootClamping(r);
+    }
+
+    overshootClamping(o) { this.overshootClampingV = o; return this; }
+
+    static restDisplacementThreshold(r) {
+        const instance = new Layout();
+        return instance.restDisplacementThreshold(r);
+    }
+
+    restDisplacementThreshold(r) { this.restDisplacementThresholdV = r; return this; }
+    
+    static restSpeedThreshold(r) {
+        const instance = new Layout();
+        return instance.restSpeedThreshold(r);
+    }
+
+    restSpeedThreshold(r) { this.restSpeedThresholdV = r; return this; };
+
+    static build() {
+        const instance = new Layout();
+        return instance.build();
+    }
+
+    build() {
+        const duration = this.durationV;
+        const easing = this.easingV;
+        const delay = this.delayV;
+        const type = this.type ? this.type : withTiming;
+        const damping = this.dampingV;
+        const mass = this.massV;
+        const stiffness = this.stiffnessV;
+        const overshootClamping = this.overshootClampingV;
+        const restDisplacementThreshold = this.restDisplacementThresholdV;
+        const restSpeedThreshold = this.restSpeedThresholdV;
+
+        const delayFunction = (delay)? withDelay : (_, animation) => {
+            'worklet'
+            return animation;
         };
+
+        const animation = type;
+
+        const config = {};
+
+        if (type == withTiming) {
+            if (easing) {
+                config.easing = easing;
+            }
+            if (duration) {
+                config.duration;
+            }
+        } else {
+            if (damping) {
+                config.damping = damping;
+            }
+            if (mass) {
+                config.mass = mass;
+            }
+            if (stiffness) {
+                config.stiffness = stiffness;
+            }
+            if (overshootClamping) {
+                config.overshootClamping = overshootClamping;
+            }
+            if (restDisplacementThreshold) {
+                config.restDisplacementThreshold = restDisplacementThreshold;
+            }
+            if (restSpeedThreshold) {
+                config.restSpeedThreshold = restSpeedThreshold;
+            }
+        }
+
+        return (values) => {
+            'worklet'
+            return {
+                initialValues: {
+                    originX: values.boriginX,
+                    originY: values.boriginY,
+                    width: values.bwidth,
+                    height: values.bheight,
+                },
+                animations: {
+                    originX: delayFunction(delay, animation(values.originX, config)),
+                    originY: delayFunction(delay, animation(values.originY, config)),
+                    width: delayFunction(delay, animation(values.width, config)),
+                    height: delayFunction(delay, animation(values.height, config)),
+                },
+            };
+        }
     }
 }
-

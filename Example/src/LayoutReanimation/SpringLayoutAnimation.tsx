@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { AnimatedLayout, withSpring } from 'react-native-reanimated';
+import Animated, { AnimatedLayout, withSpring, Layout } from 'react-native-reanimated';
 
 function Box({label, state}: {label: string, state: boolean}) {
+  let ind = 0;
+  if (label === 'B') ind++;
+  if (label === 'C') ind = 2;
+  const delay = 300 * ind;
   return (
-    <View style={[styles.box,{ 
+    <Animated.View layout={Layout.delay(delay).springify()} style={[styles.box,{ 
         flexDirection: (state)? 'row': 'row-reverse',height: (state)? 30: 60}]}>
       <Text> {label} </Text>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -16,7 +20,7 @@ export function SpringLayoutAnimation(): React.ReactElement {
   return (
     <View style={{marginTop: 30}} >
       <View style={{height: 300}} >
-        <AnimatedLayout animation={withSpring(1)} isShallow={false} style={{flexDirection: state? 'row' : 'column'}} >
+        <AnimatedLayout style={{flexDirection: state? 'row' : 'column'}} >
           {state && <Box key="a" label="A" state={state} />}
           <Box key="b" label="B" state={state} />
           {!state && <Box key="a" label="A" state={state} />}
