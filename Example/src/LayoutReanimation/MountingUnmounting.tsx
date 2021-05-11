@@ -1,40 +1,20 @@
 import { isCompletionStatement } from 'babel-types';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { useAnimatedStyle, AnimatedLayout, withTiming, withSpring } from 'react-native-reanimated';
+import Animated, { AnimatedLayout } from 'react-native-reanimated';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 function AnimatedView() {
 
-    const style = useAnimatedStyle(() => {
-        return {}
-    });
-
-    const mounting = (progress: number, targetValues, depth) => {
-        'worklet';
-        if (depth >= 1) return {};
-        return {
-            opacity: progress,
-            originX: targetValues.originX * progress + (1-progress) * (-300),
-            transform: [
-                {rotate: `${(Math.max(progress, 1) - 1) * 90}deg`},
-            ],
-        }
-    }
-
-    const unmounting = (progress: number, initialValues) => {
-        'worklet';
-        return {
-            opacity: 1 - progress,
-            originX: initialValues.originX * (1-progress) + progress * (1000),
-        }
-    }
-
     return (
-        <AnimatedLayout isShallow={false} animation={withSpring(1)} mounting={mounting} unmounting={unmounting} >
-            <Animated.View style={[styles.animatedView, style]} >
-                <Text> kk </Text>
+        <Animated.View>
+            <Animated.View style={styles.left} />
+            <Animated.View style={styles.top} />
+            <Animated.View style={styles.animatedView} >
+                <AnimatedText> kk </AnimatedText>
             </Animated.View>
-        </AnimatedLayout>
+        </Animated.View>
     );
 }
 
@@ -42,22 +22,47 @@ export function MountingUnmounting(): React.ReactElement {
     const [show, setShow] = useState(false);
     return (
         <View style={{flexDirection: 'column-reverse'}}>
-            <Button title="toggle" onPress={() => {setShow((last) => !last)}}/>
-            <View style={{height: 400, alignItems: 'center', justifyContent: 'center'}}>
-                {show && <AnimatedView />}
-            </View>
+            <AnimatedLayout>
+                <Button title="toggle" onPress={() => {setShow((last) => !last)}}/>
+                <View style={{height: 400, alignItems: 'center', justifyContent: 'center'}}>
+                    {show && <AnimatedView />}
+                </View>
+            </AnimatedLayout>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     animatedView: {
-        height: 200,
-        width: 100,
-        borderWidth: 1,
-        borderColor: 'black',
+        height: 100,
+        width: 200,
+        borderWidth: 3,
+        borderColor: '#001a72',
         alignItems: 'center',
         justifyContent: 'center',
-        opacity: 0.5,
     },
+    left: {
+        height: 100,
+        width: 50,
+        borderWidth: 3,
+        borderColor: '#001a72',
+        borderRightWidth: 0,
+        transform:[
+            {translateX: -50},
+            {translateY: 100},
+            { skewY: 15},
+            {translateY: 32},
+        ],
+    },
+    top: {
+        height: 50,
+        width: 200,
+        borderWidth: 3,
+        borderColor: '#001a72',
+        borderBottomWidth: 0,
+        transform:[
+            { skewX: 15},
+            {translateX: -16},
+        ],
+    }
 });
