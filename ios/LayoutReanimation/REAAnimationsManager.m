@@ -199,7 +199,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
     } shouldSkipAnimationRoots:false depth:(1e9)];
   }
   
-  return active || (!ToRemove);
+  return active || (!(ToRemove == state));
 }
 
 - (void)removeLeftovers:(NSNumber*)tag

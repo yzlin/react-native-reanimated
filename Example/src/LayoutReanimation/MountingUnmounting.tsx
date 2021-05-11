@@ -1,7 +1,7 @@
 import { isCompletionStatement } from 'babel-types';
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { AnimatedLayout, SlideInRight, SlideOutRight, SlideInDown, SlideOutUp, OpacityIn, OpacityOut } from 'react-native-reanimated';
+import Animated, { AnimatedLayout, SlideInRight, SlideOutRight, SlideInDown, SlideOutUp, OpacityIn, OpacityOut, SlideOutLeft, SlideInLeft } from 'react-native-reanimated';
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
@@ -9,10 +9,10 @@ function AnimatedView() {
 
     return (
         <Animated.View>
-            <Animated.View collapsable={false} key="left" entering={SlideInRight} style={styles.left} />
-            <Animated.View collapsable={false} key="top" entering={SlideInDown} exiting={SlideOutUp} style={styles.top} />
-            <Animated.View collapsable={false} key="center" exiting={SlideOutRight} style={styles.animatedView} >
-                <AnimatedText entering={OpacityIn} exiting={OpacityOut}> kk </AnimatedText>
+            <Animated.View collapsable={false} key="left" entering={SlideInRight.delay(300)} exiting={SlideOutLeft.delay(300)} style={styles.left} />
+            <Animated.View collapsable={false} key="top"  entering={SlideInDown} exiting={SlideOutUp} style={styles.top} />
+            <Animated.View collapsable={false} key="center" entering={SlideInLeft} exiting={SlideOutRight} style={styles.animatedView} >
+                <AnimatedText entering={OpacityIn.delay(600).duration(3000)} exiting={OpacityOut.duration(3000)}> SWM </AnimatedText>
             </Animated.View>
         </Animated.View>
     );
@@ -25,7 +25,7 @@ export function MountingUnmounting(): React.ReactElement {
             <AnimatedLayout>
                 <Button title="toggle" onPress={() => {setShow((last) => !last)}}/>
                 <View style={{height: 400, alignItems: 'center', justifyContent: 'center'}}>
-                    {show && <AnimatedView />}
+                    {show && <AnimatedView key={Math.random().toString()}/>}
                 </View>
             </AnimatedLayout>
         </View>

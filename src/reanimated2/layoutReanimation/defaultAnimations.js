@@ -160,7 +160,7 @@ export class Layout {
                 config.easing = easing;
             }
             if (duration) {
-                config.duration;
+                config.duration = duration;
             }
         } else {
             if (damping) {
@@ -328,7 +328,7 @@ class BaseAnimationBuilder {
                 config.easing = easing;
             }
             if (duration) {
-                config.duration;
+                config.duration = duration;
             }
         } else {
             if (damping) {
@@ -402,6 +402,30 @@ export class SlideInRight extends BaseAnimationBuilder {
     }
 }
 
+export class SlideInLeft extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideInLeft();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    originX: delayFunction(delay, animation(values.originX, config)),
+                },
+                initialValues: {
+                    originX: values.originX+width,
+                }
+            };
+        }
+    }
+}
+
 export class SlideOutRight extends BaseAnimationBuilder {
     static createInstance() {
         return new SlideOutRight();
@@ -424,9 +448,31 @@ export class SlideOutRight extends BaseAnimationBuilder {
     }
 }
 
+export class SlideOutLeft extends BaseAnimationBuilder {
+    static createInstance() {
+        return new SlideOutLeft();
+    }
+
+    build() {
+        const delayFunction = this.getDelayFunction();
+        const [animation, config] = this.getAnimationAndConfig();
+        const delay = this.delayV;
+
+        return (values) => {
+            'worklet'
+            return {
+                animations: {
+                    originX: delayFunction(delay, animation(values.originX - width, config)),
+                },
+                initialValues: {}
+            };
+        }
+    }
+}
+
 export class SlideInDown extends BaseAnimationBuilder {
     static createInstance() {
-        return new SlideInRight();
+        return new SlideInDown();
     }
 
     build() {
@@ -450,7 +496,7 @@ export class SlideInDown extends BaseAnimationBuilder {
 
 export class SlideOutUp extends BaseAnimationBuilder {
     static createInstance() {
-        return new SlideOutRight();
+        return new SlideOutUp();
     }
 
     build() {
@@ -472,13 +518,15 @@ export class SlideOutUp extends BaseAnimationBuilder {
 
 export class OpacityIn extends BaseAnimationBuilder {
     static createInstance() {
-        return new SlideOutRight();
+        return new OpacityIn();
     }
 
     build() {
         const delayFunction = this.getDelayFunction();
         const [animation, config] = this.getAnimationAndConfig();
         const delay = this.delayV;
+
+        console.log("duration: 000 ", config.duration);
 
         return (values) => {
             'worklet'
@@ -496,7 +544,7 @@ export class OpacityIn extends BaseAnimationBuilder {
 
 export class OpacityOut extends BaseAnimationBuilder {
     static createInstance() {
-        return new SlideOutRight();
+        return new OpacityOut();
     }
 
     build() {
