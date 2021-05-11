@@ -199,3 +199,35 @@ export class Layout {
         }
     }
 }
+
+export class ZoomOut {
+    duration(d) {
+        this.durationV = d;
+        return this;
+    }
+
+    static duration(d) {
+        const instance = new ZoomOut();
+        return instance.duration(d);
+    }
+
+    static build() {
+         const instance = new ZoomOut();
+        return instance.build();
+    }
+
+    build() {
+        const duration = (this.durationV)? this.durationV : 300;
+        return () => {
+            'worklet'
+            return {
+                animations: {
+                    transform: [{scale: withTiming(0, {duration,})}]
+                },
+                initialValues: {
+                    transform: [{scale: 1}],
+                }
+            };
+        }
+    }
+}
