@@ -563,3 +563,16 @@ export class OpacityOut extends BaseAnimationBuilder {
         }
     }
 }
+
+/*entering={StyleIn.add({}).add({})}
+entering={StyleIn.frames({
+    0: {
+
+    },
+    40: {
+
+    },
+    100: {
+
+    },
+})}*/

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import Animated, { AnimatedLayout, withSpring, Layout } from 'react-native-reanimated';
+import ChangePosition from 'reanimated1/interactablePlayground/examples/ChangePosition';
 
 function Box({label, state}: {label: string, state: boolean}) {
-  let ind = 0;
-  if (label === 'B') ind++;
-  if (label === 'C') ind = 2;
+  const ind = label.charCodeAt(0) - ('A').charCodeAt(0);
   const delay = 300 * ind;
   return (
     <Animated.View layout={Layout.delay(delay).springify()} style={[styles.box,{ 

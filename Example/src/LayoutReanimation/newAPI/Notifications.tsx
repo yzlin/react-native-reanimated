@@ -95,9 +95,9 @@ function  Notifications({notifications, removeIndex}: any) {
                     return (
                     <Animated.View 
                         key={notification} 
-                        enter={useSeTutajNieWetkniesz}
-                        exit={fadeOut}
-                        layout={mojAnimator}
+                        entering={}
+                        exiting={}
+                        layout={Layout}
                     >
                         { notification }
                         <Button title="X" onPress={() => removeIndex(ind)}/>
