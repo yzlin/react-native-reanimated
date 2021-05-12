@@ -8,26 +8,51 @@ function AnimatedView() {
         return {}
     });
 
-    const mounting = (progress: number, targetValues, depth) => {
+    const entering = (targetValues) => {
         'worklet';
-        if (depth > 0) return {};
-
-        console.log("targetValues ", targetValues, " progress ", progress);
 
         return {
-            transform: [
-               { translateY: targetValues.height/2 },
-                { perspective: 500 },
-                { rotateX: `${(1-progress) * 90}deg`},
-                { translateY: -targetValues.height/2 },
-                { translateY: 300 * (1-progress) },
-            ],
+            initialValues:{
+                transform: [
+                    { translateY: targetValues.height/2 },
+                    { perspective: 500 },
+                    { rotateX: `90deg`},
+                    { translateY: -targetValues.height/2 },
+                    { translateY: 300 },
+                ],
+            },
+            animations: {
+                transform: [
+                    { translateY: withTiming(targetValues.height/2) },
+                    { perspective: withTiming(500) },
+                    { rotateX: withTiming(`0deg`)},
+                    { translateY: withTiming(-targetValues.height/2) },
+                    { translateY: withTiming(0) },
+                ],
+            }
+        }
+    }
+
+    const exiting = (targetValues) => {
+        'worklet';
+
+        return {
+            initialValues:{},
+            animations: {
+                transform: [
+                    { translateY: withTiming(targetValues.height/2) },
+                    { perspective: withTiming(500) },
+                    { rotateX: withTiming(`90deg`)},
+                    { translateY: withTiming(-targetValues.height/2) },
+                    { translateY: withTiming(300) },
+                ],
+            }
         }
     }
 
     return (
-        <AnimatedLayout isShallow={false} animation={withTiming(1, {duration: 2000})} mounting={mounting} >
-            <Animated.View style={[styles.animatedView, style]} >
+        <AnimatedLayout>
+            <Animated.View {...{entering, exiting}} style={[styles.animatedView, style]} >
                 <Text> kk </Text>
             </Animated.View>
         </AnimatedLayout>

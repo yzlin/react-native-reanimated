@@ -193,7 +193,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
       [_animatedLayout removeObjectForKey:current.reactTag];
       [_viewForTag removeObjectForKey:current.reactTag];
       _removeConfigForTag(current.reactTag);
-      if (view.reactTag == current.reactTag) { // TODO If it's lowest animation layout then remove also path to the root
+      if (view.reactTag == current.reactTag) { 
         if ([view isKindOfClass:[REAAnimationRootView class]]) {
           UIView * hangingPoint = _animatedLayoutHangingPoint[view.reactTag];
           UIView * tmp = view;
