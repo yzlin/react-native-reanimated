@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import Animated, { AnimatedLayout, withSpring, Layout } from 'react-native-reanimated';
-import ChangePosition from 'reanimated1/interactablePlayground/examples/ChangePosition';
+import Animated, { AnimatedLayout, Layout } from 'react-native-reanimated';
 
 function Box({label, state}: {label: string, state: boolean}) {
   const ind = label.charCodeAt(0) - ('A').charCodeAt(0);
   const delay = 300 * ind;
   return (
-    <Animated.View layout={Layout.delay(delay).springify()} style={[styles.box,{ 
-        flexDirection: (state)? 'row': 'row-reverse',height: (state)? 30: 60}]}>
+    <Animated.View 
+        layout={Layout.delay(delay).springify()} 
+        style={[styles.box,
+          { 
+            flexDirection: (state)? 'row': 'row-reverse', 
+            height: (state)? 30: 60,
+          }]} 
+    >
       <Text> {label} </Text>
     </Animated.View>
   );

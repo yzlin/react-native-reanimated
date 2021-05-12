@@ -5,7 +5,7 @@ import Animated, { AnimatedLayout, SlideInRight, SlideOutRight, SlideInDown, Sli
 
 const AnimatedText = Animated.createAnimatedComponent(Text);
 
-function AnimatedView() {
+function SWMLogo() {
 
     return (
         <AnimatedLayout>
