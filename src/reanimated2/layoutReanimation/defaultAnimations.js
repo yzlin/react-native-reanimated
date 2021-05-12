@@ -563,4 +563,3 @@ export class OpacityOut extends BaseAnimationBuilder {
         }
     }
 }
-

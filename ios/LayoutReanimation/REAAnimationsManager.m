@@ -37,6 +37,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
   NSMutableDictionary<NSNumber*, UIView *>* _viewForTag;
   NSMutableDictionary<NSNumber*, NSNumber *>* _animatedLayout;
   NSMutableSet<NSNumber*>* _toRemove;
+  NSMutableDictionary<NSNumber*, UIView *>* _animatedLayoutHangingPoint;
 }
 
 - (instancetype)initWithUIManager:(RCTUIManager *)uiManager
@@ -47,6 +48,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
     _viewForTag = [NSMutableDictionary new];
     _animatedLayout = [NSMutableDictionary new];
     _toRemove = [NSMutableSet new];
+    _animatedLayoutHangingPoint = [NSMutableDictionary new];
   }
   return self;
 }
@@ -60,6 +62,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
   _animatedLayout = nil;
   _viewForTag = nil;
   _toRemove = nil;
+  _animatedLayoutHangingPoint = nil;
 }
 
 - (void)notifyAboutChangeWithBeforeSnapshots:(REASnapshooter*)before afterSnapshooter:(REASnapshooter*)after
@@ -90,6 +93,7 @@ typedef NS_ENUM(NSInteger, ViewState) {
         UIView * parent = pathToTheRoot[i];
         if (current.superview == nil) {
           [parent addSubview:current];
+          _animatedLayoutHangingPoint[view.reactTag] = parent;
         }
       }
     } else {
@@ -190,7 +194,18 @@ typedef NS_ENUM(NSInteger, ViewState) {
       [_viewForTag removeObjectForKey:current.reactTag];
       _removeConfigForTag(current.reactTag);
       if (view.reactTag == current.reactTag) { // TODO If it's lowest animation layout then remove also path to the root
-        [view removeFromSuperview];
+        if ([view isKindOfClass:[REAAnimationRootView class]]) {
+          UIView * hangingPoint = _animatedLayoutHangingPoint[view.reactTag];
+          UIView * tmp = view;
+          while (tmp.superview != nil && tmp != hangingPoint) {
+            UIView * next = tmp.superview;
+            [tmp removeFromSuperview];
+            tmp = next;
+          }
+          [_animatedLayoutHangingPoint removeObjectForKey:view.reactTag];
+        } else {
+          [view removeFromSuperview];
+        }
       }
       for (UIView * child in view.subviews) {
         [child removeFromSuperview];
