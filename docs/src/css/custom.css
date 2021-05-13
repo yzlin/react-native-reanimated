@@ -43,6 +43,7 @@
     Segoe UI Symbol;
   --ifm-font-family-monospace: DM Mono, monospace;
   --ifm-color-primary: var(--swm-color-base);
+  --ifm-color-secondary: var(--ifm-color-white);
   --swm-color-yellow: #ffe780;
   --swm-color-sea-blue: #87cce8;
   --swm-color-pink: #ffa3a1;
@@ -294,6 +295,22 @@ section > .container {
   margin-bottom: 1rem;
   min-width: 15rem;
   font-weight: 300;
+}
+
+.button--secondary {
+  border-radius: 0;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  margin-right: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  min-width: 15rem;
+  font-weight: 300;
+}
+
+.button--secondary:hover {
+  background-color: var(--swm-color-base);
+  color: var(--swm-color-bright);
 }
 
 .hero-image {

@@ -1,0 +1,70 @@
+:root {
+  --swmColorYellow: #ffe780;
+  --swmColorSeaBlue: #87cce8;
+  --swmColorSeaBlue40: #b5e1f1;
+  --swmColorPink: #ffa3a1;
+  --swmColorGreen: #b1dfd0;
+  --swmColorBase: #001a72;
+}
+
+@value swmColorYellow: var(--swmColorYellow);
+@value swmColorSeaBlue: var(--swmColorSeaBlue);
+@value swmColorPink: var(--swmColorPink);
+@value swmColorGreen: var(--swmColorGreen);
+
+.container {
+  background-color: var(--swmColorSeaBlue40);
+  flex: 1;
+  padding: 76px;
+}
+
+.cardsGrid {
+  display: grid;
+  width: fit-content;
+  margin: 0 auto;
+  grid-template-columns: repeat(4, auto);
+  grid-row-gap: 56px;
+  grid-column-gap: 16px;
+}
+
+@media only screen and (max-width: 1440px) {
+  .cardsGrid {
+    grid-template-columns: repeat(3, auto);
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .cardsGrid {
+    grid-template-columns: repeat(2, auto);
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .cardsGrid {
+    grid-template-columns: auto;
+  }
+}
+
+.card {
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 430px;
+  height: 622px;
+  padding: 24px;
+  background-color: #fff;
+}
+
+.card:hover {
+  background-color: var(--swmColorBase);
+  transition-duration: var(--ifm-button-transition-duration);
+  transition-timing-function: var(--ifm-transition-timing-default);
+}
+
+.card:hover .cardText h2 {
+  color: var(--swm-color-bright);
+}
+
+.cardText {
+  align-self: flex-end;
+}
