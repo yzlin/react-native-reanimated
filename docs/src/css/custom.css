@@ -58,6 +58,8 @@
   --ifm-font-size-base: 16px;
   --ifm-code-font-size: 80%;
 
+  --ifm-button-border-color: var(--swm-color-base);
+
   --ifm-link-color: var(--ifm-color-primary-dark);
   --ifm-link-hover-color: var(--ifm-color-primary-lightest);
   --ifm-link-decoration: underline;
@@ -303,6 +305,10 @@ section > .container {
 .button--secondary:hover {
   background-color: var(--swm-color-base);
   color: var(--swm-color-bright);
+}
+
+.button--outline {
+  color: var(--swm-color-base);
 }
 
 .hero-image {
