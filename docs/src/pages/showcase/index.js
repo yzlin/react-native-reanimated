@@ -60,14 +60,18 @@ function Card({ title, name, link, platform }) {
 
         <div className={styles.cardImgContainer}>
           <img
-            src={`https://picsum.photos/217/470?random=${link}`}
+            src={`https://picsum.photos/217/470?random=${title}`}
             className={styles.cardImg}
           />
         </div>
         <div className={styles.cardDescription}>
           <h2 className={styles.cardTitle}>{title}</h2>
           <p className={classnames(styles.cardAuthor, 'margin--none')}>
-            by <span className={styles.cardTextNick}>{name}</span> on {platform}
+            by{' '}
+            <a href={link} className={styles.cardTextNick}>
+              {name}
+            </a>{' '}
+            on {platform}
           </p>
         </div>
       </article>
@@ -85,14 +89,14 @@ function Showcase() {
             {Array.from(Array(12)).map((_, i) => (
               <Card
                 key={i}
-                title={
+                title={`${i + 1} ${
                   i % 2
-                    ? 'Very long name that should describe what this demo is doing'
-                    : 'Short and to the point name'
-                }
+                    ? 'Very long name that should describe what this demo is doing in every detail'
+                    : 'Short name'
+                }`}
                 name="@JakubGonet"
                 platform="Twitter"
-                link={i}
+                link="https://twitter.com/RavenOfWroclaw/status/1197617218575589377"
               />
             ))}
           </div>
