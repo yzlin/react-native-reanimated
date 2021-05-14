@@ -286,26 +286,18 @@ section > .container {
   margin-top: 2rem;
 }
 
-.button--primary {
+.button {
   border-radius: 0;
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
-  margin-right: 1rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  min-width: 15rem;
   font-weight: 300;
 }
 
-.button--secondary {
-  border-radius: 0;
+.button--wide {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   margin-right: 1rem;
   margin-top: 1rem;
   margin-bottom: 1rem;
   min-width: 15rem;
-  font-weight: 300;
 }
 
 .button--secondary:hover {
@@ -494,7 +486,7 @@ section > .contaner > .row {
     font-size: var(--ifm-font-size-base);
   }
 
-  .button--primary {
+  .button--wide {
     padding-left: 2rem;
     padding-right: 2rem;
   }
@@ -534,7 +526,7 @@ section > .contaner > .row {
 }
 
 @media screen and (max-width: 600px) {
-  .button--primary {
+  .button--wide {
     margin-right: 0;
     margin-left: 0;
     min-width: 20rem;
@@ -593,7 +585,7 @@ section > .contaner > .row {
     font-size: 10px;
   }
 
-  .button--primary {
+  .button--wide {
     min-width: 18rem;
     margin: initial 0;
   }

@@ -68,7 +68,7 @@ function Hero() {
             <div className={classnames('hero-buttons', styles.buttons)}>
               <Link
                 className={classnames(
-                  'button button--primary button--lg',
+                  'button button--primary button--wide button--lg',
                   styles.getStarted
                 )}
                 to={useBaseUrl('docs')}>
@@ -76,7 +76,7 @@ function Hero() {
               </Link>
               <Link
                 className={classnames(
-                  'button button--primary button--lg',
+                  'button button--outline button--wide button--lg',
                   styles.getStarted
                 )}
                 to={blogUrl}>
@@ -140,7 +140,7 @@ function BannerSection() {
             <div className={classnames('hero-buttons', styles.buttons)}>
               <Link
                 className={classnames(
-                  'button button--primary button--lg',
+                  'button button--primary button--wide button--lg',
                   styles.getStarted
                 )}
                 to={useBaseUrl('docs/installation')}>
@@ -186,7 +186,7 @@ function Home() {
                 <div>
                   <Link
                     className={classnames(
-                      'button button--primary button--lg',
+                      'button button--outline button--wide button--lg',
                       styles.getStarted
                     )}
                     to={exampleUrl}>
@@ -195,7 +195,7 @@ function Home() {
 
                   <Link
                     className={classnames(
-                      'button button--primary button--lg',
+                      'button button--outline button--wide button--lg',
                       styles.getStarted
                     )}
                     to={playgroundUrl}>
