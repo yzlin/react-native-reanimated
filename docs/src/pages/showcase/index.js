@@ -35,7 +35,7 @@ function Card() {
           }}></div>
         <div className={styles.cardText}>
           <h2>Title</h2>
-          <p>by @JakubGonet on Twitter</p>
+          <span>by @JakubGonet on Twitter</span>
         </div>
       </article>
     </>
