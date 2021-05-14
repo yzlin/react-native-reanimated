@@ -37,11 +37,9 @@ function Filter({ expanded: expandedInitial }) {
             Available
           </button>
         </article>
-
-        {/* <button className="button button--primary button--lg margin-horiz--none margin-bottom--none">
+        <button className="button button--primary button--lg margin-horiz--none">
           Show results
-        </button> */}
-
+        </button>
         <button className={styles.resetFilters}>Reset filters</button>
       </div>
     </>
@@ -54,19 +52,23 @@ function Filter({ expanded: expandedInitial }) {
   );
 }
 
-function Card() {
+function Card({ title, name, link, platform }) {
   return (
     <>
       <article className={styles.card}>
-        <div
-          style={{
-            backgroundColor: 'black',
-            width: '380px',
-            height: '470px',
-          }}></div>
-        <div className={styles.cardText}>
-          <h2>Title</h2>
-          <span>by @JakubGonet on Twitter</span>
+        {/* <img src="https://picsum.photos/217/470" /> */}
+
+        <div className={styles.cardImgContainer}>
+          <img
+            src={`https://picsum.photos/217/470?random=${link}`}
+            className={styles.cardImg}
+          />
+        </div>
+        <div className={styles.cardDescription}>
+          <h2 className={styles.cardTitle}>{title}</h2>
+          <p className={classnames(styles.cardAuthor, 'margin--none')}>
+            by <span className={styles.cardTextNick}>{name}</span> on {platform}
+          </p>
         </div>
       </article>
     </>
@@ -76,12 +78,24 @@ function Card() {
 function Showcase() {
   return (
     <Layout>
-      <div className={styles.container}>
-        <Filter expanded={true} />
-        <div className={styles.cardsGrid}>
-          {Array.from(Array(12)).map((_, i) => (
-            <Card key={i} />
-          ))}
+      <div className={styles.containerWrapper}>
+        <div className={styles.container}>
+          <Filter expanded={true} />
+          <div className={styles.cardsGrid}>
+            {Array.from(Array(12)).map((_, i) => (
+              <Card
+                key={i}
+                title={
+                  i % 2
+                    ? 'Very long name that should describe what this demo is doing'
+                    : 'Short and to the point name'
+                }
+                name="@JakubGonet"
+                platform="Twitter"
+                link={i}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </Layout>

@@ -2,6 +2,8 @@
   --swmColorYellow: #ffe780;
   --swmColorSeaBlue: #87cce8;
   --swmColorSeaBlue40: #b5e1f1;
+  --swmColorNick: #38acdd;
+  --swmColorGray: #6676aa;
   --swmColorPink: #ffa3a1;
   --swmColorPink100: #ff6259;
   --swmColorGreen: #b1dfd0;
@@ -12,10 +14,13 @@
 @value swmColorSeaBlue: var(--swmColorSeaBlue);
 @value swmColorPink: var(--swmColorPink);
 @value swmColorGreen: var(--swmColorGreen);
+/* @value swmColorNick:  var(--swmColorNick);
+@value swmColorGray: var(--swmColorGray); */
 
 .container {
-  background-color: var(--swmColorSeaBlue40);
   padding: 76px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 .container > * {
@@ -25,6 +30,10 @@
 
 .container > *:first-child {
   margin-top: 0px;
+}
+
+.containerWrapper {
+  background-color: var(--swmColorSeaBlue40);
 }
 
 .cardsGrid {
@@ -57,9 +66,7 @@
 .card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  width: 430px;
-  height: 622px;
+  max-width: 430px;
   padding: 24px;
   background-color: #fff;
 }
@@ -70,8 +77,33 @@
   transition-timing-function: var(--ifm-transition-timing-default);
 }
 
-.card:hover .cardText h2 {
+.card:hover .cardTitle {
   color: var(--swm-color-bright);
+}
+
+.cardDescription {
+  padding-top: 24px;
+}
+
+.cardAuthor {
+  color: var(--swmColorGray);
+  font-weight: 600;
+}
+
+.cardTextNick {
+  color: var(--swmColorNick);
+}
+
+.cardImgContainer {
+  background-color: black;
+  width: 380px;
+  height: 470px;
+}
+
+.cardImg {
+  object-fit: contain;
+  margin: 0 auto;
+  display: block;
 }
 
 .filter {
@@ -95,5 +127,11 @@
 
 .resetFilters {
   all: unset;
+  display: block;
   color: var(--swmColorPink100);
+}
+
+.resetFilters:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
