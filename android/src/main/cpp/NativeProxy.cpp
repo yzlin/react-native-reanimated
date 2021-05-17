@@ -99,7 +99,7 @@ void NativeProxy::installJSIBindings()
 
     // Layout Animations Start
 
-  auto notifyAboutProgress = [=](int tag, float progress) {
+  auto notifyAboutProgress = [=](int tag, jsi::Value progress) {
     this->layoutAnimations->cthis()->notifyAboutProgress(progress, tag);
   };
 

@@ -141,10 +141,14 @@ public class NativeProxy {
     WeakReference<LayoutAnimations> weakLayoutAnimations = new WeakReference<>(LayoutAnimations);
     animationsManager.setNativeMethods(new NativeMethodsHolder() {
       @Override
-      public void startAnimationForTag(int tag) {
+      public void startAnimationForTag(int tag, String type, HashMap<String, Integer> values) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
-          LayoutAnimations.startAnimationForTag(tag);
+          HashMap<String, String> preparedValues = new HashMap<>();
+          for (String key : values.keySet()) {
+            preparedValues.put(key, values.get(key).toString());
+          }
+          LayoutAnimations.startAnimationForTag(tag, type, preparedValues);
         }
       }
 
@@ -154,32 +158,6 @@ public class NativeProxy {
         if (LayoutAnimations != null) {
           LayoutAnimations.removeConfigForTag(tag);
         }
-      }
-
-      @Override
-      public Map<String, Object> getStyleWhileMounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
-        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
-        if (LayoutAnimations != null) {
-          HashMap<String, String> preparedValues = new HashMap<>();
-          for (String key : values.keySet()) {
-            preparedValues.put(key, values.get(key).toString());
-          }
-          return LayoutAnimations.getStyleWhileMounting(tag, progress, preparedValues, depth);
-        }
-        return new HashMap<String, Object>();
-      }
-
-      @Override
-      public Map<String, Object> getStyleWhileUnmounting(int tag, float progress, HashMap<String, Integer> values, int depth) {
-        LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
-        if (LayoutAnimations != null) {
-          HashMap<String, String> preparedValues = new HashMap<>();
-          for (String key : values.keySet()) {
-            preparedValues.put(key, values.get(key).toString());
-          }
-          return LayoutAnimations.getStyleWhileUnmounting(tag, progress, preparedValues, depth);
-        }
-        return new HashMap<String, Object>();
       }
     });
   }

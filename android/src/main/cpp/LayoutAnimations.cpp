@@ -20,12 +20,17 @@ void LayoutAnimations::setWeakUIRuntime(std::weak_ptr<jsi::Runtime> wrt) {
     this->weakUIRuntime = wrt;
 }
 
-void LayoutAnimations::startAnimationForTag(int tag) {
+void LayoutAnimations::startAnimationForTag(int tag, Jstring type, alias_ref<JMap<jstring, jstring>> values) {
     if (auto rt = this->weakUIRuntime.lock()) {
         jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
         if (!layoutAnimationRepositoryAsValue.isUndefined()) {
-          jsi::Function startAnimationForTag = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "startAnimationForTag");
-          startAnimationForTag.call(*rt, jsi::Value(tag));
+            jsi::Function startAnimationForTag = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "startAnimationForTag");
+            jsi::Object target(*rt);
+
+            for (const auto& entry : *values) {
+                target.setProperty(*rt, entry.first->toStdString().c_str(), std::stoi(entry.second->toStdString()));
+            }
+            startAnimationForTag.call(*rt, jsi::Value(tag), jsi::Value(type->toStdString().c_str()), target);
         }
     }
 }
@@ -40,49 +45,13 @@ void LayoutAnimations::removeConfigForTag(int tag) {
     }
 }
 
-jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileMounting(int tag, double progress, alias_ref<JMap<jstring, jstring>> values, int depth) {
+void LayoutAnimations::notifyAboutProgress(jsi::Value progress, int tag) {
     if (auto rt = this->weakUIRuntime.lock()) {
-        jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
-        if (!layoutAnimationRepositoryAsValue.isUndefined()) {
-          jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getMountingStyle");
-          jsi::Object target(*rt);
-
-          for (const auto& entry : *values) {
-            target.setProperty(*rt, entry.first->toStdString().c_str(), std::stoi(entry.second->toStdString()));
-          }
-
-          jsi::Value value = getMountingStyle.call(*rt, jsi::Value(tag), jsi::Value(progress), target, jsi::Value(depth));
-          jsi::Object props = value.asObject(*rt);
-          return JNIHelper::ConvertToPropsMap(*rt, props);
-         }
+        static const auto method = javaPart_
+                ->getClass()
+                ->getMethod<void(JMap<JString, JObject>::javaobject, int)>("notifyAboutProgress");
+        method(javaPart_.get(), JNIHelper::ConvertToPropsMap(*animatedRuntime, progress.asObject(*rt)), tag);
     }
-    return JNIHelper::PropsMap::create();
-}
-
-jni::local_ref<JMap<JString, JObject>> LayoutAnimations::getStyleWhileUnmounting(int tag, double progress, alias_ref<JMap<jstring, jstring>> values, int depth) {
-     if (auto rt = this->weakUIRuntime.lock()) {
-        jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
-        if (!layoutAnimationRepositoryAsValue.isUndefined()) {
-          jsi::Function getMountingStyle = layoutAnimationRepositoryAsValue.getObject(*rt).getPropertyAsFunction(*rt, "getUnmountingStyle");
-          jsi::Object initial(*rt);
-
-          for (const auto& entry : *values) {
-            initial.setProperty(*rt, entry.first->toStdString().c_str(),  std::stoi(entry.second->toStdString()));
-          }
-
-          jsi::Value value = getMountingStyle.call(*rt, jsi::Value(tag), jsi::Value(progress), initial, jsi::Value(depth));
-          jsi::Object props = value.asObject(*rt);
-          return JNIHelper::ConvertToPropsMap(*rt, props);
-        }
-    }
-    return JNIHelper::PropsMap::create();
-}
-
-void LayoutAnimations::notifyAboutProgress(double progress, int tag) {
-    static const auto method = javaPart_
-                           ->getClass()
-                           ->getMethod<void(double, int)>("notifyAboutProgress");
-    method(javaPart_.get(), progress, tag);
 }
 
 void LayoutAnimations::notifyAboutEnd(int tag, int cancelled) {
