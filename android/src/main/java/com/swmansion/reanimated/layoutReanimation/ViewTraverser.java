@@ -18,7 +18,7 @@ public class ViewTraverser {
         internalTraverse(root, lambda, depth, false);
     }
 
-    private static void internalTraverse(View view, TraversingLambda lambda, int depth, boolean shouldSkipAnimationRoots) {
+    static void internalTraverse(View view, TraversingLambda lambda, int depth, boolean shouldSkipAnimationRoots) {
         if ((view instanceof AnimatedRoot) && shouldSkipAnimationRoots) {
             return;
         }

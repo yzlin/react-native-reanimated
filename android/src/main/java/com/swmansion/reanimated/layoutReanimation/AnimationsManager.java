@@ -23,6 +23,7 @@ import com.facebook.react.uimanager.UIImplementation;
 import com.facebook.react.uimanager.UIManagerModule;
 import com.facebook.react.uimanager.ViewManager;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -104,7 +105,28 @@ public class AnimationsManager {
     }
 
     private void scheduleCleaning() {
-        //TODO
+        WeakReference<AnimationsManager> animationsManagerWeakReference = new WeakReference<>(this);
+        mContext.runOnUiQueueThread(() -> {
+            AnimationsManager thiz = animationsManagerWeakReference.get();
+            if (thiz == null) {
+                return;
+            }
+            HashSet<Integer> toRemove = mToRemove;
+            mToRemove = new HashSet<>();
+
+            HashSet<Integer> candidates = new HashSet<>();
+            for (Integer tag : toRemove) {
+                View view = mViewForTag.get(tag);
+                if (view == null) {
+                    continue;
+                }
+                candidates.add(mAnimatedLayout.get(tag));
+            }
+
+            for (Integer tag : candidates) {
+                removeLeftovers(tag);
+            }
+        });
     }
 
     public HashMap<String, Integer> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
@@ -332,7 +354,61 @@ public class AnimationsManager {
         removeLeftovers(before.tag);
     }
 
+    boolean dfs(View view, boolean disappearingAbove) {
+        boolean active = false;
+        ViewState state = mStates.get(view.getId());
+        boolean disappearing = state == ViewState.ToRemove || state == ViewState.Disappearing;
+
+        if (view instanceof ViewGroup) {
+            ViewGroup vg = (ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); ++i) {
+                View child = vg.getChildAt(i);
+                active = active || dfs(child, disappearing || disappearingAbove);
+            }
+        }
+
+        if (!disappearingAbove && state == ViewState.ToRemove && !active) {
+            ViewTraverser.internalTraverse(view,
+                (View curView) -> {
+                    mStates.remove(curView.getId());
+                    mAnimatedLayout.remove(curView.getId());
+                    mViewForTag.remove(curView.getId());
+                    mViewManager.remove(curView.getId());
+                    mParentViewManager.remove(curView.getId());
+                    mParent.remove(curView.getId());
+                    mNativeMethodsHolder.removeConfigForTag(curView.getId());
+                    if (view.getId() == curView.getId()) {
+                        if (view instanceof AnimatedRoot) {
+                            View hangingPoint = mAnimatedLayoutHangingPoint.get(curView.getId());
+                            View tmp = view;
+                            while (tmp.getParent() != null && tmp.getParent() != hangingPoint) {
+                                ViewGroup next = (ViewGroup)tmp.getParent();
+                                next.removeView(tmp);
+                                tmp = next;
+                            }
+                            mAnimatedLayoutHangingPoint.remove(curView.getId());
+                        } else  {
+                            ViewGroup parent = (ViewGroup) view.getParent();
+                            parent.removeView(curView);
+                        }
+                    }
+                    if (curView instanceof ViewGroup) {
+                        ViewGroup vg = (ViewGroup)curView;
+                        vg.removeAllViews();
+                    }
+                },
+                (int)1e9,
+                false
+            );
+        }
+
+        return active || (!(state == ViewState.ToRemove));
+    }
+
     private void removeLeftovers(Integer tag) {
-        // TODO
+        View view = mViewForTag.get(tag);
+        if (view != null) {
+            dfs(view, false);
+        }
     }
 }
