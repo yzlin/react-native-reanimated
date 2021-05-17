@@ -29,10 +29,8 @@ public class LayoutAnimations {
     private native HybridData initHybrid();
 
     // LayoutReanimation
-    public native void startAnimationForTag(int tag);
+    public native void startAnimationForTag(int tag, String type, Map<String, String> values);
     public native void removeConfigForTag(int tag);
-    public native Map<String, Object> getStyleWhileMounting(int tag, double progress, Map<String, String> values, int depth);
-    public native Map<String, Object> getStyleWhileUnmounting(int tag, double progress, Map<String, String> values, int depth);
 
     private void notifyAboutEnd(int tag, int cancelledInt) {
         ReactApplicationContext context = mContext.get();
@@ -45,14 +43,14 @@ public class LayoutAnimations {
         }
     }
 
-    private void notifyAboutProgress(double progress, int tag) {
+    private void notifyAboutProgress(Map<String, Object> newStyle, int tag) {
         ReactApplicationContext context = mContext.get();
         if (context != null) {
             context.getNativeModule(ReanimatedModule.class)
                     .getNodesManager()
                     .getReactBatchObserver()
                     .getAnimationsManager()
-                    .notifyAboutProgress(progress, tag);
+                    .notifyAboutProgress(newStyle, tag);
         }
     }
 }

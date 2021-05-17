@@ -270,12 +270,69 @@ public class AnimationsManager {
             }
 
             if (view instanceof AnimatedRoot) {
-
+                ArrayList<View> pathToTheRoot = (ArrayList<View>) before.capturedValues.get(view.getId()).get(Snapshooter.pathToTheRootView);
+                for (int i = 1; i < pathToTheRoot.size(); ++i) {
+                    ViewGroup parent = (ViewGroup) pathToTheRoot.get(i);
+                    View cur = pathToTheRoot.get(i-1);
+                    if (cur.getParent() == null) {
+                        parent.addView(cur);
+                        mAnimatedLayoutHangingPoint.put(view.getId(), parent);
+                    }
+                }
             } else {
                 ViewGroup parent = (ViewGroup) mParent.get(view.getId());
                 parent.addView(view);
             }
         }
 
+        for (View view : allViews) {
+            Integer tag = view.getId();
+            String type = "entering";
+            HashMap<String, Object> startValues = before.capturedValues.get(view.getId());
+            HashMap<String, Object> targetValues = after.capturedValues.get(view.getId());
+            ViewState state = mStates.get(view.getId());
+
+            if (state == ViewState.Appearing || state == ViewState.Disappearing || state == ViewState.ToRemove) {
+                if (state == ViewState.Appearing && startValues != null && targetValues == null) {
+                    mStates.put(tag, ViewState.Disappearing);
+                    type = "exiting";
+                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                    mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
+                }
+                continue;
+            }
+
+            if (state == ViewState.Inactive) { // it can be a fresh view
+                if (startValues == null && targetValues != null) {
+                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                    mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
+                }
+                if (startValues != null && targetValues == null) {
+                    mStates.put(view.getId(), ViewState.ToRemove);
+                }
+                continue;
+            }
+            // View must be in Layout state
+            type = "Layout";
+            if (startValues != null && targetValues == null) {
+                mStates.put(view.getId(), ViewState.Disappearing);
+                type = "exiting";
+                HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
+                continue;
+            }
+            HashMap<String, Integer> preparedStartValues = prepareDataForAnimationWorklet(startValues);
+            HashMap<String, Integer> preparedTargetValues = prepareDataForAnimationWorklet(targetValues);
+            HashMap<String, Integer> preparedValues = new HashMap<>(preparedTargetValues);
+            for (String key : preparedStartValues.keySet()) {
+                preparedValues.put("b" + key, preparedStartValues.get(key));
+            }
+            mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
+        }
+        removeLeftovers(before.tag);
+    }
+
+    private void removeLeftovers(Integer tag) {
+        // TODO
     }
 }
