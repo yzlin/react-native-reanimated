@@ -1,5 +1,6 @@
 package com.swmansion.reanimated.layoutReanimation;
 
+import android.accounts.AccountManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,17 +35,32 @@ public class AnimationsManager {
     private UIImplementation mUIImplementation;
     private UIManagerModule mUIManager;
     private NativeMethodsHolder mNativeMethodsHolder;
-    private HashMap<Integer, ArrayList<Runnable>> mBlocksForTags;
-    private HashMap<Integer, Snapshooter> mFirstSnapshots;
-    private HashMap<Integer, Snapshooter> mSecondSnapshots;
+
+    private HashMap<Integer, ViewState> mStates;
+    private HashMap<Integer, View> mViewForTag;
+    private HashMap<Integer, Integer> mAnimatedLayout;
+    private HashSet<Integer> mToRemove;
+    private HashMap<Integer, View> mAnimatedLayoutHangingPoint;
+    private HashMap<Integer, ViewManager> mViewManager;
+    private HashMap<Integer, ViewManager> mParentViewManager;
+    private HashMap<Integer, View> mParent;
+
+    public enum ViewState {
+        Appearing, Disappearing, Layout, Inactive, ToRemove;
+    }
 
     AnimationsManager(ReactContext context, UIImplementation uiImplementation, UIManagerModule uiManagerModule) {
         mContext = context;
         mUIImplementation = uiImplementation;
         mUIManager = uiManagerModule;
-        mBlocksForTags = new HashMap<>();
-        mFirstSnapshots = new HashMap<>();
-        mSecondSnapshots = new HashMap<>();
+        mStates = new HashMap<>();
+        mViewForTag = new HashMap<>();
+        mAnimatedLayout = new HashMap<>();
+        mAnimatedLayoutHangingPoint = new HashMap<>();
+        mToRemove = new HashSet<>();
+        mViewManager = new HashMap<>();
+        mParentViewManager = new HashMap<>();
+        mParent = new HashMap();
     }
 
     public void onCatalystInstanceDestroy() {
@@ -52,150 +68,45 @@ public class AnimationsManager {
         mContext = null;
         mUIImplementation = null;
         mUIManager = null;
-        mBlocksForTags = null;
+        mStates = null;
+        mToRemove = null;
+        mViewForTag = null;
+        mAnimatedLayoutHangingPoint = null;
+        mAnimatedLayout = null;
+        mViewManager = null;
+        mParent = null;
+        mParentViewManager = null;
     }
 
-    public void startAnimationWithFirstSnapshot(Snapshooter snapshooter) {
-        mFirstSnapshots.put(snapshooter.tag, snapshooter);
-        mSecondSnapshots.remove(snapshooter.tag);
-        mNativeMethodsHolder.startAnimationForTag(snapshooter.tag);
-    }
+    public void notifyAboutProgress(Map<String, Object> newStyle, Integer tag) {
+       ViewState state = mStates.get(tag);
+       if (state == ViewState.Inactive) {
+           mStates.put(tag, ViewState.Appearing);
+       }
 
-    public void addSecondSnapshot(Snapshooter snapshooter) {
-        mSecondSnapshots.put(snapshooter.tag, snapshooter);
-        if (snapshooter.capturedValues.size() == 0) { // Root config should be removed on next unmounting animation
-            addOnAnimationEndRunnable(snapshooter.tag, () -> {
-               mNativeMethodsHolder.removeConfigForTag(snapshooter.tag);
-            });
-        }
-    }
-
-    private void addOnAnimationEndRunnable(Integer tag, Runnable runnable) {
-        if (mBlocksForTags.get(tag) == null) {
-            mBlocksForTags.put(tag, new ArrayList<>());
-        }
-        mBlocksForTags.get(tag).add(runnable);
-    }
-
-    public void notifyAboutProgress(double progress, Integer tag) {
-        Log.i("LayoutReanimation", "progress: " + progress);
-        Snapshooter first = mFirstSnapshots.get(tag);
-        Snapshooter second = mSecondSnapshots.get(tag);
-        if (first == null || second == null) { // animation is not ready
-            return;
-        }
-
-        HashSet<Integer> processed = new HashSet<>();
-        ArrayList<View> allViews = new ArrayList<>();
-        for (View view : first.listOfViews) {
-            allViews.add(view);
-            processed.add(view.getId());
-        }
-        for (View view : second.listOfViews) {
-            if (!processed.contains(view.getId())) {
-                allViews.add(view);
-            }
-        }
-
-        for (View view : allViews) {
-            HashMap<String, Object> startValues = first.capturedValues.get(view.getId());
-            HashMap<String, Object> targetValues = second.capturedValues.get(view.getId());
-
-            if (startValues != null && targetValues != null) { //interpolate
-                double currentWidth = ((Integer)targetValues.get(Snapshooter.width)) * progress + ((Integer)startValues.get(Snapshooter.width))  * (1.0 - progress);
-                double currentHeight = ((Integer)targetValues.get(Snapshooter.height)) * progress + ((Integer)startValues.get(Snapshooter.height)) * (1.0 - progress);
-
-                double currentX = ((Integer)targetValues.get(Snapshooter.originX)) * progress + ((Integer)startValues.get(Snapshooter.originX)) * (1.0 - progress);
-                double currentY = ((Integer)targetValues.get(Snapshooter.originY)) * progress + ((Integer)startValues.get(Snapshooter.originY)) * (1.0 - progress);
-
-                HashMap<String, Object> props = new HashMap<>();
-                props.put(Snapshooter.width, currentWidth);
-                props.put(Snapshooter.height, currentHeight);
-                props.put(Snapshooter.originX, currentX);
-                props.put(Snapshooter.originY, currentY);
-                ViewManager viewManager = (ViewManager) targetValues.get(Snapshooter.viewManager);
-                ViewManager parentViewManager = (ViewManager) targetValues.get(Snapshooter.parentViewManager);
-                View parentView = (View) targetValues.get(Snapshooter.parent);
-                setNewProps(props, view, viewManager, parentViewManager, parentView.getId());
-            }
-
-            if (startValues == null && targetValues != null) { // appearing
-                int depth = 0; // distance to the highest appearing ancestor or AnimatedRoot
-                if (targetValues.get("depth") == null) {
-                    View deepestView = view;
-                    while ((!(deepestView instanceof AnimatedRoot)) && first.capturedValues.get(((View)deepestView.getParent()).getId()) == null) {
-                        deepestView = (View)deepestView.getParent();
-                        depth++;
-                    }
-                    targetValues.put("depth", depth);
-                }
-                depth = (Integer)targetValues.get("depth");
-                HashMap<String, Integer> data = prepareDataForAnimationWorklet(targetValues);
-                Map<String, Object> newProps = mNativeMethodsHolder.getStyleWhileMounting(tag, (float)progress, data, depth);
-                ViewManager viewManager = (ViewManager) targetValues.get(Snapshooter.viewManager);
-                ViewManager parentViewManager = (ViewManager) targetValues.get(Snapshooter.parentViewManager);
-                View parentView = (View) targetValues.get(Snapshooter.parent);
-                setNewProps(newProps, view, viewManager, parentViewManager, parentView.getId());
-            }
-
-            if (startValues != null && targetValues == null) { // disappearing
-                int depth = 0;
-                if (startValues.get("depth") == null) {
-                    View deepestView = view;
-                    // TODO get rid of that disaster
-                    while ((!(deepestView instanceof AnimatedRoot)) && second.capturedValues.get(((View)(first.capturedValues.get(deepestView.getId()).get(Snapshooter.parent))).getId()) == null) {
-                        deepestView = (View)(first.capturedValues.get(deepestView.getId()).get(Snapshooter.parent));
-                        depth++;
-                    }
-                    startValues.put("depth", depth);
-
-                    if ((view instanceof AnimatedRoot)) {
-                        // If I'm the root
-                        ArrayList<View> pathToRoot = (ArrayList<View>)startValues.get(Snapshooter.pathToTheRootView);
-                        for (int i = 1; i < pathToRoot.size(); ++i) {
-                            ViewGroup parent = (ViewGroup)pathToRoot.get(i);
-                            View currentView = pathToRoot.get(i-1);
-                            if (currentView.getParent() == null) {
-                                parent.addView(currentView);
-                                addOnAnimationEndRunnable(tag, () -> {
-                                    parent.removeView(currentView);
-                                });
-                            }
-                        }
-                    } else {
-                        if (view.getParent() == null) {
-                            ViewGroup parentView = (ViewGroup)startValues.get(Snapshooter.parent);
-                            parentView.addView(view);
-                            addOnAnimationEndRunnable(tag, () -> {
-                                parentView.removeView(view);
-                            });
-                        }
-                    }
-                }
-                depth = (Integer)startValues.get("depth");
-                HashMap<String, Integer> data = prepareDataForAnimationWorklet(startValues);
-                Map<String, Object> newProps = mNativeMethodsHolder.getStyleWhileUnmounting(tag, (float)progress, data, depth);
-                ViewManager viewManager = (ViewManager) startValues.get(Snapshooter.viewManager);
-                ViewManager parentViewManager = (ViewManager) startValues.get(Snapshooter.parentViewManager);
-                View parentView = (View) startValues.get(Snapshooter.parent);
-                setNewProps(newProps, view, viewManager, parentViewManager, parentView.getId());
-            }
-        }
+       setNewProps(newStyle, mViewForTag.get(tag), mViewManager.get(tag), mParentViewManager.get(tag), mParent.get(tag).getId());
     }
 
     public void notifyAboutEnd(int tag, boolean cancelled) {
-        if (mBlocksForTags.get(tag) != null) {
-            for (Runnable runnable : mBlocksForTags.get(tag)) {
-                runnable.run();
+
+        if (!cancelled) {
+            ViewState state = mStates.get(tag);
+            if (state == ViewState.Appearing) {
+                mStates.put(tag, ViewState.Layout);
+            }
+
+            if (state == ViewState.Disappearing) {
+                mStates.put(tag, ViewState.ToRemove);
+                mToRemove.add(tag);
+                scheduleCleaning();
             }
         }
-        
-        if (!cancelled) {
-            mFirstSnapshots.remove(tag);
-            mSecondSnapshots.remove(tag);
-        }
     }
-    
+
+    private void scheduleCleaning() {
+        //TODO
+    }
+
     public HashMap<String, Integer> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
         HashMap<String, Integer> preparedValues = new HashMap<>();
 
@@ -322,6 +233,48 @@ public class AnimationsManager {
             }
         } else {
             viewToUpdate.layout(x, y, x + width, y + height);
+        }
+
+    }
+
+    public void notifyAboutSnapshots(Snapshooter before, Snapshooter after) {
+        HashSet<View> alreadyKnown = new HashSet<>();
+        ArrayList<View> allViews = new ArrayList<>();
+        for (View view : before.listOfViews) {
+            allViews.add(view);
+            alreadyKnown.add(view);
+        }
+        for (View view : after.listOfViews) {
+            if (!alreadyKnown.contains(view)) {
+                allViews.add(view);
+            }
+        }
+
+        // update data for view
+        for (View view : allViews) {
+            if (!mStates.containsKey(view)) {
+                mStates.put(view.getId(), ViewState.Inactive);
+                mViewForTag.put(view.getId(), view);
+                mAnimatedLayout.put(view.getId(), before.tag);
+                HashMap<String, Object> data = after.capturedValues.get(view.getId());
+                mViewManager.put(view.getId(), (ViewManager)data.get(Snapshooter.viewManager));
+                mParentViewManager.put(view.getId(), (ViewManager)data.get(Snapshooter.parentViewManager));
+                mParent.put(view.getId(), ((View)data.get(Snapshooter.parent)));
+            }
+        }
+
+        // attach all orphan views
+        for (View view : allViews) {
+            if (view.getParent() != null) {
+                continue;
+            }
+
+            if (view instanceof AnimatedRoot) {
+
+            } else {
+                ViewGroup parent = (ViewGroup) mParent.get(view.getId());
+                parent.addView(view);
+            }
         }
 
     }

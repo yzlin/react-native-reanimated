@@ -20,6 +20,7 @@ import com.swmansion.reanimated.NodesManager;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 // Use java BiFunction when minSdk is Bumped to 24
@@ -88,6 +89,8 @@ public class ReactBatchObserver {
             }
         };
 
+        final HashMap<Integer, Snapshooter> firstSnapshots = new HashMap<>();
+
         //TODO use weakRefs here
         mUIManager.prependUIBlock(nativeViewHierarchyManager -> {
             BiFunction<AnimatedRoot, Integer> lambda = (AnimatedRoot root, Integer tag) -> {
@@ -98,7 +101,7 @@ public class ReactBatchObserver {
                     });
                 }
 
-                mAnimationsManager.startAnimationWithFirstSnapshot(snapshooter);
+                firstSnapshots.put(tag, snapshooter);
             };
             goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
         });
@@ -112,8 +115,8 @@ public class ReactBatchObserver {
                         snapshooter.takeSnapshot(view, nativeViewHierarchyManager);
                     });
                 }
-                mAnimationsManager.addSecondSnapshot(snapshooter);
-                mAnimationsManager.notifyAboutProgress(0, tag);
+
+                mAnimationsManager.notifyAboutSnapshots(firstSnapshots.get(tag), snapshooter);
             };
             goThroughAffectedWithLambda.exec(nativeViewHierarchyManager, lambda);
         });

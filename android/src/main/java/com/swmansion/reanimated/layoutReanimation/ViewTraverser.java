@@ -15,9 +15,6 @@ public class ViewTraverser {
         }
         AnimatedRoot root = (AnimatedRoot)view;
         int depth = (int)1e9;
-        if (root.isShallow) {
-            depth = 2;
-        }
         internalTraverse(root, lambda, depth, false);
     }
 
@@ -33,7 +30,7 @@ public class ViewTraverser {
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup)view;
             for  (int i = 0; i < viewGroup.getChildCount(); ++i) {
-                internalTraverse(viewGroup.getChildAt(i), lambda,depth - 1, true);
+                internalTraverse(viewGroup.getChildAt(i), lambda,depth - 1, false);
             }
         }
 
