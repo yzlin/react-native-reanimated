@@ -252,7 +252,7 @@ public class AnimationsManager {
 
         // update data for view
         for (View view : allViews) {
-            if (!mStates.containsKey(view)) {
+            if (!mStates.containsKey(view.getId())) {
                 mStates.put(view.getId(), ViewState.Inactive);
                 mViewForTag.put(view.getId(), view);
                 mAnimatedLayout.put(view.getId(), before.tag);
@@ -313,7 +313,7 @@ public class AnimationsManager {
                 continue;
             }
             // View must be in Layout state
-            type = "Layout";
+            type = "layout";
             if (startValues != null && targetValues == null) {
                 mStates.put(view.getId(), ViewState.Disappearing);
                 type = "exiting";
