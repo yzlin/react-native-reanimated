@@ -2,7 +2,9 @@ package com.swmansion.reanimated.layoutReanimation;
 
 import android.view.View;
 
+import com.facebook.react.uimanager.IllegalViewOperationException;
 import com.facebook.react.uimanager.NativeViewHierarchyManager;
+import com.facebook.react.uimanager.ViewManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,8 +57,16 @@ public class Snapshooter {
         values.put(parent, (View)view.getParent());
 
         // TODO add viewManager
-        values.put(viewManager, nativeViewHierarchyManager.resolveViewManager(view.getId()));
-        values.put(parentViewManager, nativeViewHierarchyManager.resolveViewManager(parentView.getId()));
+        ViewManager vm = null;
+        ViewManager pvm = null;
+        try {
+            vm = nativeViewHierarchyManager.resolveViewManager(view.getId());
+            pvm = nativeViewHierarchyManager.resolveViewManager(parentView.getId());
+        } catch (IllegalViewOperationException e) {
+            // do nothing
+        }
+        values.put(viewManager, vm);
+        values.put(parentViewManager, pvm);
 
         listOfViews.add(view);
         capturedValues.put(view.getId(), values);

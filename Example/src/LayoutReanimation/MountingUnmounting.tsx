@@ -42,7 +42,7 @@ export function MountingUnmounting(): React.ReactElement {
             
                 <Button title="toggle" onPress={() => {setShow((last) => !last)}}/>
                 <View style={{height: 400, alignItems: 'center', justifyContent: 'center'}}>
-                    {show && <AnimatedView key={Math.random().toString()}/>}
+                    {show && <SWMLogo key={Math.random().toString()}/>}
                 </View>
             
         </View>
