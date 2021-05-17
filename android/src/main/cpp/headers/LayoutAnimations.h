@@ -22,12 +22,12 @@ class LayoutAnimations : public jni::HybridClass<LayoutAnimations> {
         jni::alias_ref<jhybridobject> jThis);
   static void registerNatives();
 
-  void LayoutAnimations::startAnimationForTag(int tag, Jstring type, alias_ref<JMap<jstring, jstring>> values);
+  void startAnimationForTag(int tag, alias_ref<JString> type, alias_ref<JMap<jstring, jstring>> values);
   void removeConfigForTag(int tag);
 
   void setWeakUIRuntime(std::weak_ptr<jsi::Runtime> wrt);
 
-  void notifyAboutProgress(jsi::Value progress, int tag);
+  void notifyAboutProgress(jsi::Value & progress, int tag);
   void notifyAboutEnd(int tag, int cancelled);
 
  private:

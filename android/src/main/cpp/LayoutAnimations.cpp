@@ -20,7 +20,7 @@ void LayoutAnimations::setWeakUIRuntime(std::weak_ptr<jsi::Runtime> wrt) {
     this->weakUIRuntime = wrt;
 }
 
-void LayoutAnimations::startAnimationForTag(int tag, Jstring type, alias_ref<JMap<jstring, jstring>> values) {
+void LayoutAnimations::startAnimationForTag(int tag, alias_ref<JString> type, alias_ref<JMap<jstring, jstring>> values) {
     if (auto rt = this->weakUIRuntime.lock()) {
         jsi::Value layoutAnimationRepositoryAsValue = rt->global().getPropertyAsObject(*rt, "global").getProperty(*rt, "LayoutAnimationRepository");
         if (!layoutAnimationRepositoryAsValue.isUndefined()) {
@@ -30,7 +30,7 @@ void LayoutAnimations::startAnimationForTag(int tag, Jstring type, alias_ref<JMa
             for (const auto& entry : *values) {
                 target.setProperty(*rt, entry.first->toStdString().c_str(), std::stoi(entry.second->toStdString()));
             }
-            startAnimationForTag.call(*rt, jsi::Value(tag), jsi::Value(type->toStdString().c_str()), target);
+            startAnimationForTag.call(*rt, jsi::Value(tag), jsi::String::createFromUtf8(*rt,type->toStdString()), target);
         }
     }
 }
@@ -45,12 +45,12 @@ void LayoutAnimations::removeConfigForTag(int tag) {
     }
 }
 
-void LayoutAnimations::notifyAboutProgress(jsi::Value progress, int tag) {
+void LayoutAnimations::notifyAboutProgress(jsi::Value & progress, int tag) {
     if (auto rt = this->weakUIRuntime.lock()) {
         static const auto method = javaPart_
                 ->getClass()
                 ->getMethod<void(JMap<JString, JObject>::javaobject, int)>("notifyAboutProgress");
-        method(javaPart_.get(), JNIHelper::ConvertToPropsMap(*animatedRuntime, progress.asObject(*rt)), tag);
+        method(javaPart_.get(), JNIHelper::ConvertToPropsMap(*rt, progress.asObject(*rt)).get(), tag);
     }
 }
 
@@ -67,8 +67,6 @@ void LayoutAnimations::registerNatives()
       makeNativeMethod("initHybrid", LayoutAnimations::initHybrid),
       makeNativeMethod("startAnimationForTag", LayoutAnimations::startAnimationForTag),
       makeNativeMethod("removeConfigForTag", LayoutAnimations::removeConfigForTag),
-      makeNativeMethod("getStyleWhileMounting", LayoutAnimations::getStyleWhileMounting),
-      makeNativeMethod("getStyleWhileUnmounting", LayoutAnimations::getStyleWhileUnmounting)
   });
 }
 
