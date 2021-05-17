@@ -212,6 +212,26 @@ function Home() {
             </div>
           </div>
         </section>
+        <section className={styles.showcase}>
+          <div className="container">
+            <div className="row">
+              <div className=" col col--10">
+                <h1>React Native Reanimated 2 showcase</h1>
+                <p>
+                  Check out projects made in Reanimated 2 from people from all
+                  over the world.
+                </p>
+              </div>
+              <div className="col col--2">
+                <Link
+                  className="button button--primary button--wide button--lg"
+                  to={useBaseUrl('showcase')}>
+                  See projects
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </Layout>
   );

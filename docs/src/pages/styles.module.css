@@ -4,6 +4,9 @@
  * CSS files with the .module.css suffix will be treated as CSS modules
  * and scoped locally.
  */
+:root {
+  --swmColorGreen: #b1dfd0;
+}
 
 .heroBanner {
   padding: 1rem 0;
@@ -54,4 +57,8 @@
   align-items: center;
   padding: 2rem 0;
   width: 100%;
+}
+
+.showcase {
+  background-color: var(--swmColorGreen);
 }
