@@ -304,7 +304,7 @@ public class AnimationsManager {
 
             if (state == ViewState.Inactive) { // it can be a fresh view
                 if (startValues == null && targetValues != null) {
-                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(targetValues);
                     mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
                 }
                 if (startValues != null && targetValues == null) {
