@@ -16,7 +16,7 @@ const boxes = [
     description: (
       <>
         Complexity reduced from tens to just a few methods. Try it out today:
-        Check out our <a href="docs/">Documentation</a>.
+        Check out our <Link to={'docs'}>documentation</Link>.
       </>
     ),
   },
@@ -204,9 +204,11 @@ function Home() {
                 </div>
                 <p>
                   Or just go to{' '}
-                  <a href="docs/installation">Documentation page</a> to see how
-                  you can run it locally with React Native on both Android and
-                  iOS.
+                  <Link to={useBaseUrl('docs/installation')}>
+                    Documentation page
+                  </Link>{' '}
+                  to see how you can run it locally with React Native on both
+                  Android and iOS.
                 </p>
               </div>
             </div>
@@ -215,16 +217,16 @@ function Home() {
         <section className={styles.showcase}>
           <div className="container">
             <div className="row">
-              <div className=" col col--10">
+              <div className=" col">
                 <h1>React Native Reanimated 2 showcase</h1>
                 <p>
                   Check out projects made in Reanimated 2 from people from all
                   over the world.
                 </p>
               </div>
-              <div className="col col--2">
+              <div className={classnames('col col--2', styles.alignCenter)}>
                 <Link
-                  className="button button--primary button--wide button--lg"
+                  className="button button--primary button--lg"
                   to={useBaseUrl('showcase')}>
                   See projects
                 </Link>

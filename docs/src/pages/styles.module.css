@@ -62,3 +62,7 @@
 .showcase {
   background-color: var(--swmColorGreen);
 }
+
+.alignCenter {
+  align-self: center;
+}
