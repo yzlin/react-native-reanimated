@@ -361,17 +361,18 @@ public class AnimationsManager {
     boolean dfs(View view, boolean disappearingAbove) {
         boolean active = false;
         ViewState state = mStates.get(view.getId());
-        boolean disappearing = state == ViewState.ToRemove || state == ViewState.Disappearing;
+        boolean disappearing = ((state == ViewState.ToRemove) || (state == ViewState.Disappearing));
 
         if (view instanceof ViewGroup) {
             ViewGroup vg = (ViewGroup) view;
             for (int i = 0; i < vg.getChildCount(); ++i) {
                 View child = vg.getChildAt(i);
-                active = active || dfs(child, disappearing || disappearingAbove);
+                boolean childAns = dfs(child, disappearing || disappearingAbove); // we still want to go down
+                active = active || childAns;
             }
         }
 
-        if (!disappearingAbove && state == ViewState.ToRemove && !active) {
+        if ((!disappearingAbove) && (state == ViewState.ToRemove) && (!active)) {
             ViewTraverser.internalTraverse(view,
                 (View curView) -> {
                     mStates.remove(curView.getId());

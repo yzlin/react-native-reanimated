@@ -184,7 +184,8 @@ typedef NS_ENUM(NSInteger, ViewState) {
   BOOL disappearing = state == ToRemove || state == Disappearing;
   
   for (UIView* child in view.subviews) {
-    active |= [self dfs:child disapperingAbove:(disappearingAbove || disappearing)];
+    BOOL childAns = [self dfs:child disapperingAbove:(disappearingAbove || disappearing)];
+    active |= childAns;
   }
   
   if (!disappearingAbove && state == ToRemove && !active) {
