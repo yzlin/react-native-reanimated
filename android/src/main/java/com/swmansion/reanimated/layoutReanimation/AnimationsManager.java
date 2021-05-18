@@ -17,6 +17,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.uimanager.IViewManagerWithChildren;
 import com.facebook.react.uimanager.IllegalViewOperationException;
+import com.facebook.react.uimanager.PixelUtil;
 import com.facebook.react.uimanager.ReactStylesDiffMap;
 import com.facebook.react.uimanager.RootView;
 import com.facebook.react.uimanager.UIImplementation;
@@ -129,21 +130,21 @@ public class AnimationsManager {
         });
     }
 
-    public HashMap<String, Integer> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
-        HashMap<String, Integer> preparedValues = new HashMap<>();
+    public HashMap<String, Float> prepareDataForAnimationWorklet(HashMap<String, Object> values) {
+        HashMap<String, Float> preparedValues = new HashMap<>();
 
         ArrayList<String> keys = new ArrayList<String>(Arrays.asList(Snapshooter.width, Snapshooter.height, Snapshooter.originX,
                 Snapshooter.originY, Snapshooter.globalOriginX, Snapshooter.globalOriginY));
         for (String key : keys) {
-            preparedValues.put(key, (int)values.get(key));
+            preparedValues.put(key, PixelUtil.toDIPFromPixel((int)values.get(key)));
         }
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         mContext.getCurrentActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
         int height = displaymetrics.heightPixels;
         int width = displaymetrics.widthPixels;
-        preparedValues.put("windowWidth", width);
-        preparedValues.put("windowHeight", height);
+        preparedValues.put("windowWidth", PixelUtil.toDIPFromPixel(width));
+        preparedValues.put("windowHeight", PixelUtil.toDIPFromPixel(height));
         return preparedValues;
     }
 
@@ -156,10 +157,10 @@ public class AnimationsManager {
                             ViewManager viewManager,
                             ViewManager parentViewManager,
                             Integer parentTag) {
-        int x = (props.get(Snapshooter.originX) != null)? ((Double)props.get(Snapshooter.originX)).intValue() : view.getLeft();
-        int y = (props.get(Snapshooter.originY) != null)? ((Double)props.get(Snapshooter.originY)).intValue() : view.getTop();
-        int width = (props.get(Snapshooter.width) != null)? ((Double)props.get(Snapshooter.width)).intValue() : view.getWidth();
-        int height = (props.get(Snapshooter.height) != null)? ((Double)props.get(Snapshooter.height)).intValue() : view.getHeight();
+        float x = (props.get(Snapshooter.originX) != null)? ((Double)props.get(Snapshooter.originX)).floatValue() : PixelUtil.toDIPFromPixel(view.getLeft());
+        float y = (props.get(Snapshooter.originY) != null)? ((Double)props.get(Snapshooter.originY)).floatValue() : PixelUtil.toDIPFromPixel(view.getTop());
+        float width = (props.get(Snapshooter.width) != null)? ((Double)props.get(Snapshooter.width)).floatValue() : PixelUtil.toDIPFromPixel(view.getWidth());
+        float height = (props.get(Snapshooter.height) != null)? ((Double)props.get(Snapshooter.height)).floatValue() : PixelUtil.toDIPFromPixel(view.getHeight());
         updateLayout(view, parentViewManager, parentTag, view.getId(), x, y, width, height);
         props.remove(Snapshooter.originX);
         props.remove(Snapshooter.originY);
@@ -201,9 +202,12 @@ public class AnimationsManager {
     }
 
     public void updateLayout(View viewToUpdate, ViewManager parentViewManager,
-            int parentTag, int tag, int x, int y, int width, int height) {
+            int parentTag, int tag, float xf, float yf, float widthf, float heightf) {
 
-
+            int x = Math.round(PixelUtil.toPixelFromDIP(xf));
+            int y = Math.round(PixelUtil.toPixelFromDIP(yf));
+            int width = Math.round(PixelUtil.toPixelFromDIP(widthf));
+            int height = Math.round(PixelUtil.toPixelFromDIP(heightf));
         // Even though we have exact dimensions, we still call measure because some platform views
         // (e.g.
         // Switch) assume that method will always be called before onLayout and onDraw. They use it to
@@ -318,7 +322,7 @@ public class AnimationsManager {
                 if (state == ViewState.Appearing && startValues != null && targetValues == null) {
                     mStates.put(tag, ViewState.Disappearing);
                     type = "exiting";
-                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                    HashMap<String, Float> preparedValues = prepareDataForAnimationWorklet(startValues);
                     mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
                 }
                 continue;
@@ -326,7 +330,7 @@ public class AnimationsManager {
 
             if (state == ViewState.Inactive) { // it can be a fresh view
                 if (startValues == null && targetValues != null) {
-                    HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(targetValues);
+                    HashMap<String, Float> preparedValues = prepareDataForAnimationWorklet(targetValues);
                     mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
                 }
                 if (startValues != null && targetValues == null) {
@@ -339,13 +343,13 @@ public class AnimationsManager {
             if (startValues != null && targetValues == null) {
                 mStates.put(view.getId(), ViewState.Disappearing);
                 type = "exiting";
-                HashMap<String, Integer> preparedValues = prepareDataForAnimationWorklet(startValues);
+                HashMap<String, Float> preparedValues = prepareDataForAnimationWorklet(startValues);
                 mNativeMethodsHolder.startAnimationForTag(tag, type, preparedValues);
                 continue;
             }
-            HashMap<String, Integer> preparedStartValues = prepareDataForAnimationWorklet(startValues);
-            HashMap<String, Integer> preparedTargetValues = prepareDataForAnimationWorklet(targetValues);
-            HashMap<String, Integer> preparedValues = new HashMap<>(preparedTargetValues);
+            HashMap<String, Float> preparedStartValues = prepareDataForAnimationWorklet(startValues);
+            HashMap<String, Float> preparedTargetValues = prepareDataForAnimationWorklet(targetValues);
+            HashMap<String, Float> preparedValues = new HashMap<>(preparedTargetValues);
             for (String key : preparedStartValues.keySet()) {
                 preparedValues.put("b" + key, preparedStartValues.get(key));
             }

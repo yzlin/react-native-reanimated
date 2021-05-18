@@ -2,6 +2,7 @@
 // Created by Szymon Kapala on 4/16/21.
 //
 #include "LayoutAnimations.h"
+#include "Logger.h"
 
 namespace reanimated
 {
@@ -28,7 +29,7 @@ void LayoutAnimations::startAnimationForTag(int tag, alias_ref<JString> type, al
             jsi::Object target(*rt);
 
             for (const auto& entry : *values) {
-                target.setProperty(*rt, entry.first->toStdString().c_str(), std::stoi(entry.second->toStdString()));
+                target.setProperty(*rt, entry.first->toStdString().c_str(), std::stof(entry.second->toStdString()));
             }
             startAnimationForTag.call(*rt, jsi::Value(tag), jsi::String::createFromUtf8(*rt,type->toStdString()), target);
         }

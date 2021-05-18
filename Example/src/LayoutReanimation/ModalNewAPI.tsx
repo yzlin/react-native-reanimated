@@ -32,7 +32,7 @@ function AnimatedView() {
         console.log("starting Values ", startingValues);
         console.log("width", width);
         const animations = {
-            originX: withTiming(width*10, {duration: 3000}),
+            originX: withTiming(width, {duration: 3000}),
             opacity: withTiming(0.5, {duration: 2000}),
         };
         const initialValues = {

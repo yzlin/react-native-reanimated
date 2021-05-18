@@ -141,7 +141,7 @@ public class NativeProxy {
     WeakReference<LayoutAnimations> weakLayoutAnimations = new WeakReference<>(LayoutAnimations);
     animationsManager.setNativeMethods(new NativeMethodsHolder() {
       @Override
-      public void startAnimationForTag(int tag, String type, HashMap<String, Integer> values) {
+      public void startAnimationForTag(int tag, String type, HashMap<String, Float> values) {
         LayoutAnimations LayoutAnimations = weakLayoutAnimations.get();
         if (LayoutAnimations != null) {
           HashMap<String, String> preparedValues = new HashMap<>();
