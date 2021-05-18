@@ -59,6 +59,7 @@
     "fbjs": "^3.0.0",
     "mockdate": "^3.0.2",
     "react-modal": "^3.13.1",
+    "react-tweet-embed": "^1.2.2",
     "string-hash-64": "^1.0.3"
   },
   "peerDependencies": {
