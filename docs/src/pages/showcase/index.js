@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import classnames from 'classnames';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import styles from './styles.module.css';
 import showcaseData from '@site/static/showcase.json';
 
-function Filter({ expanded: expandedInitial }) {
+function Filter({ expanded: expandedInitial, data, setFilteredData }) {
   const [expanded, setExpanded] = useState(!!expandedInitial);
-  const [filter, setFilter] = useState({});
+  const [filter, setFilter] = useState({
+    hasCode: { active: false, value: true },
+  });
+  useEffect(() => {
+    const filterFn = (data) =>
+      Object.keys(filter).reduce((acc, key) => {
+        if (filter[key].active) {
+          return acc && filter[key].value === data[key];
+        }
+        return acc;
+      }, true);
+
+    setFilteredData(data.filter(filterFn));
+  }, [filter]);
 
   const resetAllFilters = () => {
     const notFiltered = Object.keys(filter).reduce((acc, key) => {
@@ -15,6 +28,10 @@ function Filter({ expanded: expandedInitial }) {
       return acc;
     }, {});
     setFilter(notFiltered);
+  };
+
+  const updateFilter = (updatedFilters) => {
+    setFilter({ ...filter, ...updatedFilters });
   };
 
   const filterButton = (
@@ -37,18 +54,20 @@ function Filter({ expanded: expandedInitial }) {
           <h2>Source code</h2>
           <button
             className={classnames(
-              'button  button--lg',
-              filter.available ? 'button--primary ' : 'button--outline'
+              'button button--lg',
+              filter.hasCode.active ? 'button--primary ' : 'button--outline'
             )}
             onClick={() =>
-              setFilter({ ...filter, available: !filter.available })
+              updateFilter({
+                hasCode: { active: !filter.hasCode.active, value: true },
+              })
             }>
             Available
           </button>
         </article>
-        <button className="button button--primary button--lg margin-horiz--none">
+        {/* <button className="button button--primary button--lg margin-horiz--none">
           Show results
-        </button>
+        </button> */}
         <button className={styles.resetFilters} onClick={resetAllFilters}>
           Reset filters
         </button>
@@ -67,8 +86,6 @@ function Card({ title, name, imageUri, link, platform }) {
   return (
     <>
       <article className={styles.card}>
-        {/* <img src="https://picsum.photos/217/470" /> */}
-
         <div className={styles.cardImgContainer}>
           <img src={imageUri} className={styles.cardImg} />
         </div>
@@ -88,13 +105,18 @@ function Card({ title, name, imageUri, link, platform }) {
 }
 
 function Showcase() {
+  const [filteredData, setFilteredData] = useState(showcaseData);
   return (
-    <Layout>
+    <Layout wrapperClassName={styles.layout}>
       <div className={styles.containerWrapper}>
         <div className={styles.container}>
-          <Filter expanded={false} />
+          <Filter
+            expanded={false}
+            data={showcaseData}
+            setFilteredData={setFilteredData}
+          />
           <div className={styles.cardsGrid}>
-            {showcaseData.slice(0, 12 + 1).map((data, i) => (
+            {filteredData.slice(0, 12 + 1).map((data, i) => (
               <Card key={i} {...data} />
             ))}
           </div>

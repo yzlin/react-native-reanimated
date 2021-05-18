@@ -33,6 +33,12 @@
 
 .containerWrapper {
   background-color: var(--swmColorSeaBlue40);
+  flex: 1;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
 }
 
 .cardsGrid {
@@ -125,9 +131,11 @@
 }
 
 .resetFilters {
-  all: unset;
   display: block;
   color: var(--swmColorPink100);
+  background: none;
+  border: none;
+  padding: 0;
 }
 
 .resetFilters:hover {
