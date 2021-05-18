@@ -3,10 +3,19 @@ import classnames from 'classnames';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import styles from './styles.module.css';
+import showcaseData from '@site/static/showcase.json';
 
 function Filter({ expanded: expandedInitial }) {
   const [expanded, setExpanded] = useState(!!expandedInitial);
   const [filter, setFilter] = useState({});
+
+  const resetAllFilters = () => {
+    const notFiltered = Object.keys(filter).reduce((acc, key) => {
+      acc[key] = false;
+      return acc;
+    }, {});
+    setFilter(notFiltered);
+  };
 
   const filterButton = (
     <>
@@ -40,7 +49,9 @@ function Filter({ expanded: expandedInitial }) {
         <button className="button button--primary button--lg margin-horiz--none">
           Show results
         </button>
-        <button className={styles.resetFilters}>Reset filters</button>
+        <button className={styles.resetFilters} onClick={resetAllFilters}>
+          Reset filters
+        </button>
       </div>
     </>
   );
@@ -52,17 +63,14 @@ function Filter({ expanded: expandedInitial }) {
   );
 }
 
-function Card({ title, name, link, platform }) {
+function Card({ title, name, imageUri, link, platform }) {
   return (
     <>
       <article className={styles.card}>
         {/* <img src="https://picsum.photos/217/470" /> */}
 
         <div className={styles.cardImgContainer}>
-          <img
-            src={`https://picsum.photos/217/470?random=${title}`}
-            className={styles.cardImg}
-          />
+          <img src={imageUri} className={styles.cardImg} />
         </div>
         <div className={styles.cardDescription}>
           <h2 className={styles.cardTitle}>{title}</h2>
@@ -84,20 +92,10 @@ function Showcase() {
     <Layout>
       <div className={styles.containerWrapper}>
         <div className={styles.container}>
-          <Filter expanded={true} />
+          <Filter expanded={false} />
           <div className={styles.cardsGrid}>
-            {Array.from(Array(12)).map((_, i) => (
-              <Card
-                key={i}
-                title={`${i + 1} ${
-                  i % 2
-                    ? 'Very long name that should describe what this demo is doing in every detail'
-                    : 'Short name'
-                }`}
-                name="@JakubGonet"
-                platform="Twitter"
-                link="https://twitter.com/RavenOfWroclaw/status/1197617218575589377"
-              />
+            {showcaseData.slice(0, 12 + 1).map((data, i) => (
+              <Card key={i} {...data} />
             ))}
           </div>
         </div>
