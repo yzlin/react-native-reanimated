@@ -32,59 +32,7 @@ type Screens = Record<string, { screen: React.ComponentType; title?: string }>;
 const SCREENS: Screens = {
   AnimatedStyleUpdate: {
     screen: AnimatedStyleUpdateExample,
-    title: '🆕 Animated Style Update',
-  },
-  WobbleExample: {
-    screen: WobbleExample,
-    title: '🆕 Animation Modifiers (Wobble Effect)',
-  },
-  DragAndSnapExample: {
-    screen: DragAndSnapExample,
-    title: '🆕 Drag and Snap',
-  },
-  MeasureExample: {
-    screen: MeasureExample,
-    title: '🆕 Synchronous Measure',
-  },
-  ScrollEventExample: {
-    screen: ScrollEventExample,
-    title: '🆕 Scroll Events',
-  },
-  ChatHeadsExample: {
-    screen: ChatHeadsExample,
-    title: '🆕 Chat Heads',
-  },
-  ScrollableToExample: {
-    screen: ScrollToExample,
-    title: '🆕 scrollTo',
-  },
-  SwipeableListExample: {
-    screen: SwipeableListExample,
-    title: '🆕 (advanced) Swipeable List',
-  },
-  LightboxExample: {
-    screen: LightboxExample,
-    title: '🆕 (advanced) Lightbox',
-  },
-  ScrollableViewExample: {
-    screen: ScrollableViewExample,
-    title: '🆕 (advanced) ScrollView imitation',
-  },
-  AnimatedTabBarExample: {
-    screen: AnimatedTabBarExample,
-    title: '🆕 (advanced) Tab Bar Example',
-  },
-  LiquidSwipe: {
-    screen: LiquidSwipe,
-    title: '🆕 Liquid Swipe Example',
-  },
-  ExtrapolationExample: {
-    screen: ExtrapolationExample,
-    title: '🆕 Extrapolation Example',
-  },
-  ScrollExample: {
-    screen: ScrollExample,
-    title: '🆕 Scroll Example',
+    title: 'Click to test JSError',
   },
 };
 
@@ -109,7 +57,6 @@ function MainScreen({ navigation, setUseRea2 }: MainScreenProps) {
         />
       )}
       renderScrollComponent={(props) => <ScrollView {...props} />}
-      ListFooterComponent={() => <LaunchReanimated1 setUseRea2={setUseRea2} />}
     />
   );
 }

@@ -15,7 +15,21 @@ function AnimatedStyleUpdateExample(): React.ReactElement {
     easing: Easing.bezier(0.5, 0.01, 0, 1),
   };
 
+  const worklet = () => {
+    'worklet';
+    throw 'EXCEPTION_IN_WORKLET';
+  }
+
   const style = useAnimatedStyle(() => {
+    if(_WORKLET) { // on UI thread context
+      try {
+        worklet();
+      }
+      catch (e) {
+        console.log("SUCCESS");
+      }
+    }
+
     return {
       width: withTiming(randomWidth.value, config),
     };
@@ -34,7 +48,7 @@ function AnimatedStyleUpdateExample(): React.ReactElement {
         ]}
       />
       <Button
-        title="toggle"
+        title="CLICK TO TRIGGER EXCEPTION"
         onPress={() => {
           randomWidth.value = Math.random() * 350;
         }}
