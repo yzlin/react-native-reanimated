@@ -74,6 +74,7 @@ export default function createAnimatedComponent(Component, options = {}) {
       if (process.env.JEST_WORKER_ID) {
         this.animatedStyle = { value: {} };
       }
+      console.log('[AnimatedComponent::constructor()]', Date.now(), 'process.env.JEST_WORKER_ID = ', process.env.JEST_WORKER_ID, this.animatedStyle);
     }
 
     componentWillUnmount() {
@@ -300,6 +301,8 @@ export default function createAnimatedComponent(Component, options = {}) {
           }
         }
       });
+      console.log('[AnimatedComponent::_attachAnimatedStyles()]', Date.now(), 'styles = ', styles[0]);
+      console.log('[AnimatedComponent::_attachAnimatedStyles()]', Date.now(), 'styles[0] = ', styles[0]?.animatedStyle?.curent);
       // attach animatedProps property
       if (this.props.animatedProps?.viewDescriptor) {
         this.props.animatedProps.viewDescriptor.value = {
@@ -439,6 +442,7 @@ export default function createAnimatedComponent(Component, options = {}) {
       if (process.env.JEST_WORKER_ID) {
         props.animatedStyle = this.animatedStyle;
       }
+      console.log('[AnimatedComponent::render()]', Date.now(), 'props = ', props);
 
       const platformProps = Platform.select({
         web: {},

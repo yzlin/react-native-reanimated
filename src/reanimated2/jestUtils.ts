@@ -98,13 +98,17 @@ const findStyleDiff = (current, expect, requireAllMatch) => {
 };
 
 const compareStyle = (received, expectedStyle, config) => {
+  console.log('[compareStyle()]', 'received', received);
+  console.log('[compareStyle()]', 'expectedStyle', expectedStyle);
+  console.log('[compareStyle()]', 'received.props.style', received.props.style);
   if (!received.props.style) {
     return { message: () => message, pass: false };
   }
   const { exact } = config;
   const currentStyle = getCurrentStyle(received);
+  console.log('[compareStyle::getCurrentStyle()]', 'currentStyle', currentStyle);
   const { isEqual, diffs } = findStyleDiff(currentStyle, expectedStyle, exact);
-
+  console.log('[compareStyle::findStyleDiff()]', 'diffs', diffs);
   if (isEqual) {
     return { message: () => 'ok', pass: true };
   }
@@ -150,15 +154,19 @@ const afterTest = () => {
 const tickTravel = () => {
   MockDate.set(new Date(Date.now() + frameTime));
   jest.advanceTimersByTime(frameTime);
+  console.log('[tickTravel]', Date.now());
 };
 
 export const withReanimatedTimer = (animatonTest) => {
+  console.log('[withReanimatedTimer]', Date.now(), 'start');
   beforeTest();
   animatonTest();
   afterTest();
+  console.log('[withReanimatedTimer]', Date.now(), 'end');
 };
 
 export const advanceAnimationByTime = (time = frameTime) => {
+  console.log('[advanceAnimationByTime]', Date.now(), time);
   for (let i = 0; i <= Math.ceil(time / frameTime); i++) {
     tickTravel();
   }
@@ -189,6 +197,7 @@ export const setUpTests = (userConfig = {}) => {
 
   jest.mock('./js-reanimated', () => require('./js-reanimated/index.web'));
   jest.mock('../ReanimatedModule', () => require('../ReanimatedModuleCompat'));
+  // jest.mock('NativeEventEmitter', () => jest.fn());
   jest.mock('./NativeReanimated', () => {
     let module;
     try {

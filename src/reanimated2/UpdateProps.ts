@@ -53,6 +53,7 @@ export const updateProps = (
   const updatePropsInternal =
     typeof _updateProps === 'undefined' ? _updatePropsJS : _updateProps;
 
+  console.log('[updateProps]', Date.now(), updates);
   updatePropsInternal(
     viewDescriptor.value.tag,
     viewName,
@@ -72,7 +73,8 @@ export const updatePropsJestWrapper = (
     ...animatedStyle.current.value,
     ...updates,
   };
-
+  console.log('[updatePropsJestWrapper]', Date.now(), 'animatedStyle.current.value', animatedStyle.current.value);
+  console.log('[updatePropsJestWrapper]', Date.now(), 'updates', updates);
   updateProps(viewDescriptor, updates, maybeViewRef, adapters);
 };
 

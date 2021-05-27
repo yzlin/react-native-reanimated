@@ -56,6 +56,7 @@
   "homepage": "https://github.com/software-mansion/react-native-reanimated#readme",
   "dependencies": {
     "@babel/plugin-transform-object-assign": "^7.10.4",
+    "@quilted/react-testing": "^0.3.10",
     "fbjs": "^3.0.0",
     "mockdate": "^3.0.2",
     "string-hash-64": "^1.0.3"

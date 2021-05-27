@@ -326,7 +326,7 @@ function jestStyleUpdater(
   const animations = state.animations || {};
   const newValues = updater() || {};
   const oldValues = state.last;
-
+  console.log('[jestStyleUpdater start]', Date.now(), newValues);
   // extract animated props
   let hasAnimations = false;
   Object.keys(animations).forEach((key) => {
@@ -345,6 +345,7 @@ function jestStyleUpdater(
   });
 
   function frame(timestamp) {
+    console.log('[jestStyleUpdater::frame()]', timestamp);
     const { animations, last, isAnimationCancelled } = state;
     if (isAnimationCancelled) {
       state.isAnimationRunning = false;
@@ -465,6 +466,7 @@ export function useAnimatedStyle(updater, dependencies, adapters) {
           animatedStyle
         );
       };
+      console.log('[useAnimatedStyle()]', Date.now());
     } else {
       fun = () => {
         'worklet';
@@ -479,6 +481,7 @@ export function useAnimatedStyle(updater, dependencies, adapters) {
       };
     }
     const mapperId = startMapper(fun, inputs, []);
+    console.log('[useAnimatedStyle()]', Date.now(), 'mapperId = ', mapperId);
     return () => {
       stopMapper(mapperId);
     };
@@ -530,6 +533,7 @@ export function useAnimatedStyle(updater, dependencies, adapters) {
   }
 
   if (process.env.JEST_WORKER_ID) {
+    console.log('[useAnimatedStyle() return]', Date.now(), 'animatedStyle = ', animatedStyle);
     return { viewDescriptor, initial, viewRef, animatedStyle };
   } else {
     return { viewDescriptor, initial, viewRef };

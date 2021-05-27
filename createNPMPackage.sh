@@ -9,7 +9,7 @@ unset CI
 versions=("0.64.1" "0.63.3" "0.62.2 --dev")
 version_name=("64" "63" "62")
 
-for index in {0..2}
+for index in {0..1}
 do
   yarn add react-native@"${versions[$index]}"
   for for_hermes in "True" "False"
