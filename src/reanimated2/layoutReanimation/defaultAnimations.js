@@ -400,6 +400,30 @@ export class ZoomOut extends BaseAnimationBuilder {
   }
 }
 
+export class ZoomIn extends BaseAnimationBuilder {
+  static createInstance() {
+    return new ZoomIn();
+  }
+
+  build() {
+    const delayFunction = this.getDelayFunction();
+    const [animation, config] = this.getAnimationAndConfig();
+    const delay = this.delayV;
+
+    return () => {
+      'worklet';
+      return {
+        animations: {
+          transform: [{ scale: delayFunction(delay, animation(1, config)) }],
+        },
+        initialValues: {
+          transform: [{ scale: 0 }],
+        },
+      };
+    };
+  }
+}
+
 export class SlideInRight extends BaseAnimationBuilder {
   static createInstance() {
     return new SlideInRight();
@@ -522,6 +546,30 @@ export class SlideInDown extends BaseAnimationBuilder {
   }
 }
 
+export class SlideInUp extends BaseAnimationBuilder {
+  static createInstance() {
+    return new SlideInUp();
+  }
+
+  build() {
+    const delayFunction = this.getDelayFunction();
+    const [animation, config] = this.getAnimationAndConfig();
+    const delay = this.delayV;
+
+    return (values) => {
+      'worklet';
+      return {
+        animations: {
+          originY: delayFunction(delay, animation(values.originY, config)),
+        },
+        initialValues: {
+          originY: values.originY + height,
+        },
+      };
+    };
+  }
+}
+
 export class SlideOutUp extends BaseAnimationBuilder {
   static createInstance() {
     return new SlideOutUp();
@@ -592,6 +640,8 @@ export class OpacityOut extends BaseAnimationBuilder {
     };
   }
 }
+
+
 
 /* entering={StyleIn.add({}).add({})}
 entering={StyleIn.frames({
