@@ -4,6 +4,8 @@ import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 import styles from './styles.module.css';
 import showcaseData from '@site/static/showcase.json';
+import Modal from 'react-modal';
+import TweetEmbed from 'react-tweet-embed';
 
 function Filter({ expanded: expandedInitial, data, setFilteredData }) {
   const [expanded, setExpanded] = useState(!!expandedInitial);
@@ -82,11 +84,20 @@ function Filter({ expanded: expandedInitial, data, setFilteredData }) {
   );
 }
 
-function Card({ title, name, imageUri, link, platform }) {
+function Card(props) {
+  const {
+    data: { title, name, imageUri, link, platform },
+    setModalState,
+  } = props;
+
   return (
     <>
       <article className={styles.card}>
-        <div className={styles.cardImgContainer}>
+        <div
+          className={styles.cardImgContainer}
+          onClick={() =>
+            setModalState({ isOpen: true, selectedData: props.data })
+          }>
           <img src={imageUri} className={styles.cardImg} />
         </div>
         <div className={styles.cardDescription}>
@@ -104,10 +115,60 @@ function Card({ title, name, imageUri, link, platform }) {
   );
 }
 
+function ShowcaseModal({ modalState, setModalState }) {
+  return (
+    // remove ariaHideApp
+    <Modal
+      ariaHideApp={false}
+      isOpen={modalState.isOpen}
+      onRequestClose={() => setModalState({ ...modalState, isOpen: false })}
+      contentLabel="Example Modal"
+      style={{
+        content: {
+          top: '50%',
+          left: '50%',
+          right: 'auto',
+          bottom: 'auto',
+          marginRight: '-50%',
+          transform: 'translate(-50%, -50%)',
+          border: 'none',
+          borderRadius: 0,
+        },
+        overlay: {
+          backgroundColor: 'rgba(38, 38, 38, 0.5)',
+        },
+      }}>
+      <div
+        style={{
+          width: '1200px',
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+        <TweetEmbed id="1197617218575589377" placeholder={'loading'} />
+        <h1>{modalState.selectedData?.title}</h1>
+        <p className={classnames(styles.cardAuthor, 'margin--none')}>
+          by{' '}
+          <a
+            href={modalState.selectedData?.link}
+            className={styles.cardTextNick}>
+            {modalState.selectedData?.name}
+          </a>{' '}
+          on {modalState.selectedData?.platform}
+        </p>
+      </div>
+    </Modal>
+  );
+}
+
 function Showcase() {
   const [filteredData, setFilteredData] = useState(showcaseData);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    selectedData: undefined,
+  });
   return (
     <Layout wrapperClassName={styles.layout}>
+      <ShowcaseModal modalState={modalState} setModalState={setModalState} />
       <div className={styles.containerWrapper}>
         <div className={styles.container}>
           <Filter
@@ -117,7 +178,7 @@ function Showcase() {
           />
           <div className={styles.cardsGrid}>
             {filteredData.slice(0, 12 + 1).map((data, i) => (
-              <Card key={i} {...data} />
+              <Card key={i} data={data} setModalState={setModalState} />
             ))}
           </div>
         </div>

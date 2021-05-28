@@ -142,3 +142,7 @@
   text-decoration: underline;
   cursor: pointer;
 }
+
+.modal {
+  width: 1200px;
+}
