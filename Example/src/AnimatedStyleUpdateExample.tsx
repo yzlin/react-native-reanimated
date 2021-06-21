@@ -3,44 +3,59 @@ import Animated, {
   withTiming,
   useAnimatedStyle,
   Easing,
+  withRepeat,
 } from 'react-native-reanimated';
 import { View, Button } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from 'react-native-screens/native-stack';
 import React from 'react';
+import { enableScreens } from 'react-native-screens';
 
-function AnimatedStyleUpdateExample(): React.ReactElement {
-  const randomWidth = useSharedValue(10);
+enableScreens(true);
 
-  const config = {
-    duration: 500,
-    easing: Easing.bezier(0.5, 0.01, 0, 1),
-  };
+const AnimatedIcon = Animated.createAnimatedComponent(Icon);
 
-  const style = useAnimatedStyle(() => {
-    return {
-      width: withTiming(randomWidth.value, config),
-    };
+export function ActivityIcon() {
+  const rotation = useSharedValue(0);
+
+  React.useEffect(() => {
+    rotation.value = withRepeat(withTiming(360, { duration: 750, easing: Easing.linear }), 0);
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return { transform: [{ rotate: `${rotation.value}deg` }] };
   });
 
+  return (
+    <View style={{height: 300, width: 300,}}>
+      <AnimatedIcon color="black" name="loader" size={16} style={animatedStyle} />
+    </View>
+  );
+}
+
+function AnimatedStyleUpdateExample({navigation}: any): React.ReactElement {
   return (
     <View
       style={{
         flex: 1,
         flexDirection: 'column',
       }}>
-      <Animated.View
-        style={[
-          { width: 100, height: 80, backgroundColor: 'black', margin: 30 },
-          style,
-        ]}
-      />
-      <Button
-        title="toggle"
-        onPress={() => {
-          randomWidth.value = Math.random() * 350;
-        }}
-      />
+      <Button title="next screen" onPress={() => {navigation.push('Home')} } />
+      <ActivityIcon />
+      <ActivityIcon />
+      <ActivityIcon />
+      
     </View>
   );
 }
 
-export default AnimatedStyleUpdateExample;
+const Stack = createNativeStackNavigator();//;createStackNavigator();
+
+export default function Screens() {
+  return (
+    <Stack.Navigator screenOptions={{stackAnimation:"none"}} >
+      <Stack.Screen name="Home" component={AnimatedStyleUpdateExample} />
+    </Stack.Navigator>
+  );
+};
