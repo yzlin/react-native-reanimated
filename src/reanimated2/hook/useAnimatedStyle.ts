@@ -38,6 +38,7 @@ import {
   BasicWorkletFunction,
   NestedObjectValues,
   SharedValue,
+  VoidWorkletFunction,
 } from '../commonTypes';
 export interface AnimatedStyleResult {
   viewDescriptors: ViewDescriptorsSet;
@@ -397,7 +398,8 @@ function checkSharedValueUsage(
 export function useAnimatedStyle<T extends AnimatedStyle>(
   updater: BasicWorkletFunction<T>,
   dependencies?: DependencyList,
-  adapters?: AdapterWorkletFunction | AdapterWorkletFunction[]
+  adapters?: AdapterWorkletFunction | AdapterWorkletFunction[],
+  callback?: VoidWorkletFunction
 ): AnimatedStyleResult {
   const viewsRef: ViewRefSet<any> = makeViewsRefSet();
   const viewDescriptors: ViewDescriptorsSet = makeViewDescriptorsSet();
@@ -443,6 +445,10 @@ export function useAnimatedStyle<T extends AnimatedStyle>(
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { initial, remoteState, sharableViewDescriptors } = initRef.current!;
   const maybeViewRef = NativeReanimatedModule.native ? undefined : viewsRef;
+
+  if (callback) {
+    updater.__optimalization = 0;
+  }
 
   useEffect(() => {
     let fun;
@@ -493,25 +499,41 @@ export function useAnimatedStyle<T extends AnimatedStyle>(
           animatedStyle,
           adaptersArray
         );
+        if (callback) {
+          callback();
+        }
       };
     } else {
-      fun = () => {
-        'worklet';
-        styleUpdater(
-          sharableViewDescriptors,
-          upadterFn,
-          remoteState,
-          maybeViewRef,
-          animationsActive
-        );
-      };
+      if (callback) {
+        fun = () => {
+          'worklet';
+          styleUpdater(
+            sharableViewDescriptors,
+            upadterFn,
+            remoteState,
+            maybeViewRef,
+            animationsActive
+          );
+          callback();
+        };
+      } else {
+        fun = () => {
+          'worklet';
+          styleUpdater(
+            sharableViewDescriptors,
+            upadterFn,
+            remoteState,
+            maybeViewRef,
+            animationsActive
+          );
+        };
+      }
     }
     const mapperId = startMapper(
       fun,
       inputs,
       [],
       upadterFn,
-      // TODO fix this
       sharableViewDescriptors
     );
     return () => {
