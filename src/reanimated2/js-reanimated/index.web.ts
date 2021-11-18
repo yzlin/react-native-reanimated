@@ -18,7 +18,7 @@ export const _updatePropsJS = (_viewTag, _viewName, updates, viewRef) => {
       [{}, {}]
     );
 
-    setNativeProps(viewRef._component, rawStyles);
+    setNativeProps(viewRef.current._component, rawStyles);
   }
 };
 
