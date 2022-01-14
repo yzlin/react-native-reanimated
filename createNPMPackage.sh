@@ -6,8 +6,8 @@ ROOT=$(pwd)
 
 unset CI
 
-versions=("0.67.0-rc.2" "0.66.1" "0.65.1" "0.64.1" "0.63.3")
-version_name=("67" "66" "65" "64" "63")
+versions=("0.66.1")
+version_name=("66")
 
 for index in {0..4}
 do
@@ -20,7 +20,7 @@ do
     fi
     echo "engine=${engine}"
 
-    cd android 
+    cd android
     gradle clean
 
     FOR_HERMES=${for_hermes} gradle :assembleDebug
@@ -37,7 +37,7 @@ cd libSo
 mkdir fbjni
 cd fbjni
 wget https://repo1.maven.org/maven2/com/facebook/fbjni/fbjni/0.2.2/fbjni-0.2.2.aar
-unzip fbjni-0.2.2.aar 
+unzip fbjni-0.2.2.aar
 rm -r $(find . ! -name '.' ! -name 'jni' -maxdepth 1)
 rm $(find . -name '*libc++_shared.so')
 cd ../..
