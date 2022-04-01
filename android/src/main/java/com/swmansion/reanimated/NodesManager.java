@@ -28,6 +28,7 @@ import com.facebook.react.uimanager.UIManagerReanimatedHelper;
 import com.facebook.react.uimanager.common.UIManagerType;
 import com.facebook.react.uimanager.common.ViewUtil;
 import com.facebook.react.uimanager.events.Event;
+import com.facebook.react.uimanager.events.EventDispatcher;
 import com.facebook.react.uimanager.events.EventDispatcherListener;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
 import com.swmansion.reanimated.layoutReanimation.AnimationsManager;
@@ -109,7 +110,7 @@ public class NodesManager implements EventDispatcherListener {
   private final ReactContext mContext;
   private final UIManagerModule mUIManager;
   private ReactApplicationContext mReactApplicationContext;
-
+  private FabricUIManager fabricUIManager;
   private RCTEventEmitter mCustomEventHandler;
   private List<OnAnimationFrame> mFrameCallbacks = new ArrayList<>();
   private ConcurrentLinkedQueue<CopiedEvent> mEventQueue = new ConcurrentLinkedQueue<>();
@@ -145,6 +146,11 @@ public class NodesManager implements EventDispatcherListener {
     mReactApplicationContext = reactApplicationContext;
     mNativeProxy = new NativeProxy(reactApplicationContext);
     mAnimationManager.setScheduler(getNativeProxy().getScheduler());
+
+    fabricUIManager = (FabricUIManager) UIManagerHelper.getUIManager(mReactApplicationContext, UIManagerType.FABRIC);
+    if (fabricUIManager != null) {
+      fabricUIManager.getEventDispatcher().addListener(this);
+    }
   }
 
   private final class NativeUpdateOperation {

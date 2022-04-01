@@ -3,6 +3,7 @@
 #import <React/RCTBridgeModule.h>
 #import <React/RCTSurfacePresenterStub.h>
 #import <React/RCTUIManager.h>
+#import "REAEventDispatcherObserver.h"
 
 @class REAModule;
 
@@ -19,6 +20,7 @@ typedef void (^REAPerformOperations)();
 
 @property (nonatomic, nullable) NSSet<NSString *> *uiProps;
 @property (nonatomic, nullable) NSSet<NSString *> *nativeProps;
+@property (nonatomic, nullable) REAEventDispatcherObserver *eventDispatcherObserver;
 
 - (nonnull instancetype)initWithModule:(REAModule *)reanimatedModule
                                 bridge:(RCTBridge *)bridge
